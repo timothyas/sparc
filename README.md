@@ -10,11 +10,11 @@ Sparse Pagerank Implementation in C++
 
 3. Coarsen graph
 
-	a. Maximal Independent Set
-	
-        b. Graph coloring
+	i. Maximal Independent Set
 
-	c. Edge matching 
+        ii. Graph coloring
+
+	iii. Edge matching 
 	
 4. Spectral bisection - reduce off diagonals for sparse matvec
 
