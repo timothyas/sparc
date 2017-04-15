@@ -1,29 +1,22 @@
-# README #
+# spiC #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Sparse Pagerank Implementation in C++
 
-### What is this repository for? ###
+# Work flow #
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+1. Load edge matrix
 
-### How do I get set up? ###
+2. (sparse storage scheme?)
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+3. Coarsen graph
+	a. Maximal Independent Set
+	b. Graph coloring
+	c. Edge matching 
+	
+4. Spectral bisection - reduce off diagonals for sparse matvec
 
-### Contribution guidelines ###
+5. Solve Mx = b 
 
-* Writing tests
-* Code review
-* Other guidelines
+# Package requirements #
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+We might use Eigen... tbd
