@@ -9,8 +9,11 @@ Sparse Pagerank Implementation in C++
 2. (sparse storage scheme?)
 
 3. Coarsen graph
+
 	a. Maximal Independent Set
-	b. Graph coloring
+	
+        b. Graph coloring
+
 	c. Edge matching 
 	
 4. Spectral bisection - reduce off diagonals for sparse matvec
