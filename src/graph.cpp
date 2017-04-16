@@ -5,6 +5,21 @@
 using namespace Eigen; 
 using namespace std; 
 
+double Graph::getEdgePoint(i,j)
+{
+	return edge(i,j);
+}
+
+double Graph::getNumNodes()
+{
+	return numNodes;
+}
+
+double Graph::getNumEdges()
+{
+	return numEdge;
+}
+
 Graph::Graph(string filename)
 {
 	ifstream inFile; 
