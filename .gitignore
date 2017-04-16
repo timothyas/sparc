@@ -21,12 +21,10 @@
 *.o
 *.gcda
 *.gcno
-*.dat
 
 # executables #
 ###############
 spiC
-test
 
 # doxygen #
 ############
