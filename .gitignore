@@ -25,6 +25,8 @@
 
 # executables #
 ###############
+spiC
+test
 
 # doxygen #
 ############
@@ -34,3 +36,4 @@
 
 # gprof  #
 #########
+gmon.out
