@@ -5,11 +5,12 @@
  * list of edges.
  *
  * Inputs
- * edgeMat: M x 2 matrix containing list of edges
- * numNodes: number of nodes in graph
- * edges: number of edges in graph, number of rows in edgeMat
+ * bisectMe: graph object to compute adjacency matrix for 
+ *
+ * Outputs
+ * adjMat: adjacency matrix associated with edge pairings 
  */
-MatrixXd ComputeAdjacencyMatrix(MatrixX2d &edgeMat, int numNodes, int numEdges)
+MatrixXd ComputeAdjacencyMatrix(Graph* bisectMe, MatrixXd &adjMat)
 
 /*   Calculate the out degree matrix associated 
  * with the (square) adjacency matrix.
@@ -17,6 +18,9 @@ MatrixXd ComputeAdjacencyMatrix(MatrixX2d &edgeMat, int numNodes, int numEdges)
  * Inputs
  * adjMat: adjacency matrix
  * matLen: matrix length, adjMat is matLen x matLen
+ *
+ * Output
+ * L: Graph laplacian
  */
 MatrixXd ComputeGraphLaplacian(MatrixXd &adjMat, int matLen)
 

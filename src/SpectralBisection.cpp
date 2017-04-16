@@ -3,22 +3,19 @@
 using namespace std;
 using namespace Eigen;
 
-MatrixXd ComputeAdjacencyMatrix(MatrixX2d &edgeMat, int numNodes, int numEdges){ 
-
-	MatrixXd adjMat(numNodes,numNodes); 
+int ComputeAdjacencyMatrix(Graph* bisectMe, MatrixXd &adjMat){ 
 
 	// Adjacency mat gets 1 where there's a connection btwn 2 nodes
 	// 	may need to replace with weights ...
-	for( int i=0, i<numEdges, i++){
-		adjMat(edgeMat(i,1),edgeMat(i,2)) = 1;
-		adjMat(edgeMat(i,2),edgeMat(i,1)) = 1;
+	for( int i=0, i<bisectMe->getNumEdges(), i++){
+		adjMat(bisectMe->getEdgePoint(i,1),bisectMe->getEdgePoint(i,2)) = 1;
+		adjMat(bisectMe->getEdgePoint(i,2),bisectMe->getEdgePoint(i,1)) = 1;
 	}
 
-	return adjMat;
-
+	return 0;
 }
 
-MatrixXd ComputeGraphLaplacian(MatrixXd &adjMat, int matLen) {
+int ComputeGraphLaplacian(MatrixXd &adjMat, MatrixXd &L, int matLen) {
 
 
 	MatrixXd L(matLen,matLen);
@@ -38,5 +35,5 @@ MatrixXd ComputeGraphLaplacian(MatrixXd &adjMat, int matLen) {
 	  }
 	}
 
-	return L;
+	return 0;
 }
