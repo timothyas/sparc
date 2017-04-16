@@ -18,7 +18,7 @@ MatrixXd ComputeAdjacencyMatrix(MatrixX2d &edgeMat, int numNodes, int numEdges)
  * adjMat: adjacency matrix
  * matLen: matrix length, adjMat is matLen x matLen
  */
-MatrixXd ComputeDegreeMatrix(MatrixXd &adjMat, int matLen)
+MatrixXd ComputeGraphLaplacian(MatrixXd &adjMat, int matLen)
 
 
 
