@@ -52,7 +52,7 @@ MatrixXd Graph::computeAdjacencyMatrix()
 
 	// Adjacency mat gets 1 where there's a connection btwn 2 nodes
 	// 	may need to replace with weights ...
-	for( size_t i=0; i<this->getNumEdges(); i++)
+	for( size_t i=0; i<numEdge; i++)
 	{
 		m = (int)edge(i,0);
 		n = (int)edge(i,1);
@@ -68,7 +68,7 @@ Graph::Graph(string filename)
 {
 	ifstream inFile; 
 	inFile.open(filename.c_str());
-	size_t numEdge = 0; 
+	numEdge = 0; 
 	string line;
 	
 	//Determine total number of edges
@@ -95,7 +95,7 @@ Graph::Graph(string filename)
 	}
 	inFile.close();
 
-	numNodes = edge.maxCoeff();
+	numNodes = edge.maxCoeff()+1;
 }
 
 

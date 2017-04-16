@@ -1,7 +1,10 @@
 #include<Eigen/Dense>
+#include<Eigen/Eigenvalues>
 #include<iostream>
+#include<iomanip>
 #include"graph.h"
 #include"spectralBisection.h"
+#include<math.h>
 
 using namespace std;
 using namespace Eigen;
@@ -9,6 +12,10 @@ using namespace Eigen;
 
 int main()
 {
+	cout << "----------------------------------------------------------------------" << endl; 
+	cout << "Running Banded Matrix Test" << endl; 
+	cout << "----------------------------------------------------------------------" << endl; 
+
 	Graph banded_matrix("banded_matrix.dat");
 	Graph* ptr = &banded_matrix;
 
@@ -16,22 +23,146 @@ int main()
 	MatrixXd A = ptr->computeAdjacencyMatrix();
 	MatrixXd L = ptr->computeGraphLaplacian();
 
-	// Output for check
-	cout << "Adjacency matrix: " << endl;
-	cout << A(0,0) << " " << A(0,1) << " " << A(0,2) << " "<< A(0,3) << endl;
-	cout << A(1,0) << " " << A(1,1) << " " << A(1,2) << " " << A(1,3) << endl;
-	cout << A(2,0) << " " << A(2,1) << " " << A(2,2) << " "<< A(2,3) << endl;
-	cout << A(3,0) << " " << A(3,1) << " " << A(3,2) << " " << A(3,3) << endl;
-	cout << "\n --- \n " << endl;
+	for (int i = 0; i < A.rows(); i++)
+	{
+		if (i==0)
+		{
+			if (A(i,i+1) !=1)
+			{
+				cout << "Computed Adjacency Matrix Incorrectly...exiting" << endl;
+				return 1;
+			}
+			if (L(i,i) != 1 || L(i,i+1) !=-1)
+			{
+				cout << "Computed Graph Laplacian Incorrectly...exiting" << endl;
+				return 1; 
+			}
+		}
+		else if (i == A.rows()-1)
+		{
+			if (A(i,i-1) !=1)
+			{
+				cout << "Computed Adjacency Matrix Incorrectly...exiting" << endl;
+				return 1;
+			}
+			if (L(i,i) != 1 || L(i,i-1) !=-1)
+			{
+				cout << "Computed Graph Laplacian Incorrectly...exiting" << endl;
+				return 1; 
+			}
+		}
 
-	cout << "Laplacian: " << endl;
-	cout << L(0,0) << " " << L(0,1) << " " << L(0,2) << " " << L(0,3)<< endl;
-	cout << L(1,0) << " " << L(1,1) << " " << L(1,2) << " " << L(1,3) << endl;
-	cout << L(2,0) << " " << L(2,1) << " " << L(2,2) << " " << L(2,3)<< endl;
-	cout << L(3,0) << " " << L(3,1) << " " << L(3,2) << " " << L(3,3) << endl;
-	cout << "\n --- \n " << endl;
-	// cout << "Graph laplacian: " << endl;
-	// cout << L << " \n --- \n " << endl;
+		else 
+		{
+			if (A(i,i+1) != 1 || A(i,i-1) !=1)
+			{
+			cout << "Computed Adjacency Matrix Incorrectly...exiting" << endl;
+			return 1;
+			}
+			if (L(i,i+1) != -1 || L(i,i-1) != -1 || L(i,i) != 2)
+			{
+			cout << "Computed Graph Laplacian Incorrectly...exiting" << endl;
+			return 1; 
+			}
+		}
+
+	}
+
+	cout << "Successfully Computed Graph Laplacian and Adjacency Matrix" << endl;
+
+
+	SelfAdjointEigenSolver<MatrixXd> eigensolver(L);
+	double eigval2 = eigensolver.eigenvalues()[1];
+	VectorXd eigvec2 = eigensolver.eigenvectors().col(1);
+	VectorXd test1,test2; 
+	test1 = L*eigvec2; 
+	test2 = eigval2*eigvec2; 
+	for (int i = 0; i < test1.size(); i++)
+	{
+		if (fabs(test1(i)-test2(i))>1e-7 )
+		{
+			cout << "Error finding second eigenvalue and/or vector...exiting" << endl; 
+			return 1; 
+		}
+	}
+	cout << "Successfully found second smallest eigenvalue and corresponding eigenvector" << endl;
+	
+	VectorXd sortedeigvec2 = eigvec2;
+	sort(sortedeigvec2.data(),sortedeigvec2.data()+sortedeigvec2.size());
+	double split = sortedeigvec2(sortedeigvec2.size()/2);
+	int countLeft =0;
+	int countRight = 0;
+
+	for (int i = 0; i < eigvec2.size(); i++)
+	{
+		if (eigvec2(i) < split)
+			countLeft++; 
+		if (eigvec2(i) > split) 
+			countRight++; 
+	}
+	if (countLeft != countRight)
+	{
+		cout << "Error finding median...exiting" << endl;
+		return 1;
+	}
+	cout << "Successfully sorted eigenvector and found median" << endl; 
+	VectorXd ind1 = VectorXd::Zero(countLeft);
+	VectorXd ind2 = VectorXd::Zero(countRight+1); 
+
+	countLeft = 0; 
+	countRight = 0; 
+	for (int i = 0; i < eigvec2.size(); i++)
+	{
+		if (eigvec2(i) < split)
+		{
+			ind1(countLeft) = i; 
+			countLeft++; 
+		}
+		if (eigvec2(i) >= split)
+		{
+			ind2(countRight) = i; 
+			countRight++;
+		}
+	}
+
+	MatrixXd newA = MatrixXd::Zero(A.rows(),A.cols());
+	MatrixXd newA11 = MatrixXd::Zero(ind1.size(),ind1.size());
+	MatrixXd newA12 = MatrixXd::Zero(ind1.size(),ind2.size());
+	MatrixXd newA21 = MatrixXd::Zero(ind2.size(),ind1.size());
+	MatrixXd newA22 = MatrixXd::Zero(ind2.size(),ind2.size());
+
+	for (int i = 0; i < ind1.size(); i++)
+	{
+		for (int j = 0; j < ind1.size(); j++)
+		{
+			newA11(i,j) = A(ind1(i),ind1(j)); 
+		}
+	}
+
+	for (int i = 0; i < ind1.size(); i++)
+	{
+		for (int j = 0; j < ind2.size(); j++)
+		{
+			newA12(i,j) = A(ind1(i),ind2(j)); 
+		}
+	}
+	for (int i = 0; i < ind2.size(); i++)
+	{
+		for (int j = 0; j < ind1.size(); j++)
+		{
+			newA21(i,j) = A(ind2(i),ind1(j)); 
+		}
+	}
+
+	for (int i = 0; i < ind2.size(); i++)
+	{
+		for (int j = 0; j < ind2.size(); j++)
+		{
+			newA22(i,j) = A(ind2(i),ind2(j));
+		}
+	}
+
+	newA << newA11, newA12, newA21,newA22; 
 
 	return 0; 
-}
+}	
