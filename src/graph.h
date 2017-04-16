@@ -8,9 +8,9 @@ using namespace std;
 class Graph { 
 	public: 
 		Graph(string filename);
-		getEdgePoint(i,j);
-		getNumNode();
-		getNumEdges();
+		double getEdgePoint(int i,int j);
+		double getNumNodes();
+		double getNumEdges();
 	private:
 		int numEdge, numNodes;
 		MatrixXd edge; 
