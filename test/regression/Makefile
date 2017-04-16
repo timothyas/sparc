@@ -6,7 +6,8 @@ OBJ  := $(patsubst %.cpp,%.o,$(SRC))
 # OPTIONS
 CC      := g++ 
 CFLAGS  :=-O3 -g -p -Wall 
-IMP	:= ../../src/graph.cpp 	
+IMP	:= ../../src/graph.cpp \
+	   ../../src/spectralBisection.cpp	
 
 # RULES
 $(EXEC): $(OBJ)

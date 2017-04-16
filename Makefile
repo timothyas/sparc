@@ -1,5 +1,5 @@
 SPIC_DIR = ${PWD}
-INC	:= -I${SPIC_DIR}/include/
+INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/src/
 
 # Export variables so check, install, and coverage can all use libraries
 export LDFLAGS
@@ -36,12 +36,12 @@ love:
 .PHONY: clobber, clean, doc
 clobber: clean 
 	-$(MAKE) -C ./src/ clobber
-	-$(MAKE) -C ./test/unit/ clobber
+	-$(MAKE) -C ./test/regression/ clobber
 	-$(MAKE) -C ./doc/writeup clean
 	-cd doc/doxygen && rm -rf html && rm -rf latex
 	-cd ./test/system/ && rm -rf Sol.png
 clean: 
-	-$(MAKE) -C ./test/unit/ clean
+	-$(MAKE) -C ./test/regression/ clean
 	-$(MAKE) -C ./src/ clean
 	-$(MAKE) -C ./doc/writeup clean
 	
