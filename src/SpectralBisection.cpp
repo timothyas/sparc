@@ -40,10 +40,3 @@ MatrixXd ComputeGraphLaplacian(MatrixXd &adjMat, int matLen) {
 
 	return L;
 }
-
-
-VectorXd ComputeEigen2(MatrixXd &L) {
-
-
-
-}
