@@ -10,16 +10,11 @@ using namespace Eigen;
 int main()
 {
 	Graph banded_matrix("banded_matrix.dat");
-	
 	Graph* ptr = &banded_matrix;
 
 	// Compute adjacency A and graph laplacian L
-	int N = ptr->getNumNodes();
-	MatrixXd A = MatrixXd::Zero(N,N);
-	MatrixXd L = MatrixXd::Zero(N,N);
-
-	computeAdjacencyMatrix(ptr,A);
-	computeGraphLaplacian(A,L,N);
+	MatrixXd A = ptr->computeAdjacencyMatrix();
+	MatrixXd L = ptr->computeGraphLaplacian();
 
 	// Output for check
 	cout << "Adjacency matrix: " << endl;
