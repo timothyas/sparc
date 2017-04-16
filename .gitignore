@@ -25,6 +25,7 @@
 # executables #
 ###############
 spiC
+regression_test
 
 # doxygen #
 ############

@@ -5,7 +5,7 @@
 using namespace Eigen; 
 using namespace std; 
 
-double Graph::getEdgePoint(i,j)
+double Graph::getEdgePoint(int i,int j)
 {
 	return edge(i,j);
 }
@@ -52,8 +52,6 @@ Graph::Graph(string filename)
 	inFile.close();
 
 	numNodes = edge.maxCoeff();
-	cout << "Number of Nodes: " << numNodes << endl; 
-	cout << "Number of Edges: " << edge.rows() << endl; 
 }
 
 
