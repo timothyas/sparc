@@ -10,12 +10,12 @@ double Graph::getEdgePoint(int i,int j)
 	return edge(i,j);
 }
 
-double Graph::getNumNodes()
+int Graph::getNumNodes()
 {
 	return numNodes;
 }
 
-double Graph::getNumEdges()
+int Graph::getNumEdges()
 {
 	return numEdge;
 }
