@@ -12,17 +12,24 @@ using namespace Eigen;
 MatrixXd spectralBisection(Graph * G)
 {
 	//Compute adjacency matrix and graph laplacian
+	cout << "Computing adjacency matrix...";
 	MatrixXd A = G->computeAdjacencyMatrix();
+	cout << "done."<<endl;
+	cout << "Computing graph laplacian...";
 	MatrixXd L = G->computeGraphLaplacian();
+	cout << "done."<<endl;
 
 	//get second eigenvector
-	VectorXd eigvec2;
+	cout << "Getting second eigenvectos..." << endl; 
 	SelfAdjointEigenSolver<MatrixXd> eigensolver(L);
 	VectorXd eigvec2 = eigensolver.eigenvectors().col(1);
+	cout << "done."<<endl;
 
 	//Get new index sets
+	cout << "Creating index sets..." << endl;
 	VectorXd ind1,ind2; 
 	getIndexSets(eigvec2,ind1,ind2);
+	cout << "done."<<endl;
 
 	MatrixXd newA = MatrixXd::Zero(A.rows(),A.cols());
 	MatrixXd newA11 = MatrixXd::Zero(ind1.size(),ind1.size());
@@ -30,13 +37,15 @@ MatrixXd spectralBisection(Graph * G)
 	MatrixXd newA21 = MatrixXd::Zero(ind2.size(),ind1.size());
 	MatrixXd newA22 = MatrixXd::Zero(ind2.size(),ind2.size());
 
-	getBlocks(A,newA11,newA12,newA21,newA22);
+	cout << "Getting block of spectral bisection..." << endl;
+	getBlocks(A,ind1,ind2,newA11,newA12,newA21,newA22);
+	cout << "done."<<endl;
 
 	newA << newA11, newA12, newA21,newA22; 
 	return newA;
 }
 
-void getBlocks(MatrixXd A, VectorXd ind1, VectorXd in2, MatrixXd & newA11,MatrixXd & newA12,MatrixXd & newA21,MatrixXd & newA22)
+void getBlocks(MatrixXd A, VectorXd ind1, VectorXd ind2, MatrixXd & newA11,MatrixXd & newA12,MatrixXd & newA21,MatrixXd & newA22)
 {
 	for (int i = 0; i < ind1.size(); i++)
 	{
@@ -68,12 +77,6 @@ void getBlocks(MatrixXd A, VectorXd ind1, VectorXd in2, MatrixXd & newA11,Matrix
 			newA22(i,j) = A(ind2(i),ind2(j));
 		}
 	}
-
-
-
-
-
-
 }
 	
 void getIndexSets(VectorXd eigvec2,VectorXd & ind1,VectorXd & ind2)
