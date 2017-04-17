@@ -3,6 +3,7 @@
 #include<iostream>
 #include<iomanip>
 #include"graph.h"
+#include"coarsen.h"
 #include"spectralBisection.h"
 #include<math.h>
 
