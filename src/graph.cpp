@@ -66,7 +66,7 @@ MatrixXd Graph::computeAdjacencyMatrix()
 
 Graph::Graph(string filename)
 {
-	cout << "Initalizing graph from " << filename << " ...";
+	cout << "Initalizing graph from " << filename << endl;
 	ifstream inFile; 
 	inFile.open(filename.c_str());
 	numEdge = 0; 
@@ -97,7 +97,6 @@ Graph::Graph(string filename)
 	inFile.close();
 
 	numNodes = edge.maxCoeff()+1;
-	cout << "done." << endl;
 }
 
 

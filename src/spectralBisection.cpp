@@ -1,4 +1,5 @@
 #include<Eigen/Eigenvalues>
+#include"SymEigsSolver.h"
 #include<iostream>
 #include<iomanip>
 #include<math.h>
@@ -8,28 +9,36 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace Spectra;
 
 MatrixXd spectralBisection(Graph * G)
 {
 	//Compute adjacency matrix and graph laplacian
-	cout << "Computing adjacency matrix...";
+	cout << "Computing adjacency matrix." << endl;
 	MatrixXd A = G->computeAdjacencyMatrix();
-	cout << "done."<<endl;
-	cout << "Computing graph laplacian...";
+	cout << "Computing graph laplacian." << endl;
 	MatrixXd L = G->computeGraphLaplacian();
-	cout << "done."<<endl;
 
 	//get second eigenvector
-	cout << "Getting second eigenvectos..." << endl; 
-	SelfAdjointEigenSolver<MatrixXd> eigensolver(L);
-	VectorXd eigvec2 = eigensolver.eigenvectors().col(1);
-	cout << "done."<<endl;
+	cout << "Getting second eigenvectos." << endl; 
+	DenseSymMatProd<double> op(L);
+	SymEigsSolver< double, LARGEST_ALGE, DenseSymMatProd<double> > eigs(&op, 2, 4);
+	//SymEigsSolver< double, SMALLEST_ALGE, DenseSymMatProd<double> >::eigenvectors(2) //(&op, 2, 4);
+
+	eigs.init();
+	int nconv = eigs.compute(1000, 1e-8,LARGEST_ALGE);
+	MatrixXd eigvec ;
+	VectorXd eigvec2;
+	cout << "---> Number of converged eigenvlues: " << nconv << endl;
+
+	eigvec = eigs.eigenvectors();
+	eigvec2 = eigvec.col(0);
+
 
 	//Get new index sets
-	cout << "Creating index sets..." << endl;
+	cout << "Creating index sets." << endl;
 	VectorXd ind1,ind2; 
 	getIndexSets(eigvec2,ind1,ind2);
-	cout << "done."<<endl;
 
 	MatrixXd newA = MatrixXd::Zero(A.rows(),A.cols());
 	MatrixXd newA11 = MatrixXd::Zero(ind1.size(),ind1.size());
@@ -37,9 +46,8 @@ MatrixXd spectralBisection(Graph * G)
 	MatrixXd newA21 = MatrixXd::Zero(ind2.size(),ind1.size());
 	MatrixXd newA22 = MatrixXd::Zero(ind2.size(),ind2.size());
 
-	cout << "Getting block of spectral bisection..." << endl;
+	cout << "Getting block of spectral bisection." << endl;
 	getBlocks(A,ind1,ind2,newA11,newA12,newA21,newA22);
-	cout << "done."<<endl;
 
 	newA << newA11, newA12, newA21,newA22; 
 	return newA;
