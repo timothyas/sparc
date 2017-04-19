@@ -6,6 +6,7 @@
 #include<Eigen/Dense>
 #include"graph.h"
 #include"spectralBisection.h"
+#include<ctime>
 
 using namespace std;
 using namespace Eigen;
@@ -14,29 +15,41 @@ using namespace Spectra;
 MatrixXd spectralBisection(Graph * G)
 {
 	//Compute adjacency matrix and graph laplacian
-	cout << "Computing adjacency matrix." << endl;
+	cout << "Computing adjacency matrix" << endl;
 	MatrixXd A = G->computeAdjacencyMatrix();
-	cout << "Computing graph laplacian." << endl;
+	cout << "Computing graph laplacian" << endl;
 	MatrixXd L = G->computeGraphLaplacian();
 
 	//get second eigenvector
-	cout << "Getting second eigenvectos." << endl; 
+	cout << "Getting second eigenvector with Eigen" << endl; 
+	std::clock_t start;
+	double duration;
+	start = std::clock();
+	SelfAdjointEigenSolver<MatrixXd> eigensolver(L);
+	double eigval2 = eigensolver.eigenvalues()[1];
+	VectorXd eigvec2 = eigensolver.eigenvectors().col(1);
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << "Eigen duration" << duration << endl;
+	//
+	
+	start = std::clock();
+	cout << "Getting second eigenvector with Spectra" << endl; 
+	//
 	DenseSymMatProd<double> op(L);
-	SymEigsSolver< double, LARGEST_ALGE, DenseSymMatProd<double> > eigs(&op, 2, 4);
-	//SymEigsSolver< double, SMALLEST_ALGE, DenseSymMatProd<double> >::eigenvectors(2) //(&op, 2, 4);
-
+	SymEigsSolver< double, SMALLEST_ALGE, DenseSymMatProd<double> > eigs(&op, 2, 4);
 	eigs.init();
-	int nconv = eigs.compute(1000, 1e-8,LARGEST_ALGE);
+	int nconv = eigs.compute(10000, 1e-3,LARGEST_ALGE);
 	MatrixXd eigvec ;
-	VectorXd eigvec2;
+	VectorXd eigvec2_spectra;
 	cout << "---> Number of converged eigenvlues: " << nconv << endl;
-
 	eigvec = eigs.eigenvectors();
-	eigvec2 = eigvec.col(0);
+	eigvec2_spectra = eigvec.col(0);
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << "Spectra duration" << duration << endl;
 
 
 	//Get new index sets
-	cout << "Creating index sets." << endl;
+	cout << "Creating index sets" << endl;
 	VectorXd ind1,ind2; 
 	getIndexSets(eigvec2,ind1,ind2);
 
@@ -46,7 +59,7 @@ MatrixXd spectralBisection(Graph * G)
 	MatrixXd newA21 = MatrixXd::Zero(ind2.size(),ind1.size());
 	MatrixXd newA22 = MatrixXd::Zero(ind2.size(),ind2.size());
 
-	cout << "Getting block of spectral bisection." << endl;
+	cout << "Getting block of spectral bisection" << endl;
 	getBlocks(A,ind1,ind2,newA11,newA12,newA21,newA22);
 
 	newA << newA11, newA12, newA21,newA22; 
