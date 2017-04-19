@@ -1,4 +1,5 @@
 #include<Eigen/Dense>
+#include"SymEigsSolver.h"
 #include<Eigen/Eigenvalues>
 #include<iostream>
 #include<iomanip>
@@ -6,9 +7,11 @@
 #include"coarsen.h"
 #include"spectralBisection.h"
 #include<math.h>
+#include<ctime>
 
 using namespace std;
 using namespace Eigen;
+using namespace Spectra;
 
 
 int main()
@@ -71,10 +74,15 @@ int main()
 
 	cout << "Successfully Computed Graph Laplacian and Adjacency Matrix" << endl;
 
+	std::clock_t start;
+	double duration;
 
+	start=std::clock();
 	SelfAdjointEigenSolver<MatrixXd> eigensolver(L);
 	double eigval2 = eigensolver.eigenvalues()[1];
 	VectorXd eigvec2 = eigensolver.eigenvectors().col(1);
+	duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+	cout << "Eigen duration: " << duration << endl; 
 	VectorXd test1,test2; 
 	test1 = L*eigvec2; 
 	test2 = eigval2*eigvec2; 
@@ -87,6 +95,31 @@ int main()
 		}
 	}
 	cout << "Successfully found second smallest eigenvalue and corresponding eigenvector" << endl;
+
+	start = std::clock();
+	DenseSymMatProd<double> op(L);
+	SymEigsSolver< double, SMALLEST_ALGE, DenseSymMatProd<double> > eigs(&op, 2, 4);
+	//SymEigsSolver< double, SMALLEST_ALGE, DenseSymMatProd<double> >::eigenvectors(2) //(&op, 2, 4);
+
+	eigs.init();
+	int nconv = eigs.compute(10000, 1e-10,LARGEST_ALGE);
+	MatrixXd eigvec ;
+	VectorXd eigvec2_Spectra;
+
+	eigvec = eigs.eigenvectors();
+	eigvec2_Spectra = eigvec.col(0);
+	duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+	cout << "Eigen duration: " << duration << endl; 
+	for (int i = 0; i < eigvec2.size(); i++)
+	{
+		if (fabs(eigvec2(i)-eigvec2_Spectra(i))>1e-7 )
+		{
+			cout << eigvec2(i) << " " << eigvec2_Spectra(i) << endl;
+			cout << "Error finding second eigenvalue and/or vector with Spectra...exiting" << endl; 
+			return 1; 
+		}
+	}
+	cout << "Successfully found second smallest eigenvalue and corresponding eigenvector with Spectra" << endl;
 	
 	VectorXd sortedeigvec2 = eigvec2;
 	sort(sortedeigvec2.data(),sortedeigvec2.data()+sortedeigvec2.size());
