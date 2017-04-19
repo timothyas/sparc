@@ -9,8 +9,8 @@ class Graph {
 	public: 
 		Graph(string filename);
 		double getEdgePoint(int i,int j);
-		double getNumNodes();
-		double getNumEdges();
+		int getNumNodes();
+		int getNumEdges();
 
 		MatrixXd computeGraphLaplacian();
 		MatrixXd computeAdjacencyMatrix();

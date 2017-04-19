@@ -1,4 +1,5 @@
 #include<Eigen/Eigenvalues>
+#include"SymEigsSolver.h"
 #include<iostream>
 #include<iomanip>
 #include<math.h>
@@ -8,19 +9,34 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace Spectra;
 
 MatrixXd spectralBisection(Graph * G)
 {
 	//Compute adjacency matrix and graph laplacian
+	cout << "Computing adjacency matrix." << endl;
 	MatrixXd A = G->computeAdjacencyMatrix();
+	cout << "Computing graph laplacian." << endl;
 	MatrixXd L = G->computeGraphLaplacian();
 
 	//get second eigenvector
+	cout << "Getting second eigenvectos." << endl; 
+	DenseSymMatProd<double> op(L);
+	SymEigsSolver< double, LARGEST_ALGE, DenseSymMatProd<double> > eigs(&op, 2, 4);
+	//SymEigsSolver< double, SMALLEST_ALGE, DenseSymMatProd<double> >::eigenvectors(2) //(&op, 2, 4);
+
+	eigs.init();
+	int nconv = eigs.compute(1000, 1e-8,LARGEST_ALGE);
+	MatrixXd eigvec ;
 	VectorXd eigvec2;
-	SelfAdjointEigenSolver<MatrixXd> eigensolver(L);
-	VectorXd eigvec2 = eigensolver.eigenvectors().col(1);
+	cout << "---> Number of converged eigenvlues: " << nconv << endl;
+
+	eigvec = eigs.eigenvectors();
+	eigvec2 = eigvec.col(0);
+
 
 	//Get new index sets
+	cout << "Creating index sets." << endl;
 	VectorXd ind1,ind2; 
 	getIndexSets(eigvec2,ind1,ind2);
 
@@ -30,13 +46,14 @@ MatrixXd spectralBisection(Graph * G)
 	MatrixXd newA21 = MatrixXd::Zero(ind2.size(),ind1.size());
 	MatrixXd newA22 = MatrixXd::Zero(ind2.size(),ind2.size());
 
-	getBlocks(A,newA11,newA12,newA21,newA22);
+	cout << "Getting block of spectral bisection." << endl;
+	getBlocks(A,ind1,ind2,newA11,newA12,newA21,newA22);
 
 	newA << newA11, newA12, newA21,newA22; 
 	return newA;
 }
 
-void getBlocks(MatrixXd A, VectorXd ind1, VectorXd in2, MatrixXd & newA11,MatrixXd & newA12,MatrixXd & newA21,MatrixXd & newA22)
+void getBlocks(MatrixXd A, VectorXd ind1, VectorXd ind2, MatrixXd & newA11,MatrixXd & newA12,MatrixXd & newA21,MatrixXd & newA22)
 {
 	for (int i = 0; i < ind1.size(); i++)
 	{
@@ -68,12 +85,6 @@ void getBlocks(MatrixXd A, VectorXd ind1, VectorXd in2, MatrixXd & newA11,Matrix
 			newA22(i,j) = A(ind2(i),ind2(j));
 		}
 	}
-
-
-
-
-
-
 }
 	
 void getIndexSets(VectorXd eigvec2,VectorXd & ind1,VectorXd & ind2)

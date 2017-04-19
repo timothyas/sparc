@@ -1,5 +1,5 @@
 SPIC_DIR = ${PWD}
-INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/src/
+INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/src/ -I/${SPIC_DIR}/include/Spectra/
 
 # Export variables so check, install, and coverage can all use libraries
 export LDFLAGS

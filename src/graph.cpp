@@ -10,12 +10,12 @@ double Graph::getEdgePoint(int i,int j)
 	return edge(i,j);
 }
 
-double Graph::getNumNodes()
+int Graph::getNumNodes()
 {
 	return numNodes;
 }
 
-double Graph::getNumEdges()
+int Graph::getNumEdges()
 {
 	return numEdge;
 }
@@ -66,6 +66,7 @@ MatrixXd Graph::computeAdjacencyMatrix()
 
 Graph::Graph(string filename)
 {
+	cout << "Initalizing graph from " << filename << endl;
 	ifstream inFile; 
 	inFile.open(filename.c_str());
 	numEdge = 0; 
