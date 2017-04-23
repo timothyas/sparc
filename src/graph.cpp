@@ -20,6 +20,11 @@ int Graph::getNumEdges()
 	return numEdge;
 }
 
+vector<int> Graph::getNodeList()
+{
+        return nodeList;
+}
+
 MatrixXd Graph::computeGraphLaplacian()
 {
 
@@ -97,6 +102,10 @@ Graph::Graph(string filename)
 	inFile.close();
 
 	numNodes = edge.maxCoeff()+1;
+        
+        // Create node list so we don't redo this tons of times
+        for(int i=0; i<numNodes; i++)
+          nodeList.push_back(i);
 }
 
 

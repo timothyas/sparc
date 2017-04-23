@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include<Eigen/Dense>
+#include<vector>
 
 using namespace Eigen;
 using namespace std;
@@ -17,6 +18,7 @@ class Graph {
 	private:
 		int numEdge, numNodes;
 		MatrixXd edge; 
+                vector<int> nodeList;
 };
 
 #endif

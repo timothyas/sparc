@@ -1,10 +1,7 @@
 #ifndef COARSEN_H
 #define COARSEN_H
 
-#include<Eigen/Dense>
 #include<vector>
-
-using namespace Eigen;
 
 /* \brief Compute colors for graph coarsening implementing openmp parallelism.
  *
@@ -12,31 +9,33 @@ using namespace Eigen;
  * \param colors: vector denoting node coloring
  * \return Error code (0 = success)
  */
-int colorGraph_shared(Graph* g, VectorXd &colors);
+int colorGraph_shared(Graph* g, vector<int> &colors);
 
 /* \brief Compute maximal independent set.
  *
  * \param g: original Graph object to be coarsened
+ * \param finalRemoveList: vector of nodes which have already been assigned a color
  * \param I: vector to be filled of maximal independent set
  * \return Error code (0 = success)
  */
-int mis_shared(Graph* g, vector<int> &I);
+int mis_shared(Graph* g, vector<bool> &finalRemoveList, vector<int> &I);
 
 
-/* \brief Compute number of neighbors for particular node. Note: this is one way / undirected.
+/* \brief Find neighbors of a particular node and return list of node numbers.
  *
  * \param g: Graph object to be coarsened
- * \param numNeighbors: vector to be filled with number of neighbors per node
+ * \param removedNodes: vector of nodes which have been removed from current search
+ * \param u: node which we want neighbors of 
+ * \param neighbors: vector of node numbers neighboring u
  * \return Error code (0 = success)
  */
-int computeNumNeighbors(Graph* g, VectorXd &numNeighbors);
+int findNeighbors_shared(Graph* g, vector<int> &removedNodes, int u, vector<int> &neighbors);
 
-/* \brief Given a node pairing list, compute the index where that nodes unique partners are listed.
+/* \brief Performs parallel inclusive scan on vector. Does not use pass by reference since algorithm is recursive..
  *
- * \param g: Graph object to be coarsened
- * \param startInd: vector to be filled with starting index of nodes partners.
- * \return Error code (0 = success)
+ * \param a: vector of integers to be scanned
+ * \return s: cumulative sum of vector a 
  */
-int findStartInd_shared(Graph* g, VectorXd &startInd);
+int inclusiveScan_shared(vector<int> a);
 
 #endif 
