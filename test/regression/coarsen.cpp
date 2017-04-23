@@ -30,14 +30,14 @@ int main()
 
 	start=std::clock();
 
-        colorGraph_shared(coarsen_me, colorList);
+        colorGraph_shared(ptr, colorList);
 
 	duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
         cout << " --- Coloring done, time: " << duration << endl;
 
         cout << " --- Color list --- " << endl << endl;
 
-        for( int i=0; i<coarsen_me.getNumNodes(), i++)
+        for( int i=0; i<coarsen_me.getNumNodes(); i++)
           cout << "Node: " << i << "    Color: " << colorList[i] << endl;
 
         return 0;

@@ -27,7 +27,7 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
   	while( any_of(coloredNodes.begin(), coloredNodes.end(), [](int ii){return !(ii) ;}) ){
         
           // Compute independent set and assign colors
-          mis_shared(gw,coloredNodes,indSet); 
+          mis_shared(g,coloredNodes,indSet); 
           
           #pragma omp parallel for 
           for(int i=0; i<indSet.size(); i++){
@@ -131,7 +131,7 @@ int findNeighbors_shared(Graph* g, vector<bool> &removedNodes, int u, vector<int
 	}
 
         inclusiveScan_shared(flag, flagSum);
-        numNeighors=flagSum(n-1);
+        numNeighors=flagSum[M-1];
 
         // This may or may not be necessary
         neighbors.clear(); 

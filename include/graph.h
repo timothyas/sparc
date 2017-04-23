@@ -12,6 +12,7 @@ class Graph {
 		double getEdgePoint(int i,int j);
 		int getNumNodes();
 		int getNumEdges();
+                vector<int> getNodeList();
 
 		MatrixXd computeGraphLaplacian();
 		MatrixXd computeAdjacencyMatrix();
