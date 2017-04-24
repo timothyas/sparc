@@ -34,6 +34,6 @@ int findNeighbors_shared(Graph* g, std::vector<int> &removedNodes, int u, std::v
  * \param a: vector of integers to be scanned
  * \return s: cumulative sum of vector a 
  */
-vector<int> inclusiveScan_shared(vector<int> a);
+std::vector<int> inclusiveScan_shared(std::vector<int> a);
 
 #endif 

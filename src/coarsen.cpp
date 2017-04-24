@@ -28,7 +28,7 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
         omp_set_num_threads(THREADS);
         
         // Loop while any nodes have not been assigned a color
-  	while( any_of(coloredNodes.begin(), coloredNodes.end(), [](int ii){return !(ii) ;}) ){
+  	while( any_of(coloredNodes.begin(), coloredNodes.end(), [](int ii){return ii==0 ;}) ){
         
           // Compute independent set and assign colors
           mis_shared(g,coloredNodes,indSet); 
