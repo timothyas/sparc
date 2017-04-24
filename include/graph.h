@@ -13,7 +13,6 @@ struct CSC_MATRIX {
 	std::vector<double> vals; //nonzero elements of matrix
 };
 
-
 class Graph { 
 
 	public: 
