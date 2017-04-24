@@ -73,6 +73,7 @@ int mis_shared(Graph* g, vector<int> &finalRemoveList,  vector<int> &I)
 
           #pragma omp parallel for collapse(2)  
           for(int u=0; u<g->getNumNodes(); u++){
+            for(int j=0; j<(g->getNeighborList(u)).size(); j++){
             for(int j=0; j<neighbors[u].size(); j++){
 
               if( rand[u] > rand[neighbors[u][j]] )

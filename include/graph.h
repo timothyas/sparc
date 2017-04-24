@@ -20,12 +20,14 @@ class Graph {
 		double getEdgePoint(int i,int j);
 		int getNumNodes();
 		int getNumEdges();
+                std::vector<int> getNodeList(int i);
 
 		CSC_MATRIX computeGraphLaplacian();
 		CSC_MATRIX  computeAdjacencyMatrix();
 	private:
 		int numEdges, numNodes;
 		std::vector<std::vector<int> > edge;
+		std::vector<std::vector<int> > neighborList;
 };
 
 
