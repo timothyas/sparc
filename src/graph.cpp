@@ -23,6 +23,11 @@ int Graph::getNumEdges()
 	return numEdges;
 }
 
+std::vector<int> Graph::getNeighbors(int i)
+{
+	return neighborList[i];
+}
+
 CSC_MATRIX Graph::computeGraphLaplacian()
 {
 	CSC_MATRIX lapMat; 
@@ -179,6 +184,7 @@ Graph::Graph(std::string filename)
 		++numEdges;
 
 	edge.reserve(numEdges);
+	neighborList.resize(numNodes);
 
 	inFile.close(); 
 
@@ -192,6 +198,8 @@ Graph::Graph(std::string filename)
 	{
 		edge[row_counter].push_back(edge1);
 		edge[row_counter].push_back(edge2);
+		neighborList[edge1].push_back(edge2);
+		neighborList[edge2].push_back(edge1);
 		row_counter++; 
 		numNodes = std::max(numNodes,std::max(edge1,edge2));
 		inFile >> edge1 >> edge2; 

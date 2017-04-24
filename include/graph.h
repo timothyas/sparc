@@ -20,7 +20,7 @@ class Graph {
 		double getEdgePoint(int i,int j);
 		int getNumNodes();
 		int getNumEdges();
-                std::vector<int> getNodeList(int i);
+                std::vector<int> getNeighbors(int i);
 
 		CSC_MATRIX computeGraphLaplacian();
 		CSC_MATRIX  computeAdjacencyMatrix();
