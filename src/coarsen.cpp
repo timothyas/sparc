@@ -6,6 +6,7 @@
 #include<math.h>
 #include<vector>
 #include<omp.h>
+#include<iostream>
 
 #include"graph.h"
 #include"coarsen.h"
@@ -15,10 +16,13 @@
 
 using namespace std;
 
+//int mxm_shared(Graph* g, 
+
+
 int colorGraph_shared(Graph* g, vector<int> &colors)
 {
         vector<int> indSet;
-        vector<bool> coloredNodes(g->getNumNodes(), false);
+        vector<int> coloredNodes(g->getNumNodes(), 0);
         int currentColor = 0;
 
         omp_set_num_threads(THREADS);
@@ -42,15 +46,13 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
         return 0;
 }
 
-int mis_shared(Graph* g, vector<bool> &finalRemoveList,  vector<int> &I)
+int mis_shared(Graph* g, vector<int> &finalRemoveList,  vector<int> &I)
 {
 	int N = g->getNumNodes();
-	int rand[N];
-	int u=0;
-	vector<int> C = g->getNodeList();
-        vector<int> neighbors;
-        vector<bool> removeList; 
-        vector<bool> keepList; 
+        vector<int> rand;
+        vector<int> removeList; 
+        vector<int> keepList; 
+	vector<vector<int>> neighbors = g->getNeighborList();
 
 	// seed RNG by threadnum
   	unsigned int mySeed = omp_get_thread_num();
@@ -62,61 +64,66 @@ int mis_shared(Graph* g, vector<bool> &finalRemoveList,  vector<int> &I)
   
   
         // Loop while any of finalRemoveList are not true.
-  	while( any_of(finalRemoveList.begin(), finalRemoveList.end(), [](int ii){return !(ii) ;}) ){
+  	while( any_of(finalRemoveList.begin(), finalRemoveList.end(), [](int ii){return ii==0 ;}) ){
 
-        // Make lists for nodes in current set
-        // Note: std::fill is apparently faster...?
-        removeList.assign(C.size,false);
-        keepList.assign(C.size,false);
+          // Make lists for nodes in current set
+          // Note: std::fill is apparently faster...?
+          fill(removeList.begin(),removeList.end(),0);
+          fill(keepList.begin(),keepList.end(),0);
 
-          #pragma omp parallel 
-          {
-            #pragma omp for private(u,neighbors)
-            for(int u=0; u<C.size(); u++){
+          #pragma omp parallel for collapse(2)  
+          for(int u=0; u<g->getNumNodes(); u++){
+            for(int j=0; j<neighbors[u].size(); j++){
 
-              findNeighbors_shared(g,u,neighbors);
-
-              //check if node is lonely
-              if(neighbors.size()==0)
-                removeList[u]=true;
-              
-              #pragma omp for
-              for(int j=0; j<neighbors.size(); j++){
-
-                if( rand[u] > rand[neighbors[j]] )
-                  keepList[u]=true;
-                else
-                  removeList[u]=true; 
-              }
+              if( rand[u] > rand[neighbors[u][j]] )
+                keepList[u]=1;
+              else
+                removeList[u]=1; 
             }
-          }// end parallel region
+          }//end parallel region
 
-          //If both lists agree, add node then flag it and its neighbors
-          #pragma omp parallel 
-          {
-            #pragma omp for private(u,neighbors)
-            for(int u=0; u<C.size(); u++){
+      //    //If both lists agree, add node then flag it and its neighbors
+      //    #pragma omp parallel 
+      //    {
+      //      #pragma omp for  
+      //      for(int u=0; u<g->getNumNodes(); u++){
 
-              if( removeList[u] && !keepList[u] ){
-                
-                I.push_back(C[u]);
-                finalRemoveList[u]=true;
-                findNeighbors_shared(g,u,neighbors);
+      //        if( removeList[u]==1 && keepList[u]==0 ){
+      //          
+      //          I.push_back(u);
+      //          finalRemoveList[u]=1;
 
-                #pragma omp for
-                for(int j=0; j<neighbors.size(); j++)
-                  finalRemoveList[neighbors[j]]=true;
-              }
+      //          #pragma omp for
+      //          for(int j=0; j<neighbors[u].size(); j++)
+      //            finalRemoveList[neighbors[u][j]]=1;
+      //        }
+      //      }
+      //    }//end parallel region
+      //  }//end while C not empty
+
+          #pragma omp parallel for  
+          for(int u=0; u<g->getNumNodes(); u++){
+            if( (removeList[u]==1 || neighbors[u].size()==0) && keepList[u]==0 ){
+              I.push_back(u);
+              finalRemoveList[u]=1;
             }
-          }// end parallel region
+          }
+            
+          #pragma omp parallel for collapse(2)
+          for(int u=0; u<I.size(); u++){
+            for(int j=0; j<neighbors[I[u]].size(); j++)
+              finalRemoveList[neighbors[I[u]][j]]=1;
+          }
+
         }//end while C not empty
 		
 	return 0;
 		
 }
 
-int findNeighbors_shared(Graph* g, vector<bool> &removedNodes, int u, vector<int> &neighbors) 
+int findNeighbors_shared(Graph* g, vector<int> &removedNodes, int u, vector<int> &neighbors) 
 {
+        // Note: this subroutine is called inside a parallel region
 
         // This is a glorified parallel select 
         int M = g->getNumEdges();
@@ -124,14 +131,14 @@ int findNeighbors_shared(Graph* g, vector<bool> &removedNodes, int u, vector<int
         vector<int> flag(M, 0);
         vector<int> flagSum(M,0);
 
-        #pragma omp parallel for 
+        #pragma omp for 
 	for(int i=0; i<M; i++){
-          if( !removedNodes[i] && (g->getEdgePoint(i,0) == u || g->getEdgePoint(i,1) == u) )
+          if( removedNodes[i]==0 && (g->getEdgePoint(i,0) == u || g->getEdgePoint(i,1) == u) )
             flag[i]=1;
 	}
 
-        inclusiveScan_shared(flag, flagSum);
-        numNeighors=flagSum[M-1];
+        flagSum=inclusiveScan_shared(flag);
+        numNeighbors=flagSum[M-1];
 
         // This may or may not be necessary
         neighbors.clear(); 
@@ -142,7 +149,7 @@ int findNeighbors_shared(Graph* g, vector<bool> &removedNodes, int u, vector<int
           return 1;
         }
 
-        #pragma omp parallel for
+        #pragma omp for
         for(int i=0; i<M; i++){
           if( flag[i]==1 && g->getEdgePoint(i,0) == u ) 
             neighbors[flagSum[i]-1] = g->getEdgePoint(i,1);
@@ -165,14 +172,14 @@ vector<int> inclusiveScan_shared(vector<int> a)
           return s;
         }
 
-        #pragma omp parallel for
+        #pragma omp for
         for( int i=0; i<a.size()/2; i++ )
-          b[i] = a[2*i] + a[2*i+1]
+          b[i] = a[2*i] + a[2*i+1];
          
         c = inclusiveScan_shared( b );
 
         s[0] = a[0];
-        #pragma omp parallel for
+        #pragma omp for
         for( int i=1; i<a.size(); i++ ){
           if( i%2 != 0 )
             s[i] = c[i/2];
