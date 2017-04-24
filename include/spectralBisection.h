@@ -6,7 +6,6 @@
 
 using namespace Eigen;
 
-
 MatrixXd spectralBisection(Graph * G);
 
 void getBlocks(MatrixXd A, VectorXd ind1, VectorXd in2, MatrixXd & newA11,MatrixXd & newA12,MatrixXd & newA21,MatrixXd & newA22);

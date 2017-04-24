@@ -1,28 +1,25 @@
-#include<Eigen/Dense>
-#include"SymEigsSolver.h"
-#include<Eigen/Eigenvalues>
 #include<iostream>
 #include<iomanip>
 #include"graph.h"
-#include"coarsen.h"
-#include"spectralBisection.h"
 #include<math.h>
 #include<ctime>
+#include<vector>
 
 using namespace std;
-using namespace Eigen;
-using namespace Spectra;
 
-
-int main()
+int banded_matrix()
 {
 	cout << "----------------------------------------------------------------------" << endl; 
 	cout << "Running Banded Matrix Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
 	Graph banded_matrix("banded_matrix.dat");
-	Graph* ptr = &banded_matrix;
 
+	CSC_MATRIX adj = banded_matrix.computeAdjacencyMatrix();
+	return 0;
+}
+
+	/*
 	// Compute adjacency A and graph laplacian L
 	MatrixXd A = ptr->computeAdjacencyMatrix();
 	MatrixXd L = ptr->computeGraphLaplacian();
@@ -199,4 +196,5 @@ int main()
 	newA << newA11, newA12, newA21,newA22; 
 
 	return 0; 
-}	
+}
+*/

@@ -1,3 +1,4 @@
+include/arpackpp
 # Latex files #
 ###############
 *.aux

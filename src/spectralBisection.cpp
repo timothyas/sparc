@@ -10,7 +10,6 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace Spectra;
 
 MatrixXd spectralBisection(Graph * G)
 {
