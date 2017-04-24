@@ -1,26 +1,31 @@
 SPIC_DIR = ${PWD}
-INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/src/ -I/${SPIC_DIR}/include/Spectra/
+INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/src/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod 
+
+LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external 
+LDLIBS     :=   -larpack -lsuperlu -lgfortran -llapack -lblas  
 
 # Export variables so check, install, and coverage can all use libraries
 export LDFLAGS
 export INC
 export LDLIBS
+export LIB
 
 all: info
 
 info:
 	@echo "Available make targets:"
 	@echo "  install   : build main program in /src/"
-	@echo "  check	 : build and run test unit test suite in /test/unit"
+	@echo "  check	   : build and run test unit test suite in /test/unit"
 	@echo "  coverage  : build tests w/ coverage option, run lcov, and generate html in /test/unit/lcov_html"
 	@echo "  doc	   : build documentation (doxygen page, and writeup)" 
+	@echo "  dep       : build dependencies"
 
 install:
 	$(MAKE) -C ./src/  
 
 check: 
 	$(MAKE)	-C ./test/regression
-	$(MAKE) -C ./test/unit check
+	$(MAKE) -C ./test/regression check
 
 coverage:
 	$(MAKE) -C ./test/unit clobber
@@ -30,6 +35,11 @@ coverage:
 	./include/lcov/bin/genhtml coverage.info -o lcov_html/
 	mv coverage.info test/unit/
 	mv lcov_html test/unit/
+
+dep:
+	-cd include/ && ./install-dep.sh
+	@echo "All dependencies installed"
+	
 love:
 	@echo "not war?"
 

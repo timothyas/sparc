@@ -26,7 +26,6 @@ class Graph {
 	private:
 		int numEdges, numNodes;
 		std::vector<std::vector<int> > edge;
-		std::list<vector<int> > 
 };
 
 
