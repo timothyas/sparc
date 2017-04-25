@@ -219,5 +219,17 @@ Graph::Graph(std::string filename)
 		inFile >> edge1 >> edge2; 
 	}
 
+	/*
+	for (int i = 0; i < numNodes; i++)
+	{
+		vector<int> row = neighborList[i];
+		cout << i << " ";
+		for (int j = 0; j < row.size(); j++)
+		{
+			cout << row[j]; 
+		}
+		cout << endl;
+	}
+*/
 	inFile.close();
 }

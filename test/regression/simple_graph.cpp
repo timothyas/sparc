@@ -16,6 +16,19 @@ int simple_graph()
 	cout << "----------------------------------------------------------------------" << endl; 
 
 	Graph simple_mat("simple_graph.dat");
+	Graph * ptr = &simple_mat;
+
+	/*
+	for (int i = 0; i < ptr->getNumNodes(); i++)
+	{
+		cout << ptr->getNeighbors(i).size() << endl;
+		cout << i << " ";
+		for (int j = 0; j < ptr->getNeighbors(i).size(); j++)
+			cout << ptr->getNeighbors(i)[j];
+		cout << endl;
+
+	}
+	*/
 	
 	std::vector<std::vector<int> > NE (simple_mat.getNumNodes());
 	NE[0].push_back(1); NE[0].push_back(3);
@@ -107,18 +120,23 @@ int simple_graph()
 		
 	cout << "Successfully computed graph laplacian in CSC format" << endl;
 
+	
+	/*
 	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
 	ARluSymStdEig<double> prob(2,L,"SA");
 	prob.FindEigenvectors();
 	//double * Eigvec = prob.RawEigenvector(1);
-	double * EigVal = prob.RawEigenvalues();
+	//double * EigVal = prob.RawEigenvalues();
 
+	
 	if (int(EigVal[1]) != 2)
 	{
 		cout << "Error computing eigenvalues...exiting" << endl;
 		return 1; 
 	}
 	cout << "Successfully computed smallest two eigenvalues" << endl;
+	*/
+	
 
 	return 0;
 }

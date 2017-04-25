@@ -13,6 +13,9 @@ using namespace Eigen;
 
 MatrixXd spectralBisection(Graph * G)
 {
+
+
+
 	//Compute adjacency matrix and graph laplacian
 	cout << "Computing adjacency matrix" << endl;
 	MatrixXd A = G->computeAdjacencyMatrix();
@@ -98,7 +101,15 @@ void getBlocks(MatrixXd A, VectorXd ind1, VectorXd ind2, MatrixXd & newA11,Matri
 		}
 	}
 }
-	
+
+int getIndexSets(double * Eigvec2, std::vector<int> &ind1; std::vector<int> &ind2)
+{
+
+	return 0;
+
+}
+
+/*	
 void getIndexSets(VectorXd eigvec2,VectorXd & ind1,VectorXd & ind2)
 {
 	VectorXd sortedeigvec2 = eigvec2;
@@ -134,3 +145,4 @@ void getIndexSets(VectorXd eigvec2,VectorXd & ind1,VectorXd & ind2)
 	}
 
 }
+*/

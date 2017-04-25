@@ -14,7 +14,7 @@
 #include"coarsen.h"
 
 
-#define THREADS 4
+#define THREADS 1
 
 using namespace std;
 
@@ -93,7 +93,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           fill(removeList.begin(),removeList.end(),0);
           fill(keepList.begin(),keepList.end(),0);
 
-          #pragma omp parallel for collapse(2) 
+//          #pragma omp parallel for collapse(2) 
           for(int u=0; u<g->getNumNodes(); u++){
             for(unsigned int j=0; j<g->getNeighbors(u).size(); j++){
 
