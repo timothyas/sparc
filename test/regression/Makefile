@@ -1,5 +1,5 @@
 # FILES
-EXEC := simple_graph
+EXEC := regression_tests
 SRC  := $(wildcard *.cpp)
 OBJ  := $(patsubst %.cpp,%.o,$(SRC))
 

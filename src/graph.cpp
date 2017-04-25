@@ -42,11 +42,12 @@ CSC_MATRIX Graph::computeGraphLaplacian()
 	int edge1; 
 	int edge2; 
 	int diag_count = 1; 
+	int gap; 
 
 	lapMat.pcol.push_back(0);
 	lapMat.irow.push_back(0);
 	int row_count = 1; 
-	for (size_t i = 0; i < numEdges; i++)
+	for (int i = 0; i < numEdges; i++)
 	{
 		edge1 = edge[i][0];
 		edge2 = edge[i][1];
@@ -54,15 +55,26 @@ CSC_MATRIX Graph::computeGraphLaplacian()
 		degree[edge2]++;
 		if (i != 0 && edge1 != edge[i-1][0])
 		{
-			lapMat.pcol.push_back(i+diag_count);
-			diag_count++; 
-			lapMat.irow.push_back(row_count);
-			row_count++;
+			gap = edge1 - edge[i-1][0];
+			for (int j = 0; j < gap; j++)
+			{
+				lapMat.pcol.push_back(i+diag_count+j);
+				lapMat.irow.push_back(row_count+j);
+			}
+			diag_count+=gap; 
+			row_count+=gap;
 		}
 		lapMat.irow.push_back(edge2);
 	}
-	lapMat.pcol.push_back(lapMat.vals.size()-1);
+	gap = lapMat.n -1 - row_count; 
+	for (int i = 0; i < gap; i++)
+	{
+		lapMat.pcol.push_back(diag_count + numEdges+ i);
+		lapMat.irow.push_back(row_count+i);
+	}
 	lapMat.irow.push_back(lapMat.n-1);
+	lapMat.pcol.push_back(lapMat.vals.size()-1);
+
 	for (size_t i = 0; i < lapMat.pcol.size(); i++)
 	{
 		lapMat.vals[lapMat.pcol[i]] = degree[i];
@@ -150,13 +162,13 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 	adjMat.n = numNodes;
 	adjMat.nnz = numEdges;
 
-	adjMat.vals.resize(numEdges,1);
+	adjMat.vals.resize(adjMat.nnz,1);
 	adjMat.irow.reserve(adjMat.nnz);
 	adjMat.pcol.reserve(adjMat.n);
 	int edge1 = -1; 
 	int edge2 = -1;
 
-	for(size_t i = 0; i < numEdges; i++)
+	for(int i = 0; i < numEdges; i++)
 	{
 		edge1 = edge[i][0];
 		edge2 = edge[i][1];
@@ -176,36 +188,31 @@ Graph::Graph(std::string filename)
 	cout << "Initalizing graph from " << filename << endl;
 	ifstream inFile; 
 	inFile.open(filename.c_str());
-	numEdges = 0; 
-	string line;
-	
-	//Determine total number of edges
-	while (getline(inFile,line))
-		++numEdges;
+	inFile >> numNodes >> numEdges;
 
-	edge.reserve(numEdges);
+	edge.resize(numEdges);
+	for (int i = 0; i < edge.size(); i++)
+	{
+		edge[i].resize(2);
+	}
+
 	neighborList.resize(numNodes);
-
-	inFile.close(); 
 
 	int edge1,edge2;
 	size_t row_counter=0; 
 
-	numNodes = 0; 
-	inFile.open(filename.c_str());
 	inFile >> edge1 >> edge2; 
 	while(!inFile.eof())
 	{
-		edge[row_counter].push_back(edge1);
-		edge[row_counter].push_back(edge2);
+		edge[row_counter][0]=edge1;
+		edge[row_counter][1]=edge2;
+		//edge[row_counter].push_back(edge1);
+		//edge[row_counter].push_back(edge2);
 		neighborList[edge1].push_back(edge2);
 		neighborList[edge2].push_back(edge1);
 		row_counter++; 
-		numNodes = std::max(numNodes,std::max(edge1,edge2));
 		inFile >> edge1 >> edge2; 
 	}
-	numNodes++;
 
 	inFile.close();
 }
-

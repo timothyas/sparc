@@ -27,7 +27,7 @@ include/arpackpp
 # executables #
 ###############
 spiC
-regression_test
+regression_tests
 
 # doxygen #
 ############

@@ -4,17 +4,22 @@ using namespace std;
 
 int simple_graph();
 int runCoarsenTest();
+int complex_graph();
 
 int main()
 {
 
-        cout << "Entering simple graph test ... " << endl;
-        simple_graph();
-        cout << "Exiting simple graph test ... " << endl;
+        if(!simple_graph())
+		cout << "\033[0;32mPASSED: Simple Graph Test\033[0m"  << endl << endl;
+	else
+		cout << "\033[0;31mFAILED: Simple Graph Test\033[0m" << endl << endl;
 
-        cout << "Entering graph coarsening test ... " << endl;
+	if(!complex_graph())
+		cout << "\033[0;32mPASSED: Complex Graph Test\033[0m"  << endl << endl;
+	else
+		cout << "\033[0;31mFAILED: Complex Graph Test\033[0m" << endl << endl;
+
         runCoarsenTest();
-        cout << "Exiting graph coarsening test ... " << endl;
 
         return 0;
 
