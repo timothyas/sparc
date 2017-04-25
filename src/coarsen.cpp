@@ -7,6 +7,7 @@
 #include<vector>
 #include<omp.h>
 #include<iostream>
+#include<algorithm>
 
 #include"graph.h"
 #include"coarsen.h"
@@ -24,24 +25,27 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
         vector<int> indSet;
         vector<int> coloredNodes(g->getNumNodes(), 0);
         int currentColor = 0;
+        bool moreColors;
 
         omp_set_num_threads(THREADS);
         
         // Loop while any nodes have not been assigned a color
-  	while( any_of(coloredNodes.begin(), coloredNodes.end(), [](int ii){return ii==0 ;}) ){
+  	do{
         
           // Compute independent set and assign colors
           mis_shared(g,coloredNodes,indSet); 
           
           #pragma omp parallel for 
-          for(int i=0; i<indSet.size(); i++){
+          for(unsigned int i=0; i<indSet.size(); i++){
             colors[indSet[i]] = currentColor;
             coloredNodes[indSet[i]] = true;
           }
                 
+          moreColors = std::any_of(coloredNodes.begin(), coloredNodes.end(), [](int ii){return ii==0 ;});
           indSet.clear();
           currentColor++;
-        }
+
+        }while(moreColors);
 
         return 0;
 }
@@ -52,7 +56,7 @@ int mis_shared(Graph* g, vector<int> &finalRemoveList,  vector<int> &I)
         vector<int> rand;
         vector<int> removeList; 
         vector<int> keepList; 
-	vector<vector<int>> neighbors = g->getNeighborList();
+	//vector<vector<int>> neighbors = g->getNeighborList();
 
 	// seed RNG by threadnum
   	unsigned int mySeed = omp_get_thread_num();
@@ -73,10 +77,10 @@ int mis_shared(Graph* g, vector<int> &finalRemoveList,  vector<int> &I)
 
           #pragma omp parallel for collapse(2)  
           for(int u=0; u<g->getNumNodes(); u++){
-            for(int j=0; j<(g->getNeighborList(u)).size(); j++){
-            for(int j=0; j<neighbors[u].size(); j++){
+            //for(int j=0; j<(g->getNeighborList(u)).size(); j++){
+            for(unsigned int j=0; j<g->getNeighbors(u).size(); j++){
 
-              if( rand[u] > rand[neighbors[u][j]] )
+              if( rand[u] > rand[g->getNeighbors(u)[j]] )
                 keepList[u]=1;
               else
                 removeList[u]=1; 
@@ -104,16 +108,16 @@ int mis_shared(Graph* g, vector<int> &finalRemoveList,  vector<int> &I)
 
           #pragma omp parallel for  
           for(int u=0; u<g->getNumNodes(); u++){
-            if( (removeList[u]==1 || neighbors[u].size()==0) && keepList[u]==0 ){
+            if( (removeList[u]==1 || g->getNeighbors(u).size()==0) && keepList[u]==0 ){
               I.push_back(u);
               finalRemoveList[u]=1;
             }
           }
             
           #pragma omp parallel for collapse(2)
-          for(int u=0; u<I.size(); u++){
-            for(int j=0; j<neighbors[I[u]].size(); j++)
-              finalRemoveList[neighbors[I[u]][j]]=1;
+          for(unsigned int u=0; u<I.size(); u++){
+            for(unsigned int j=0; j<g->getNeighbors(I[u]).size(); j++)
+              finalRemoveList[g->getNeighbors(I[u])[j]]=1;
           }
 
         }//end while C not empty
@@ -145,7 +149,7 @@ int findNeighbors_shared(Graph* g, vector<int> &removedNodes, int u, vector<int>
         neighbors.clear(); 
         neighbors.assign(numNeighbors, 0);
 
-        if( neighbors.size() != numNeighbors ){
+        if( (int)neighbors.size() != numNeighbors ){
           cout << "Error in findNeighbors_shared: incorrect size of neighbors vector." << endl;
           return 1;
         }
@@ -174,14 +178,14 @@ vector<int> inclusiveScan_shared(vector<int> a)
         }
 
         #pragma omp for
-        for( int i=0; i<a.size()/2; i++ )
+        for( unsigned int i=0; i<a.size()/2; i++ )
           b[i] = a[2*i] + a[2*i+1];
          
         c = inclusiveScan_shared( b );
 
         s[0] = a[0];
         #pragma omp for
-        for( int i=1; i<a.size(); i++ ){
+        for( unsigned int i=1; i<a.size(); i++ ){
           if( i%2 != 0 )
             s[i] = c[i/2];
           else
