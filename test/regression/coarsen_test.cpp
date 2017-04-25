@@ -1,19 +1,13 @@
-#include<Eigen/Dense>
-#include"SymEigsSolver.h"
-#include<Eigen/Eigenvalues>
 #include<iostream>
 #include<iomanip>
-#include"graph.h"
-#include"coarsen.h"
-#include"spectralBisection.h"
 #include<math.h>
 #include<ctime>
+#include"graph.h"
+#include"coarsen.h"
 
 using namespace std;
-using namespace Eigen;
 
-
-int main()
+int runCoarsenTest()
 {
 	cout << "----------------------------------------------------------------------" << endl; 
 	cout << "Running Graph Coarsening Test" << endl; 

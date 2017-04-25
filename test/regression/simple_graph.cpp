@@ -9,7 +9,7 @@
 #include "arlssym.h"
 using namespace std;
 
-int main()
+int simple_graph()
 {
 	cout << "----------------------------------------------------------------------" << endl; 
 	cout << "Running Simple Graph Test" << endl; 
