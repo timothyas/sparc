@@ -6,13 +6,15 @@ OBJ  := $(patsubst %.cpp,%.o,$(SRC))
 # OPTIONS
 CC      := g++ 
 CFLAGS  :=-O3 -g -p -Wall 
-IMP	:= ../../src/graph.cpp 
+IMP	:= ../../include/graph.h \
+	   ../../include/coarsen.h
 
 # RULES
 $(EXEC): $(OBJ)
-	$(LINK.o) $(IMP) -p -fopenmp  -o $@ $^  $(CFLAGS) $(INC) $(LDFLAGS) $(LDLIBS)
-%.o: %.cpp
-	$(COMPILE.c)  $< -fopenmp -o $@ $(INC) $(CFLAGS)
+	$(LINK.o) -p -fopenmp  -o $@ $^  $(CFLAGS) $(INC) $(LDFLAGS) $(LDLIBS)
+%.o: %.cpp 
+	$(COMPILE.c) -std=c++11 $< -fopenmp -o $@ $(INC) $(CFLAGS)
+	
 
 .PHONY: clobber clean 
 clobber:

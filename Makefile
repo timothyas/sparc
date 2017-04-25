@@ -1,5 +1,5 @@
 SPIC_DIR = ${PWD}
-INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/src/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod 
+INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod 
 
 LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external 
 LDLIBS     :=   -larpack -lsuperlu -lgfortran -llapack -lblas  
@@ -24,8 +24,12 @@ install:
 	$(MAKE) -C ./src/  
 
 check: 
+	-cp ./src/graph.cpp ./test/regression
+	-cp ./src/coarsen.cpp ./test/regression
 	$(MAKE)	-C ./test/regression
 	$(MAKE) -C ./test/regression check
+	-rm ./test/regression/graph.cpp
+	-rm ./test/regression/coarsen.cpp
 
 coverage:
 	$(MAKE) -C ./test/unit clobber
