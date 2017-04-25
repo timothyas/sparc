@@ -185,20 +185,25 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 
 Graph::Graph(std::string filename)
 {
+        //numEdges=0;
+        //numNodes=0;
 	cout << "Initalizing graph from " << filename << endl;
 	ifstream inFile; 
 	inFile.open(filename.c_str());
 	inFile >> numNodes >> numEdges;
 
+        cout << "GRAPH: numEdges: " << numEdges << endl;
 	edge.resize(numEdges);
-	for (int i = 0; i < edge.size(); i++)
+	for (unsigned int i = 0; i < numEdges; i++)
 	{
 		edge[i].resize(2);
+                cout << "i: " << i << " edge: " << edge[i][0] << " " << edge[i][1] << endl;
 	}
 
 	neighborList.resize(numNodes);
 
-	int edge1,edge2;
+	int edge1 = 0;
+        int edge2 = 0;
 	size_t row_counter=0; 
 
 	inFile >> edge1 >> edge2; 

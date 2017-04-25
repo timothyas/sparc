@@ -9,17 +9,20 @@ int complex_graph();
 int main()
 {
 
-        if(!simple_graph())
-		cout << "\033[0;32mPASSED: Simple Graph Test\033[0m"  << endl << endl;
-	else
-		cout << "\033[0;31mFAILED: Simple Graph Test\033[0m" << endl << endl;
+//        if(!simple_graph())
+//		cout << "\033[0;32mPASSED: Simple Graph Test\033[0m"  << endl << endl;
+//	else
+//		cout << "\033[0;31mFAILED: Simple Graph Test\033[0m" << endl << endl;
+//
+//	if(!complex_graph())
+//		cout << "\033[0;32mPASSED: Complex Graph Test\033[0m"  << endl << endl;
+//	else
+//		cout << "\033[0;31mFAILED: Complex Graph Test\033[0m" << endl << endl;
 
-	if(!complex_graph())
+        if(!runCoarsenTest())
 		cout << "\033[0;32mPASSED: Complex Graph Test\033[0m"  << endl << endl;
 	else
 		cout << "\033[0;31mFAILED: Complex Graph Test\033[0m" << endl << endl;
-
-        runCoarsenTest();
 
         return 0;
 

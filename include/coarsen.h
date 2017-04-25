@@ -16,7 +16,7 @@ int colorGraph_shared(Graph* g, std::vector<int> &colors);
  * \param I: vector to be filled of maximal independent set
  * \return Error code (0 = success)
  */
-int mis_shared(Graph* g, std::vector<int> &finalRemoveList, std::vector<int> &I);
+int mis_shared(Graph* g, std::vector<int> finalRemoveList, std::vector<int> &I);
 
 
 /* \brief Find neighbors of a particular node and return list of node numbers.
