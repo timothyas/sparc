@@ -119,13 +119,9 @@ Graph::Graph(std::string filename)
 	inFile.open(filename.c_str());
 	inFile >> numNodes >> numEdges;
 
-	edge.resize(numEdges);
-	for (unsigned int i = 0; i < numEdges; i++)
-	{
-		edge[i].resize(2);
-	}
+	edge.resize(numEdges,vector<int>(2));
 
-	neighborList.resize(numNodes);
+	neighborList.resize(numNodes,vector<int>(0));
 
 	int edge1 = 0;
         int edge2 = 0;
