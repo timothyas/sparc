@@ -14,7 +14,7 @@
 #include"coarsen.h"
 
 
-#define THREADS 1
+#define THREADS 4
 
 using namespace std;
 
@@ -129,7 +129,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
 //          }
             
           // Remove neighbors from independent set
-          #pragma omp parallel for collapse(2)
+ //         #pragma omp parallel for collapse(2)
           for(unsigned int u=0; u<I.size(); u++){
             for(unsigned int j=0; j<g->getNeighbors(I[u]).size(); j++)
               finalRemoveList[g->getNeighbors(I[u])[j]]=1;

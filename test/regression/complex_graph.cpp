@@ -20,7 +20,7 @@ int complex_graph()
 	CSC_MATRIX adj = complex_graph.computeAdjacencyMatrix();
 
 	int irow_temp[] = {1,6,9,2,3,4,6,5,6,7,8};
-	int pcol_temp[] = {0,3,5,7,8,9,10};
+	int pcol_temp[] = {0,3,5,7,8,9,10,11};
 	int vals_temp[] = {1,1,1,1,1,1,1,1,1,1,1};
 	std::vector<int> irow_test (irow_temp, irow_temp + sizeof(irow_temp) / sizeof(int) );	
 	std::vector<int> pcol_test (pcol_temp, pcol_temp + sizeof(pcol_temp) / sizeof(int) );	
@@ -60,7 +60,7 @@ int complex_graph()
 
 	CSC_MATRIX lap = complex_graph.computeGraphLaplacian();
 	int irowtemp[] = {0,1,6,9,1,2,3,2,3,4,6,4,5,5,6,6,7,7,8,8,9};
-	int pcoltemp[] = {0,4,7,8,11,13,15,17,19,20};
+	int pcoltemp[] = {0,4,7,8,11,13,15,17,19,20,21};
 	int valstemp[] = {3,-1,-1,-1,3,-1,-1,1,3,-1,-1,2,-1,2,-1,4,-1,2,-1,1,1};
 	std::vector<int> test_irow (irowtemp, irowtemp + sizeof(irowtemp) / sizeof(int) );	
 	std::vector<int> test_pcol (pcoltemp, pcoltemp + sizeof(pcoltemp) / sizeof(int) );	

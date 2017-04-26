@@ -18,18 +18,6 @@ int simple_graph()
 	Graph simple_mat("simple_graph.dat");
 	Graph * ptr = &simple_mat;
 
-	/*
-	for (int i = 0; i < ptr->getNumNodes(); i++)
-	{
-		cout << ptr->getNeighbors(i).size() << endl;
-		cout << i << " ";
-		for (int j = 0; j < ptr->getNeighbors(i).size(); j++)
-			cout << ptr->getNeighbors(i)[j];
-		cout << endl;
-
-	}
-	*/
-	
 	std::vector<std::vector<int> > NE (simple_mat.getNumNodes());
 	NE[0].push_back(1); NE[0].push_back(3);
 	NE[1].push_back(0); NE[1].push_back(2); NE[1].push_back(3);
@@ -53,7 +41,7 @@ int simple_graph()
 	CSC_MATRIX adj = simple_mat.computeAdjacencyMatrix();
 
 	int irow_temp[] = {1,3,2,3,3};
-	int pcol_temp[] = {0,2,4};
+	int pcol_temp[] = {0,2,4,5};
 	int vals_temp[] = {1,1,1,1,1};
 	std::vector<int> irow_test (irow_temp, irow_temp + sizeof(irow_temp) / sizeof(int) );	
 	std::vector<int> pcol_test (pcol_temp, pcol_temp + sizeof(pcol_temp) / sizeof(int) );	
@@ -88,7 +76,7 @@ int simple_graph()
 
 	CSC_MATRIX lap = simple_mat.computeGraphLaplacian();
 	int irowtemp[] = {0,1,3,1,2,3,2,3,3};
-	int pcoltemp[] = {0,3,6,8};
+	int pcoltemp[] = {0,3,6,8,9};
 	int valstemp[] = {2,-1,-1,3,-1,-1,2,-1,3};
 	std::vector<int> test_irow (irowtemp, irowtemp + sizeof(irowtemp) / sizeof(int) );	
 	std::vector<int> test_pcol (pcoltemp, pcoltemp + sizeof(pcoltemp) / sizeof(int) );	
@@ -121,21 +109,20 @@ int simple_graph()
 	cout << "Successfully computed graph laplacian in CSC format" << endl;
 
 	
-	/*
+	
 	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
 	ARluSymStdEig<double> prob(2,L,"SA");
 	prob.FindEigenvectors();
-	//double * Eigvec = prob.RawEigenvector(1);
-	//double * EigVal = prob.RawEigenvalues();
+	double * Eigvec = prob.RawEigenvector(1);
+	double * EigVal = prob.RawEigenvalues();
 
-	
-	if (int(EigVal[1]) != 2)
+	if (fabs(EigVal[1]- 2) > 1e-10)
 	{
 		cout << "Error computing eigenvalues...exiting" << endl;
 		return 1; 
 	}
 	cout << "Successfully computed smallest two eigenvalues" << endl;
-	*/
+	
 	
 
 	return 0;
