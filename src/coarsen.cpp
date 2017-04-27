@@ -19,7 +19,7 @@
 using namespace std;
 
 //int mxm_shared(Graph* g, 
-
+//
 
 int colorGraph_shared(Graph* g, vector<int> &colors)
 {
@@ -33,14 +33,10 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
         // Loop while any nodes have not been assigned a color
   	do{
         
-//          for(int i=0; i<g->getNumNodes(); i++){
-//            cout << " cNodes: " << coloredNodes[i] <<endl;
-//          }
-
           // Compute independent set and assign colors
           mis_shared(g,coloredNodes,indSet); 
           
-          #pragma omp parallel for 
+  //        #pragma omp parallel for 
           for(unsigned int i=0; i<indSet.size(); i++){
             colors[indSet[i]] = currentColor;
             coloredNodes[indSet[i]] = 1;
@@ -48,13 +44,6 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
 
                 
           moreColors = any_of(coloredNodes.begin(), coloredNodes.end(), [](int ii){return ii==0 ;});
-//          for(unsigned int i=0; i<indSet.size(); i++){
-//            cout << "indSet: " << indSet[i] << " color: " << colors[indSet[i]] << endl;
-//          }
-//          for(int i=0; i<g->getNumNodes(); i++){
-//            cout << " cNodes: " << coloredNodes[i] <<endl;
-//          }
-//          cout << "mc: " << moreColors << endl;
           indSet.clear();
           currentColor++;
 
@@ -65,27 +54,21 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
 
 int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
 {
-        time_t timer;
         unsigned int mySeed;
         vector<int> rand(g->getNumNodes(),0);
         vector<int> removeList(g->getNumNodes(),0); 
         vector<int> keepList(g->getNumNodes(),0); 
 
   	// Each node gets rand integer in [0,N^4)
-  	#pragma omp parallel private(mySeed)
+  //	#pragma omp parallel private(mySeed)
         {
           mySeed=(int)time(NULL)*omp_get_thread_num();
-          #pragma omp for 
+  //       #pragma omp for 
     	  for(int i=0; i < g->getNumNodes(); i++){
             rand[i] = (rand_r(&mySeed) % (int)(pow((double)g->getNumNodes(),4)-1));
           }
         }
     
-//        for(int i=0; i<g->getNumNodes(); i++){ 
-//          cout << "node: " << i << " r[i]: " << rand[i] << endl; //" timer: " << timer << endl;
-//        }
-  
-
         // Loop while any of finalRemoveList are not true.
   	while( any_of(finalRemoveList.begin(), finalRemoveList.end(), [](int ii){return ii==0 ;}) ){
 
@@ -93,20 +76,16 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           fill(removeList.begin(),removeList.end(),0);
           fill(keepList.begin(),keepList.end(),0);
 
-//          #pragma omp parallel for collapse(2) 
+  //        #pragma omp parallel for  
           for(int u=0; u<g->getNumNodes(); u++){
             for(unsigned int j=0; j<g->getNeighbors(u).size(); j++){
-
-//              cout << "u: " << u << " j: " << g->getNeighbors(u)[j] << endl;
 
               if( finalRemoveList[u]==0 ){
                 if( rand[u] > rand[g->getNeighbors(u)[j]] && finalRemoveList[g->getNeighbors(u)[j]]==0 ){
                   keepList[u]=1;
-//                  cout << "tid: " << omp_get_thread_num() << " keepList[u="<<u<<"]: "<< keepList[u] << endl;
                 }
                 else{
                   removeList[u]=1; 
-//                  cout << "tid: " << omp_get_thread_num() << " removeList[u="<<u<<"]: "<< removeList[u] << endl;
                 }
               }
               else{
@@ -116,7 +95,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           }//end parallel region
 
           // Make independent set, remove from full list
-          #pragma omp parallel for  
+  //        #pragma omp parallel for  
           for(int u=0; u<g->getNumNodes(); u++){
             if( (removeList[u]==1 || g->getNeighbors(u).size()==0) && keepList[u]==0 ){
               I.push_back(u);
@@ -124,25 +103,15 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
             }
           }
 
-//          for(int i=0; i<finalRemoveList.size(); i++){
-//            cout << "frl[" << i << "]: " << finalRemoveList[i] << endl;
-//          }
             
           // Remove neighbors from independent set
- //         #pragma omp parallel for collapse(2)
+  //        #pragma omp parallel for 
           for(unsigned int u=0; u<I.size(); u++){
             for(unsigned int j=0; j<g->getNeighbors(I[u]).size(); j++)
               finalRemoveList[g->getNeighbors(I[u])[j]]=1;
           }
 
-//          for(int i=0; i<I.size(); i++)
-//            cout << "indset: " << I[i] << endl;
-//
-//          for(int i=0; i<finalRemoveList.size(); i++){
-//            cout << "frl[" << i << "]: " << finalRemoveList[i] << endl;
-//          }
-
-        }//end while C not empty
+        }//end while any node not removed
 
 	return 0;
 		

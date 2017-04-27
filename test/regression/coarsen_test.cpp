@@ -17,13 +17,12 @@ int runCoarsenTest()
 	Graph coarsen_me("coarsen_test.dat");
 	Graph* ptr = &coarsen_me;
 
-        cout << " --- Test matrix read ..." << endl;
-
         //Zeroth order print check
-        cout << "Edge list " << endl;
-        for(int i=0; i<coarsen_me.getNumEdges();i++){
-          cout << coarsen_me.getEdgePoint(i,0) << " " << coarsen_me.getEdgePoint(i,1) << endl;
-        }
+        //cout << " --- Test matrix read ..." << endl;
+        //cout << "Edge list " << endl;
+        //for(int i=0; i<coarsen_me.getNumEdges();i++){
+        //  cout << coarsen_me.getEdgePoint(i,0) << " " << coarsen_me.getEdgePoint(i,1) << endl;
+        //}
         
         vector<int> colorList(coarsen_me.getNumNodes(), -1);
 	std::clock_t start;
