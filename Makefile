@@ -30,6 +30,7 @@ check:
 	$(MAKE) -C ./test/regression check
 	-rm ./test/regression/graph.cpp
 	-rm ./test/regression/coarsen.cpp
+	$(MAKE) -C ./test/regression clean
 
 coverage:
 	$(MAKE) -C ./test/unit clobber

@@ -14,8 +14,6 @@ using namespace Eigen;
 MatrixXd spectralBisection(Graph * G)
 {
 
-
-
 	//Compute adjacency matrix and graph laplacian
 	cout << "Computing adjacency matrix" << endl;
 	MatrixXd A = G->computeAdjacencyMatrix();
@@ -68,8 +66,32 @@ MatrixXd spectralBisection(Graph * G)
 	return newA;
 }
 
-void getBlocks(MatrixXd A, VectorXd ind1, VectorXd ind2, MatrixXd & newA11,MatrixXd & newA12,MatrixXd & newA21,MatrixXd & newA22)
+CSC_MATRIX getBlocks(CSC_MATRIX A, std::vector<int> ind1, std::vector<int> ind2)
 {
+	CSC_MATRIX A_SB;
+	A_SB.n = A.n; 
+	A_SB.nnz = A.nnz;
+	A_SB.irow.resize(A.irow.size());
+	A_SB.pcol.resize(A.pcol.size());
+	A_SB.nvals.resize(A.nvals.size());
+
+	for (int i = 0; i < ind1.size() + ind2.size();i++)
+	{
+		for (int j = 0; j < ind1.size() + ind2.size();j++)
+		{
+			if (checkCSC(i,j))
+			{
+				if (i < ind1.size() && j < ind1.size())
+				if (i >= ind1.size() && j < ind1.size())
+				if (i < ind1.size() && j >= ind1.size())
+				if (i >= ind1.size() && j >= ind1.size())
+			}
+		}
+
+
+	}
+
+	
 	for (int i = 0; i < ind1.size(); i++)
 	{
 		for (int j = 0; j < ind1.size(); j++)
@@ -102,46 +124,28 @@ void getBlocks(MatrixXd A, VectorXd ind1, VectorXd ind2, MatrixXd & newA11,Matri
 	}
 }
 
-int getIndexSets(double * Eigvec2, std::vector<int> &ind1; std::vector<int> &ind2)
+int getIndexSets(vector<double> Eigvec2, std::vector<int> &ind1; std::vector<int> &ind2)
 {
+	vector<double> SortedEigVec2 = Eigvec2;  
+	
+	sort(SortedEigvec2.data(),SortedEigvec2.data()+SortedEigvec2.size());
+	double split = SortedEigvec2(sortedEigvec2.size()/2);
+
+	vector<int> ind1; 
+	vector<int> ind2; 
+
+	for (size_t i = 0; i < Eigvec2.size(); i++)
+	{
+		if (Eigvec2[i] >= split)
+		{
+			ind1.push_back(i);
+		}
+		else
+		{
+			ind2.push_back(i);
+		}
+
+	}
+
 	return 0;
-
 }
-
-/*	
-void getIndexSets(VectorXd eigvec2,VectorXd & ind1,VectorXd & ind2)
-{
-	VectorXd sortedeigvec2 = eigvec2;
-	sort(sortedeigvec2.data(),sortedeigvec2.data()+sortedeigvec2.size());
-	double split = sortedeigvec2(sortedeigvec2.size()/2);
-	int countLeft =0;
-	int countRight = 0;
-
-	for (int i = 0; i < eigvec2.size(); i++)
-	{
-		if (eigvec2(i) < split)
-			countLeft++; 
-		if (eigvec2(i) > split) 
-			countRight++; 
-	}
-	ind1 = VectorXd::Zero(countLeft);
-	ind2 = VectorXd::Zero(countRight+1); 
-
-	countLeft = 0; 
-	countRight = 0; 
-	for (int i = 0; i < eigvec2.size(); i++)
-	{
-		if (eigvec2(i) < split)
-		{
-			ind1(countLeft) = i; 
-			countLeft++; 
-		}
-		if (eigvec2(i) >= split)
-		{
-			ind2(countRight) = i; 
-			countRight++;
-		}
-	}
-
-}
-*/

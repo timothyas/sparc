@@ -22,7 +22,7 @@ class Graph {
 		int getNumEdges();
                 std::vector<int> getNeighbors(int i);
 
-		CSC_MATRIX computeGraphLaplacian();
+		CSC_MATRIX computeGraphLaplacian(CSC_MATRIX adj);
 		CSC_MATRIX  computeAdjacencyMatrix();
 	private:
 		int numEdges, numNodes;

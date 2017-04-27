@@ -23,6 +23,7 @@ clobber:
 	-$(RM) $(OBJ)
 clean: 
 	-rm $(OBJ)
+	-rm *.o
 check:
 	-./$(EXEC)
 
