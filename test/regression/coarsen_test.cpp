@@ -14,7 +14,7 @@ int runCoarsenTest()
 	cout << "Running Graph Coarsening Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
-	Graph coarsen_me("coarsen_test.dat");
+	Graph coarsen_me("complex_graph.dat");
 	Graph* ptr = &coarsen_me;
 
         //Zeroth order print check
