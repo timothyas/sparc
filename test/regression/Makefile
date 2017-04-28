@@ -5,7 +5,7 @@ OBJ  := $(patsubst %.cpp,%.o,$(SRC))
 
 # OPTIONS
 CC      := g++ 
-CFLAGS  :=-O3 -g -p -Wall 
+CFLAGS  :=-O3 -g -p -Wall -std=c++11
 IMP	:= ../../include/graph.h \
 	   ../../include/coarsen.h
 
@@ -13,7 +13,7 @@ IMP	:= ../../include/graph.h \
 $(EXEC): $(OBJ)
 	$(LINK.o) -p -fopenmp  -o $@ $^  $(CFLAGS) $(INC) $(LDFLAGS) $(LDLIBS)
 %.o: %.cpp 
-	$(COMPILE.c) -std=c++11 $< -fopenmp -o $@ $(INC) $(CFLAGS)
+	$(COMPILE.c) $< -fopenmp -o $@ $(INC) $(CFLAGS)
 	
 
 .PHONY: clobber clean 
