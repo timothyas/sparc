@@ -36,7 +36,7 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
           // Compute independent set and assign colors
           mis_shared(g,coloredNodes,indSet); 
           
-  //        #pragma omp parallel for 
+          #pragma omp parallel for 
           for(unsigned int i=0; i<indSet.size(); i++){
             colors[indSet[i]] = currentColor;
             coloredNodes[indSet[i]] = 1;
@@ -60,10 +60,10 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
         vector<int> keepList(g->getNumNodes(),0); 
 
   	// Each node gets rand integer in [0,N^4)
-  //	#pragma omp parallel private(mySeed)
+  	#pragma omp parallel private(mySeed)
         {
           mySeed=(int)time(NULL)*omp_get_thread_num();
-  //       #pragma omp for 
+         #pragma omp for 
     	  for(int i=0; i < g->getNumNodes(); i++){
             rand[i] = (rand_r(&mySeed) % (int)(pow((double)g->getNumNodes(),4)-1));
           }
@@ -76,7 +76,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           fill(removeList.begin(),removeList.end(),0);
           fill(keepList.begin(),keepList.end(),0);
 
-  //        #pragma omp parallel for  
+          #pragma omp parallel for  
           for(int u=0; u<g->getNumNodes(); u++){
             for(unsigned int j=0; j<g->getNeighbors(u).size(); j++){
 
@@ -95,7 +95,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           }//end parallel region
 
           // Make independent set, remove from full list
-  //        #pragma omp parallel for  
+          #pragma omp parallel for  
           for(int u=0; u<g->getNumNodes(); u++){
             if( (removeList[u]==1 || g->getNeighbors(u).size()==0) && keepList[u]==0 ){
               I.push_back(u);
@@ -105,7 +105,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
 
             
           // Remove neighbors from independent set
-  //        #pragma omp parallel for 
+          #pragma omp parallel for 
           for(unsigned int u=0; u<I.size(); u++){
             for(unsigned int j=0; j<g->getNeighbors(I[u]).size(); j++)
               finalRemoveList[g->getNeighbors(I[u])[j]]=1;
