@@ -10,7 +10,7 @@
  * \param matchList: input/output of node pairings
  * \return Error code (0 = success)
  */
-int mxm_shared(Graph* g, std::vector<int> &colors, int numColors, std::vector<int> &nodeWeight, std::vector<int> &matchList);
+int mxm_shared(Graph* g, std::vector<int> &colors, int numColors, std::vector<int> &nodeWeights, std::vector<int> &matchList);
 
 /* \brief Compute colors for graph coarsening implementing openmp parallelism.
  *

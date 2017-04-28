@@ -18,13 +18,12 @@
 
 using namespace std;
 
-int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWeight, vector<int> &matchList)
+int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWeights, vector<int> &matchList)
 {
 
-        int v, vi; 
+        omp_set_num_threads(THREADS);
+        
         vector<int> nodeList;
-        vector<int> lonelyNeighbors;
-        vector<int> lonelyWeights;
         vector<int> raceList;
 
         for(int k=0; k<numColors; k++){
@@ -32,28 +31,41 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
           // Fill nodeList with unmatched nodes of this color
           doubleSelect_shared(colors, k, matchList, -1,nodeList); 
 
-          #pragma omp parallel for private(lonelyNeighbors,lonelyWeights,v,vi)
+          #pragma omp parallel for 
           for(unsigned int u = 0; u<nodeList.size(); u++){
+
+            int v, vi;
+            vector<int> lonelyNeighbors;
+            vector<int> lonelyWeights;
 
             // Find unmatched neighbors
             for(unsigned int i = 0; i<g->getNeighbors(u).size(); i++){
               if(matchList[g->getNeighbors(nodeList[u])[i]] == -1){
-                lonelyNeighbors.push_back(g->getNeighbors(nodeList[u])[i]);
-                lonelyWeights.push_back(g->getNeighbors(nodeList[u])[i]);
+                #pragma omp critical
+                {
+                  lonelyNeighbors.push_back(g->getNeighbors(nodeList[u])[i]);
+                  lonelyWeights.push_back(nodeWeights[g->getNeighbors(nodeList[u])[i]]);
+                }
               }
             }
 
-            // Find heaviest lonely neighbor, partner up!
-            // Note: max_element returns iterator
-            auto viter = max_element(lonelyWeights.begin(), lonelyWeights.end());
-            vi = distance(lonelyWeights.begin(),viter);
-            v = lonelyNeighbors[vi];
+            if( lonelyWeights.size() != 0 ){
 
-            // They both swiped right ... 
-            matchList[nodeList[u]] = v;
-            matchList[v] = nodeList[u];
+              // Find heaviest lonely neighbor, partner up!
+              // Note: max_element returns iterator
+              auto viter = max_element(lonelyWeights.begin(), lonelyWeights.end());
+              vi = distance(lonelyWeights.begin(),viter);
+              v = lonelyNeighbors[vi];
 
-            raceList.push_back(nodeList[u]);
+              // They both swiped right ... 
+              matchList[nodeList[u]] = v;
+              matchList[v] = nodeList[u];
+
+              #pragma omp critical
+              { 
+                raceList.push_back(nodeList[u]);
+              }
+            }
 
             // Clear neighbors for next round
             lonelyNeighbors.clear();
@@ -68,6 +80,7 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
           } //end parallel region
 
           nodeList.clear();
+          raceList.clear();
 
         } // end k->numColors
 
@@ -154,10 +167,15 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           #pragma omp parallel for  
           for(int u=0; u<g->getNumNodes(); u++){
             if( (removeList[u]==1 || g->getNeighbors(u).size()==0) && keepList[u]==0 ){
-              I.push_back(u);
+
               finalRemoveList[u]=1;
+
+              #pragma omp critical
+              {
+                I.push_back(u);
+              }
             }
-          }
+          }//end parallel region
 
             
           // Remove neighbors from independent set
@@ -165,7 +183,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           for(unsigned int u=0; u<I.size(); u++){
             for(unsigned int j=0; j<g->getNeighbors(I[u]).size(); j++)
               finalRemoveList[g->getNeighbors(I[u])[j]]=1;
-          }
+          }//end parallel region
 
         }//end while any node not removed
 
