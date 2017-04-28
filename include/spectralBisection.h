@@ -1,15 +1,8 @@
 #ifndef SPECTRALBISECTION_H
 #define SPECTRALBISECTION_H
 
-#include<Eigen/Dense>
 #include"graph.h"
 
-using namespace Eigen;
-
-MatrixXd spectralBisection(Graph * G);
-
-void getBlocks(MatrixXd A, VectorXd ind1, VectorXd in2, MatrixXd & newA11,MatrixXd & newA12,MatrixXd & newA21,MatrixXd & newA22);
-
-
-int getIndexSets(vector<double> Eigvec2, std::vector<int> &ind1; std::vector<int> &ind2)
+double getAij(CSC_MATRIX A,int i,int j);
+//int getIndexSets(vector<double> Eigvec2, std::vector<int> &ind1; std::vector<int> &ind2);
 #endif

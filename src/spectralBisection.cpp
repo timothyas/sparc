@@ -1,16 +1,13 @@
-#include<Eigen/Eigenvalues>
-#include"SymEigsSolver.h"
 #include<iostream>
 #include<iomanip>
 #include<math.h>
-#include<Eigen/Dense>
 #include"graph.h"
 #include"spectralBisection.h"
 #include<ctime>
 
 using namespace std;
-using namespace Eigen;
 
+/*
 MatrixXd spectralBisection(Graph * G)
 {
 
@@ -65,7 +62,9 @@ MatrixXd spectralBisection(Graph * G)
 	newA << newA11, newA12, newA21,newA22; 
 	return newA;
 }
+*/
 
+/*
 CSC_MATRIX getBlocks(CSC_MATRIX A, std::vector<int> ind1, std::vector<int> ind2)
 {
 	CSC_MATRIX A_SB;
@@ -147,5 +146,31 @@ int getIndexSets(vector<double> Eigvec2, std::vector<int> &ind1; std::vector<int
 
 	}
 
+	return 0;
+}
+
+*/
+
+double getAij(CSC_MATRIX A,int i,int j)
+{
+	int ind = 0; 
+
+	// flip indices if in upper triangular part of matrix
+	if (j > i);
+	{
+		int temp = i; 
+		i = j; 
+		j = temp;
+	}
+	for (int n = A.irow[A.pcol[j]]; n < A.irow[A.pcol[j+1]]; n++)
+	{
+		if (n=i)
+		{
+			return A.vals[A.pcol[j]+ind];
+		}
+		ind++;
+	}
+
+	// if value is not found, return 0. 
 	return 0;
 }
