@@ -2,7 +2,6 @@
 
 using namespace std;
 
-int test_getAij();
 int simple_graph();
 int runCoarsenTest();
 int complex_graph();
@@ -31,9 +30,6 @@ int main()
 		cout << "\033[0;32mPASSED: Coarsening Test\033[0m"  << endl << endl;
 	else
 		cout << "\033[0;31mFAILED: Coarsening Test\033[0m" << endl << endl;
-
-	test_getAij();
-
 
         return 0;
 
