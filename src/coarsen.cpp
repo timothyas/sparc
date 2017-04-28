@@ -18,50 +18,53 @@
 
 using namespace std;
 
-int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> weight)
+int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWeight, vector<int> &matchList)
 {
 
-        int v; 
-        vector<int> matched(g->getNumNodes(), -1);
+        int v, vi; 
+        vector<int> nodeList;
         vector<int> lonelyNeighbors;
-        vector<int> neighbors;
+        vector<int> lonelyWeights;
         vector<int> raceList;
-
 
         for(int k=0; k<numColors; k++){
 
           // Fill nodeList with unmatched nodes of this color
-          doubleSelect_shared(colors, k, matched, -1,nodeList); 
+          doubleSelect_shared(colors, k, matchList, -1,nodeList); 
 
-          #pragma omp parallel for private(lonelyNeighbors,v)
+          #pragma omp parallel for private(lonelyNeighbors,lonelyWeights,v,vi)
           for(unsigned int u = 0; u<nodeList.size(); u++){
 
             // Find unmatched neighbors
             for(unsigned int i = 0; i<g->getNeighbors(u).size(); i++){
-              if(matched[g->getNeighbors(nodeList[u])[i]] == -1)
+              if(matchList[g->getNeighbors(nodeList[u])[i]] == -1){
                 lonelyNeighbors.push_back(g->getNeighbors(nodeList[u])[i]);
+                lonelyWeights.push_back(g->getNeighbors(nodeList[u])[i]);
+              }
             }
 
             // Find heaviest lonely neighbor, partner up!
-            // Note: max_element returns iterator, dereference to get value.
-            v = *max_element(lonelyNeighbors.begin(), lonelyNeighbors.end());
+            // Note: max_element returns iterator
+            auto viter = max_element(lonelyWeights.begin(), lonelyWeights.end());
+            vi = distance(lonelyWeights.begin(),viter);
+            v = lonelyNeighbors[vi];
 
             // They both swiped right ... 
-            matched[nodeList[u]] = v;
-            matched[v] = nodeList[u];
+            matchList[nodeList[u]] = v;
+            matchList[v] = nodeList[u];
 
             raceList.push_back(nodeList[u]);
 
             // Clear neighbors for next round
-            // Not sure if this is necessary, seems like memory problem w/o it
             lonelyNeighbors.clear();
+            lonelyWeights.clear();
         
           } //end parallel region
 
           #pragma omp parallel for
           for( unsigned int u = 0; u<raceList.size(); u++){
-            if( matched[matched[nodeList[u]]] != nodeList[u] )
-              matched[nodeList[u]]=-1;
+            if( matchList[matchList[nodeList[u]]] != nodeList[u] )
+              matchList[nodeList[u]]=-1;
           } //end parallel region
 
           nodeList.clear();
@@ -170,7 +173,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
 		
 }
 
-int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> &matchedList, int m, vector<int> &nodeList) 
+int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> &matchedList, int unmatchedValue, vector<int> &nodeList) 
 {
         // This is a glorified parallel select 
         int numSelected;
@@ -188,9 +191,9 @@ int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> &matc
 
         if( nodeList.size() != 0 )
           nodeList.clear(); 
-        neighbors.resize(numSelected);
+        nodeList.resize(numSelected);
 
-        if( (int)neighbors.size() != numNeighbors ){
+        if( (int)nodeList.size() != numSelected ){
           cout << "Error in findNeighbors_shared: incorrect size of neighbors vector." << endl;
           return 1;
         }

@@ -1,13 +1,25 @@
 #ifndef COARSEN_H
 #define COARSEN_H
 
+/* \brief Compute maximal matching for graph.
+ *
+ * \param g: original Graph object to be coarsened
+ * \param colors: vector denoting node coloring
+ * \param numColors: number of colors
+ * \param nodeWeight: weight of each node (starts at 1, summed when coarsened)
+ * \param matchList: input/output of node pairings
+ * \return Error code (0 = success)
+ */
+int mxm_shared(Graph* g, std::vector<int> &colors, int numColors, std::vector<int> &nodeWeight, std::vector<int> &matchList);
+
 /* \brief Compute colors for graph coarsening implementing openmp parallelism.
  *
  * \param g: original Graph object to be coarsened
  * \param colors: vector denoting node coloring
+ * \param numColors: number of colors
  * \return Error code (0 = success)
  */
-int colorGraph_shared(Graph* g, std::vector<int> &colors);
+int colorGraph_shared(Graph* g, std::vector<int> &colors, int &numColors);
 
 /* \brief Compute maximal independent set.
  *
@@ -19,15 +31,16 @@ int colorGraph_shared(Graph* g, std::vector<int> &colors);
 int mis_shared(Graph* g, std::vector<int> finalRemoveList, std::vector<int> &I);
 
 
-/* \brief Find neighbors of a particular node and return list of node numbers.
+/* \brief Find unmatched nodes of a particular color.
  *
- * \param g: Graph object to be coarsened
- * \param removedNodes: vector of nodes which have been removed from current search
- * \param u: node which we want neighbors of 
- * \param neighbors: vector of node numbers neighboring u
+ * \param colors: list of colors for each node
+ * \param currentColor: color value to find
+ * \param matchList: list of matched status for each node 
+ * \param unmatchedValue: value to look for unmatched nodes
+ * \param nodeList: vector of unmatched nodes flagged with current color
  * \return Error code (0 = success)
  */
-int findNeighbors_shared(Graph* g, std::vector<int> &removedNodes, int u, std::vector<int> &neighbors);
+int doubleSelect_shared(std::vector<int> &colors, int currentColor, std::vector<int> &matchList, int unmatchedValue, std::vector<int> &nodeList);
 
 /* \brief Performs parallel inclusive scan on vector. Does not use pass by reference since algorithm is recursive..
  *

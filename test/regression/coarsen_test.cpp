@@ -24,17 +24,22 @@ int runCoarsenTest()
         //  cout << coarsen_me.getEdgePoint(i,0) << " " << coarsen_me.getEdgePoint(i,1) << endl;
         //}
         
+        int numColors;
         vector<int> colorList(coarsen_me.getNumNodes(), -1);
+        vector<int> nodeWeight(coarsen_me.getNumNodes(), 1);
+        vector<int> matchList(coarsen_me.getNumNodes(),-1);
 	std::clock_t start;
 	double duration;
 
-        cout << " --- Coloring ... " << endl;
+
+        // --- Color Test
+        cout << " Coloring ... " << endl;
 	start=std::clock();
 
-        colorGraph_shared(ptr, colorList);
+        colorGraph_shared(ptr, colorList, numColors);
 
 	duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
-        cout << " --- Coloring done, time: " << duration << endl;
+        cout << " Coloring done, time: " << duration << endl;
 
         cout << " --- Color list --- " << endl << endl;
         for( int i=0; i<coarsen_me.getNumNodes(); i++)
@@ -47,6 +52,20 @@ int runCoarsenTest()
               return 1;
             }
           }
+        }
+
+        // --- Maximal matching test
+        cout << " Maximal matching ... " << endl;
+
+        start=std::clock();
+        mxm_shared(ptr, colorList, numColors, nodeWeight, matchList); 
+        duration=(std::clock()-start) / (double) CLOCKS_PER_SEC;
+
+        cout << " Matching done, time: " << duration << endl;
+
+        cout << " --- Match list --- " << endl;
+        for( int i=0; i<coarsen_me.getNumNodes(); i++){
+          cout << matchList[i] << endl;
         }
 
         return 0;
