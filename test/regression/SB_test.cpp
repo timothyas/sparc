@@ -9,6 +9,7 @@ using namespace std;
 
 int test_getAij()
 {
+	cout << "HERE" << endl;
 	double value; 
 	Graph complex_graph("complex_graph.dat");
 	CSC_MATRIX adj = complex_graph.computeAdjacencyMatrix();
