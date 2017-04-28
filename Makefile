@@ -31,7 +31,7 @@ check:
 	$(MAKE) -C ./test/regression check
 	-rm ./test/regression/graph.cpp
 	-rm ./test/regression/coarsen.cpp
-	-rm ./test/spectralBisection.cpp
+	-rm ./test/regression/spectralBisection.cpp
 	$(MAKE) -C ./test/regression clean
 
 coverage:
