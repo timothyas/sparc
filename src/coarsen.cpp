@@ -18,10 +18,61 @@
 
 using namespace std;
 
-//int mxm_shared(Graph* g, 
-//
+int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> weight)
+{
 
-int colorGraph_shared(Graph* g, vector<int> &colors)
+        int v; 
+        vector<int> matched(g->getNumNodes(), -1);
+        vector<int> lonelyNeighbors;
+        vector<int> neighbors;
+        vector<int> raceList;
+
+
+        for(int k=0; k<numColors; k++){
+
+          // Fill nodeList with unmatched nodes of this color
+          doubleSelect_shared(colors, k, matched, -1,nodeList); 
+
+          #pragma omp parallel for private(lonelyNeighbors,v)
+          for(unsigned int u = 0; u<nodeList.size(); u++){
+
+            // Find unmatched neighbors
+            for(unsigned int i = 0; i<g->getNeighbors(u).size(); i++){
+              if(matched[g->getNeighbors(nodeList[u])[i]] == -1)
+                lonelyNeighbors.push_back(g->getNeighbors(nodeList[u])[i]);
+            }
+
+            // Find heaviest lonely neighbor, partner up!
+            // Note: max_element returns iterator, dereference to get value.
+            v = *max_element(lonelyNeighbors.begin(), lonelyNeighbors.end());
+
+            // They both swiped right ... 
+            matched[nodeList[u]] = v;
+            matched[v] = nodeList[u];
+
+            raceList.push_back(nodeList[u]);
+
+            // Clear neighbors for next round
+            // Not sure if this is necessary, seems like memory problem w/o it
+            lonelyNeighbors.clear();
+        
+          } //end parallel region
+
+          #pragma omp parallel for
+          for( unsigned int u = 0; u<raceList.size(); u++){
+            if( matched[matched[nodeList[u]]] != nodeList[u] )
+              matched[nodeList[u]]=-1;
+          } //end parallel region
+
+          nodeList.clear();
+
+        } // end k->numColors
+
+        return 0;
+}
+
+
+int colorGraph_shared(Graph* g, vector<int> &colors, int &numColors)
 {
         vector<int> indSet;
         vector<int> coloredNodes(g->getNumNodes(), 0);
@@ -48,6 +99,8 @@ int colorGraph_shared(Graph* g, vector<int> &colors)
           currentColor++;
 
         }while(moreColors);
+
+        numColors = currentColor;
 
         return 0;
 }
@@ -117,28 +170,25 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
 		
 }
 
-int findNeighbors_shared(Graph* g, vector<int> &removedNodes, int u, vector<int> &neighbors) 
+int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> &matchedList, int m, vector<int> &nodeList) 
 {
-        // Note: this subroutine is called inside a parallel region
-
         // This is a glorified parallel select 
-        int M = g->getNumEdges();
-        int numNeighbors;
-        vector<int> flag(M, 0);
-        vector<int> flagSum(M,0);
+        int numSelected;
+        vector<int> flag(colors.size(), 0);
+        vector<int> flagSum(colors.size(),0);
 
         #pragma omp for 
-	for(int i=0; i<M; i++){
-          if( removedNodes[i]==0 && (g->getEdgePoint(i,0) == u || g->getEdgePoint(i,1) == u) )
+	for(unsigned int i=0; i<colors.size(); i++){
+          if( colors[i]==currentColor && matchedList[i] == unmatchedValue )
             flag[i]=1;
 	}
 
         flagSum=inclusiveScan_shared(flag);
-        numNeighbors=flagSum[M-1];
+        numSelected=flagSum[colors.size()-1];
 
-        // This may or may not be necessary
-        neighbors.clear(); 
-        neighbors.assign(numNeighbors, 0);
+        if( nodeList.size() != 0 )
+          nodeList.clear(); 
+        neighbors.resize(numSelected);
 
         if( (int)neighbors.size() != numNeighbors ){
           cout << "Error in findNeighbors_shared: incorrect size of neighbors vector." << endl;
@@ -146,13 +196,10 @@ int findNeighbors_shared(Graph* g, vector<int> &removedNodes, int u, vector<int>
         }
 
         #pragma omp for
-        for(int i=0; i<M; i++){
-          if( flag[i]==1 && g->getEdgePoint(i,0) == u ) 
-            neighbors[flagSum[i]-1] = g->getEdgePoint(i,1);
-          else if( flag[i]==1 && g->getEdgePoint(i,1) == u ) 
-            neighbors[flagSum[i]-1] = g->getEdgePoint(i,0);
+        for(unsigned int i=0; i<colors.size(); i++){
+          if( flag[i]==1 ) 
+            nodeList[flagSum[i]-1] = i;
         }
-        
 
 	return 0;
 }
