@@ -72,11 +72,6 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
         
           } //end parallel region
 
-          cout << " -- pre race check -- " << endl;
-          for(int i=0; i<raceList.size(); i++){
-            cout << "k: " << k << " rl[" << i << "]: " << raceList[i] << endl;
-          }
-
           #pragma omp parallel for
           for( unsigned int u = 0; u<raceList.size(); u++){
             if( matchList[matchList[raceList[u]]] != raceList[u] )
