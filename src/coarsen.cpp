@@ -20,9 +20,12 @@ using namespace std;
 
 int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWeights, vector<int> &matchList)
 {
-
         omp_set_num_threads(THREADS);
         
+        int v, vi;
+        vector<int>::iterator viter;
+        vector<int> lonelyNeighbors;
+        vector<int> lonelyWeights;
         vector<int> nodeList;
         vector<int> raceList;
 
@@ -31,15 +34,11 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
           // Fill nodeList with unmatched nodes of this color
           doubleSelect_shared(colors, k, matchList, -1,nodeList); 
 
-          #pragma omp parallel for 
+          #pragma omp parallel for private(v,vi,viter,lonelyNeighbors,lonelyWeights)
           for(unsigned int u = 0; u<nodeList.size(); u++){
 
-            int v, vi;
-            vector<int> lonelyNeighbors;
-            vector<int> lonelyWeights;
-
             // Find unmatched neighbors
-            for(unsigned int i = 0; i<g->getNeighbors(u).size(); i++){
+            for(unsigned int i = 0; i<g->getNeighbors(nodeList[u]).size(); i++){
               if(matchList[g->getNeighbors(nodeList[u])[i]] == -1){
                 #pragma omp critical
                 {
@@ -53,7 +52,7 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
 
               // Find heaviest lonely neighbor, partner up!
               // Note: max_element returns iterator
-              auto viter = max_element(lonelyWeights.begin(), lonelyWeights.end());
+              viter = max_element(lonelyWeights.begin(), lonelyWeights.end());
               vi = distance(lonelyWeights.begin(),viter);
               v = lonelyNeighbors[vi];
 
@@ -73,10 +72,15 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
         
           } //end parallel region
 
+          cout << " -- pre race check -- " << endl;
+          for(int i=0; i<raceList.size(); i++){
+            cout << "k: " << k << " rl[" << i << "]: " << raceList[i] << endl;
+          }
+
           #pragma omp parallel for
           for( unsigned int u = 0; u<raceList.size(); u++){
-            if( matchList[matchList[nodeList[u]]] != nodeList[u] )
-              matchList[nodeList[u]]=-1;
+            if( matchList[matchList[raceList[u]]] != raceList[u] )
+              matchList[raceList[u]]=-1;
           } //end parallel region
 
           nodeList.clear();
