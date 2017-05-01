@@ -1,4 +1,5 @@
 #include"graph.h"
+#include<omp.h>
 #include<fstream>
 #include<string>
 #include<iostream>
@@ -7,6 +8,33 @@
 
 using namespace std; 
 
+int Graph::reorderGraph(std::vector<int> indMap)
+{
+	for (int i = 0; i < numEdges; i++)
+	{
+		edge[i][0] = indMap[edge[i][0]];
+		edge[i][1] = indMap[edge[i][1]];
+	}
+
+	neighborList.clear();
+	neighborList.resize(numNodes,vector<int>(0));
+
+	for (int i = 0; i < numEdges; i++)
+	{
+		neighborList[edge[i][0]].push_back(edge[i][1]);
+		neighborList[edge[i][1]].push_back(edge[i][0]);
+	}
+
+	//need to sort new neighborList in order to get
+	//the appropriate irow
+	#pragma omp parallel for
+	for (int i = 0; i < numNodes; i++)
+	{
+		std::sort(neighborList[i].begin(),neighborList[i].end());
+	}
+
+	return 0; 
+}
 
 double Graph::getEdgePoint(int i,int j)
 {
@@ -72,18 +100,13 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 	adjMat.nnz = numEdges;
 
 	adjMat.vals.resize(adjMat.nnz,1);
-	adjMat.irow.resize(adjMat.nnz);
+	adjMat.irow.reserve(adjMat.nnz);
 	adjMat.pcol.resize(adjMat.n+1);
 	int numCount = 0; 
 	int pcolInd = 1;
 
 	adjMat.pcol[0]=0;
 	adjMat.pcol[adjMat.n]=adjMat.nnz;
-	for(int i = 0; i < numEdges; i++)
-	{
-		adjMat.irow[i]=edge[i][1];
-	}
-
 	std::vector<int> NE; 
 	for (int i = 0; i < numNodes; i++)
 	{
@@ -91,7 +114,10 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 		for (size_t j = 0; j < NE.size(); j++)
 		{
 			if (NE[j] > i)
+			{
+				adjMat.irow.push_back(NE[j]);
 				numCount++; 
+			}
 		}
 		adjMat.pcol[pcolInd]=adjMat.pcol[pcolInd-1]+numCount;
 		pcolInd++; 
@@ -99,6 +125,14 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 	}
 
 	return adjMat;
+}
+
+Graph::Graph(int nodes,int edges)
+{
+	numNodes = nodes; 
+	numEdges = edges;
+	edge.resize(edges,vector<int>(2));
+	neighborList.resize(nodes,vector<int>(0));
 }
 
 
@@ -110,9 +144,7 @@ Graph::Graph(std::string filename)
 	inFile >> numNodes >> numEdges;
 
 	edge.resize(numEdges,vector<int>(2));
-
 	neighborList.resize(numNodes,vector<int>(0));
-
 	int edge1 = 0;
         int edge2 = 0;
 	size_t row_counter=0; 

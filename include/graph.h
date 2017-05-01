@@ -17,10 +17,12 @@ class Graph {
 
 	public: 
 		Graph(std::string filename);
+		Graph(int numNodes, int numEdges);
 		double getEdgePoint(int i,int j);
 		int getNumNodes();
 		int getNumEdges();
                 std::vector<int> getNeighbors(int i);
+		int reorderGraph(std::vector<int> indMap);
 
 		CSC_MATRIX computeGraphLaplacian(CSC_MATRIX adj);
 		CSC_MATRIX  computeAdjacencyMatrix();
