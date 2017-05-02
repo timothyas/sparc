@@ -7,10 +7,9 @@
  * \param colors: vector denoting node coloring
  * \param numColors: number of colors
  * \param nodeWeight: weight of each node (starts at 1, summed when coarsened)
- * \param matchList: input/output of node pairings
  * \return Error code (0 = success)
  */
-int mxm_shared(Graph* g, std::vector<int> &colors, int numColors, std::vector<int> &nodeWeights, std::vector<int> &matchList);
+int mxm_shared(Graph* g, std::vector<int> &colors, int numColors);
 
 /* \brief Compute colors for graph coarsening implementing openmp parallelism.
  *
@@ -40,7 +39,16 @@ int mis_shared(Graph* g, std::vector<int> finalRemoveList, std::vector<int> &I);
  * \param nodeList: vector of unmatched nodes flagged with current color
  * \return Error code (0 = success)
  */
-int doubleSelect_shared(std::vector<int> &colors, int currentColor, std::vector<int> &matchList, int unmatchedValue, std::vector<int> &nodeList);
+int doubleSelect_shared(std::vector<int> &colors, int currentColor, std::vector<int> matchList, int unmatchedValue, std::vector<int> &nodeList);
+
+/* \brief Find unmatched nodes of a particular color.
+ *
+ * \param matchList: list of matched status for each node 
+ * \param unmatchedValue: value to look for unmatched nodes
+ * \param nodeList: vector of unmatched nodes
+ * \return Error code (0 = success)
+ */
+int selectUnmatched_shared(std::vector<int> matchList, int unmatchedValue, std::vector<int> &nodeList);
 
 /* \brief Performs parallel inclusive scan on vector. Does not use pass by reference since algorithm is recursive..
  *

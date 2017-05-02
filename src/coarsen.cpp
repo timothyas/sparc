@@ -14,11 +14,11 @@
 #include"coarsen.h"
 
 
-#define THREADS 4
+#define THREADS 1
 
 using namespace std;
 
-int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWeights, vector<int> &matchList)
+int mxm_shared(Graph* g, vector<int> &colors, int numColors)
 {
         omp_set_num_threads(THREADS);
         
@@ -32,14 +32,14 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
         for(int k=0; k<numColors; k++){
 
           // Fill nodeList with unmatched nodes of this color
-          doubleSelect_shared(colors, k, matchList, -1,nodeList); 
+          doubleSelect_shared(colors, k, g->getMatchList(), -1,nodeList); 
 
           #pragma omp parallel for private(v,vi,viter,lonelyNeighbors,lonelyWeights)
           for(unsigned int u = 0; u<nodeList.size(); u++){
 
             // Find unmatched neighbors
             for(unsigned int i = 0; i<g->getNeighbors(nodeList[u]).size(); i++){
-              if(matchList[g->getNeighbors(nodeList[u])[i]] == -1){
+              if(g->getNodeMatch(g->getNeighbors(nodeList[u])[i]) == -1){
                 #pragma omp critical
                 {
                   lonelyNeighbors.push_back(g->getNeighbors(nodeList[u])[i]);
@@ -57,8 +57,8 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
               v = lonelyNeighbors[vi];
 
               // They both swiped right ... 
-              matchList[nodeList[u]] = v;
-              matchList[v] = nodeList[u];
+              g->setNodeMatch(nodeList[u],v);
+              g->setNodeMatch(v,nodeList[u]);
 
               #pragma omp critical
               { 
@@ -74,8 +74,8 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors, vector<int> &nodeWe
 
           #pragma omp parallel for
           for( unsigned int u = 0; u<raceList.size(); u++){
-            if( matchList[matchList[raceList[u]]] != raceList[u] )
-              matchList[raceList[u]]=-1;
+            if( g->getNodeMatch(g->getNodeMatch(raceList[u])) != raceList[u] )
+              g->setNodeMatch(raceList[u],-1);
           } //end parallel region
 
           nodeList.clear();
@@ -217,6 +217,40 @@ int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> &matc
 
         #pragma omp for
         for(unsigned int i=0; i<colors.size(); i++){
+          if( flag[i]==1 ) 
+            nodeList[flagSum[i]-1] = i;
+        }
+
+	return 0;
+}
+
+int selectUnmatched_shared(vector<int> &matchedList, int unmatchedValue, vector<int> &nodeList) 
+{
+        // This is a glorified parallel select 
+        int numSelected;
+        vector<int> flag(matchedList.size(), 0);
+        vector<int> flagSum(matchedList.size(),0);
+
+        #pragma omp for 
+	for(unsigned int i=0; i<flag.size(); i++){
+          if( matchedList[i] == unmatchedValue )
+            flag[i]=1;
+	}
+
+        flagSum=inclusiveScan_shared(flag);
+        numSelected=flagSum[colors.size()-1];
+
+        if( nodeList.size() != 0 )
+          nodeList.clear(); 
+        nodeList.resize(numSelected);
+
+        if( (int)nodeList.size() != numSelected ){
+          cout << "Error in findNeighbors_shared: incorrect size of neighbors vector." << endl;
+          return 1;
+        }
+
+        #pragma omp for
+        for(unsigned int i=0; i<flag.size(); i++){
           if( flag[i]==1 ) 
             nodeList[flagSum[i]-1] = i;
         }
