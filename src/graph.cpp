@@ -1,16 +1,53 @@
 #include"graph.h"
+#include<omp.h>
 #include<fstream>
 #include<string>
 #include<iostream>
 #include<vector>
 #include<algorithm>
 #include"coarsen.h"
+#include<exception>
+#include<assert.h>
+#include<stdexcept>
 
 using namespace std; 
 
+int Graph::reorderGraph(std::vector<int> indMap)
+{
+	for (int i = 0; i < numEdges; i++)
+	{
+		edge[i][0] = indMap[edge[i][0]];
+		edge[i][1] = indMap[edge[i][1]];
+	}
+
+	neighborList.clear();
+	neighborList.resize(numNodes,vector<int>(0));
+
+	for (int i = 0; i < numEdges; i++)
+	{
+		neighborList[edge[i][0]].push_back(edge[i][1]);
+		neighborList[edge[i][1]].push_back(edge[i][0]);
+	}
+
+	//need to sort new neighborList in order to get
+	//the appropriate irow
+	#pragma omp parallel for
+	for (int i = 0; i < numNodes; i++)
+	{
+		std::sort(neighborList[i].begin(),neighborList[i].end());
+	}
+
+	return 0; 
+}
 
 double Graph::getEdgePoint(int i,int j)
 {
+	if (j > 1 || i > numEdges-1)
+	{
+		std::cout << "Error: Invalid edge. Must have j <= 1 & i <=numEdges-1" << endl;
+		assert(j < 1);
+		assert(i < numEdges);
+	}
 	return edge[i][j];
 }
 
@@ -65,6 +102,10 @@ CSC_MATRIX Graph::computeGraphLaplacian(CSC_MATRIX adjMat)
 	lapMat.irow.resize(lapMat.vals.size());
 	lapMat.pcol.resize(lapMat.n+1);
 
+	// laplacian has all the points as the adjacency matrix but has 
+	// points on the every diagonal. We can modify the adj pcol and irow 
+	// to get the pcol, irow for the laplacian 
+
 	for (size_t i = 0; i < lapMat.pcol.size(); i++)
 	{
 		lapMat.pcol[i] = adjMat.pcol[i]+i; 
@@ -99,18 +140,16 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 	adjMat.nnz = numEdges;
 
 	adjMat.vals.resize(adjMat.nnz,1);
-	adjMat.irow.resize(adjMat.nnz);
+	adjMat.irow.reserve(adjMat.nnz);
 	adjMat.pcol.resize(adjMat.n+1);
 	int numCount = 0; 
 	int pcolInd = 1;
 
 	adjMat.pcol[0]=0;
 	adjMat.pcol[adjMat.n]=adjMat.nnz;
-	for(int i = 0; i < numEdges; i++)
-	{
-		adjMat.irow[i]=edge[i][1];
-	}
 
+	// we determine information from NeighborList because we can gaurentee if 
+	// will be sorted. 
 	std::vector<int> NE; 
 	for (int i = 0; i < numNodes; i++)
 	{
@@ -118,8 +157,14 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 		for (size_t j = 0; j < NE.size(); j++)
 		{
 			if (NE[j] > i)
+			{
+				adjMat.irow.push_back(NE[j]);
 				numCount++; 
+			}
 		}
+		// pcol[0] = 0; 
+		// pcol[i] = pcol[i-1] + nnz in (i-1) column 
+		// pcol[n+1] should thus always be nnz  
 		adjMat.pcol[pcolInd]=adjMat.pcol[pcolInd-1]+numCount;
 		pcolInd++; 
 		numCount= 0; 
@@ -128,12 +173,29 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 	return adjMat;
 }
 
+Graph::Graph(int nodes,int edges)
+{
+	numNodes = nodes; 
+	numEdges = edges;
+	edge.resize(edges,vector<int>(2));
+	neighborList.resize(nodes,vector<int>(0));
+}
+
 
 Graph::Graph(std::string filename)
 {
-	cout << "Initalizing graph from " << filename << endl;
+	int error = 0; // error checking for constructor 
+	cout << "Initalizing graph from: " << filename << endl;
 	ifstream inFile; 
-	inFile.open(filename.c_str());
+	try
+	{
+		inFile.open(filename.c_str());
+		if (!inFile.good())
+		{
+			error = 1; 
+			throw std::invalid_argument( "Error: File does not exist.");
+		}
+
 	inFile >> numNodes >> numEdges;
 
         nodeWeights.resize(numNodes,1);
@@ -158,8 +220,13 @@ Graph::Graph(std::string filename)
 		row_counter++; 
 		inFile >> edge1 >> edge2; 
 	}
-
 	inFile.close();
+	}
+	catch(std::exception & e)
+	{
+		cerr << e.what() << endl;
+	}
+	assert(error == 0);
 }
 
 CoarseGraph::CoarseGraph(const Graph& g) 

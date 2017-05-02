@@ -14,7 +14,7 @@ int runCoarsenTest()
 	cout << "Running Graph Coarsening Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
-	Graph coarsen_me("coarsen_test.dat");
+	Graph coarsen_me("../../data/facebook_combined.txt");
 	Graph* ptr = &coarsen_me;
 
         int numColors;

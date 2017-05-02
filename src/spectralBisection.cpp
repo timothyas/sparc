@@ -7,6 +7,7 @@
 #include<algorithm>
 #include<fstream>
 #include<vector>
+#include<iterator>
 #include "arlsmat.h"
 #include "areig.h"
 #include "arlssym.h"
@@ -18,141 +19,65 @@ int spectralBisection(Graph *G)
 
 	std::string filename = "facebook_SB.txt";
 	//Compute adjacency matrix and graph laplacian
+	double start = std::clock();
 	cout << "Computing adjacency matrix" << endl;
 	CSC_MATRIX adj = G->computeAdjacencyMatrix();
+	double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << setprecision(15) << "--->Time: " << duration << endl;
+
+	start = std::clock();
 	cout << "Computing graph laplacian" << endl;
 	CSC_MATRIX lap = G->computeGraphLaplacian(adj);
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << setprecision(15) << "--->Time: " << duration << endl;
 
+	start = std::clock();
 	cout << "Getting second eigenvector with Arpack++" << endl; 
-
-	
-	double start = std::clock();
 	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
-	ARluSymStdEig<double> prob(2,L,"SA",5,0,100000);
+	int nev = 2; 
+	int ncv = min(2*nev+1,lap.n -1);
+	ARluSymStdEig<double> prob(nev,L,"SA",ncv,0,100000);
 	prob.FindEigenvectors();
-	double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << "Time: " << duration << endl;
 
 	double * Eigvec = prob.RawEigenvector(1);
 	double * EigVal = prob.RawEigenvalues();
-	cout << "2nd eigenvalue" << EigVal[1] << endl;
+	cout << "2nd eigenvalue: " << EigVal[1] << endl;
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << setprecision(15) << "--->Time: " << duration << endl;
 
+	start = std::clock();
 	vector<double> Eigvec2(Eigvec,Eigvec+lap.n);
-	std::vector<int> ind1,ind2;
+	cout << "Getting index Map" << endl;
+	std::vector<int> indMap =  getIndexMap(Eigvec2);
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << setprecision(15) << "--->Time: " << duration << endl;
 
-	cout << "Getting index sets" << endl;
-	getIndexSets(Eigvec2, ind1, ind2);
-	cout << "Performing swapping of indices" << endl;
-	CSC_MATRIX A_SB = getBlocks(adj, ind1,ind2);
-	cout << "Saving matrix" << endl;
-	saveMatrixToFile(A_SB,filename);
+	start = std::clock();
+	cout << "Reordering Matrix" << endl;
+	G->reorderGraph(indMap);
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << setprecision(15) << "--->Time: " << duration << endl;
+
+	start = std::clock();
+	cout << "Computing new Adj Matrix" << endl;
+	CSC_MATRIX newAdj = G->computeAdjacencyMatrix();
+
+
+	cout << "Saving Matrix to File" << endl;
+	saveMatrixToFile(newAdj,filename);
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+	cout << setprecision(15) << "--->Time: " << duration << endl;
+
 	return 0; 
 }
 
-CSC_MATRIX getBlocks(CSC_MATRIX A, std::vector<int> ind1, std::vector<int> ind2)
+std::vector<int> getIndexMap(vector<double> Eigvec2)
 {
-	CSC_MATRIX A_SB;
-	A_SB.n = A.n; 
-	A_SB.nnz = A.nnz;
-	A_SB.irow.reserve(A.irow.size());
-	A_SB.pcol.reserve(A.pcol.size());
-	A_SB.vals.reserve(A.vals.size());
-	double value; 
-	double pcolSet; // determine if pcol has already been set for each row
+	std::vector<int> ind1,ind2;
+	std::vector<double> sortedEigvec2 = Eigvec2;  
 
-	for (size_t j = 0; j < A_SB.n; j++)
-	{
-		pcolSet = false;
-		for (size_t i = j; i < A_SB.n; i++)
-		{
-			cout << "i: " << i << " j: " << j << endl;
-		
-			// in A11 block
-			if (j < ind1.size() && i < ind1.size())
-			{
-				// check element A(ind1(i),ind1(j)) is non zero
-				double value = getAij(A,ind1[i],ind1[j]);
-				if (value !=0)
-				{
-					A_SB.vals.push_back(value); 
-					A_SB.irow.push_back(i);
-					if (!pcolSet)
-					{
-						A_SB.pcol.push_back(A_SB.vals.size()-1);
-						pcolSet = true; 
-					}
+	std::vector<int> indMap (Eigvec2.size(),0);
 
-				}
-			}
-
-			// in A21
-			else if (j < ind1.size() && i >= ind1.size())
-			{
-				// check element A(ind1(i),ind1(j)) is non zero
-				double value = getAij(A,ind2[i-ind1.size()],ind1[j]);
-				if (value !=0)
-				{
-					A_SB.vals.push_back(value); 
-					A_SB.irow.push_back(i);
-					if (!pcolSet)
-					{
-						A_SB.pcol.push_back(A_SB.vals.size()-1);
-						pcolSet = true; 
-					}
-
-				}
-			}
-
-
-			// in A12
-			else if (j >= ind1.size() && i < ind1.size())
-			{
-				// check element A(ind1(i),ind1(j)) is non zero
-				double value = getAij(A,ind1[i],ind2[j-ind1.size()]);
-				if (value !=0)
-				{
-					A_SB.vals.push_back(value); 
-					A_SB.irow.push_back(i);
-					if (!pcolSet)
-					{
-						A_SB.pcol.push_back(A_SB.vals.size()-1);
-						pcolSet = true; 
-					}
-
-				}
-			}
-
-			// in A22 
-			else if (j >= ind1.size() && i >= ind1.size())
-			{
-				// check element A(ind1(i),ind1(j)) is non zero
-				double value = getAij(A,ind2[i-ind1.size()],ind2[j-ind1.size()]);
-				if (value !=0)
-				{
-					A_SB.vals.push_back(value); 
-					A_SB.irow.push_back(i);
-					if (!pcolSet)
-					{
-						A_SB.pcol.push_back(A_SB.vals.size()-1);
-						pcolSet = true; 
-					}
-
-				}
-			}
-		}
-		if (!pcolSet)
-		{
-			A_SB.pcol.push_back(A_SB.pcol[A_SB.pcol.size()-1]);
-		}
-	}
-	
-	return A_SB;
-}
-
-int getIndexSets(vector<double> Eigvec2, std::vector<int> &ind1, std::vector<int> &ind2)
-{
-	vector<double> sortedEigvec2 = Eigvec2;  
-	
 	std::sort(sortedEigvec2.data(),sortedEigvec2.data()+sortedEigvec2.size());
 	double split = sortedEigvec2[sortedEigvec2.size()/2];
 
@@ -169,15 +94,46 @@ int getIndexSets(vector<double> Eigvec2, std::vector<int> &ind1, std::vector<int
 
 	}
 
-	return 0;
+	ind1.insert(ind1.end(),ind2.begin(),ind2.end());
+	
+
+	for (size_t i = 0; i < ind1.size(); i++)
+	{
+		indMap[ind1[i]]=i;
+	}
+
+	return indMap;
 }
 
 int saveMatrixToFile(CSC_MATRIX A,std::string filename)
 {
 	ofstream outFile; 
-
 	outFile.open(filename.c_str());
 
+	int counter; 
+	int numMatched;
+	int row, col; 
+
+	for (int i = 0; i < A.n;i++)
+	{
+		numMatched= 0;
+		for (int j = 0; j < A.n; j++)
+		{
+			col = i;
+			row = j;
+			counter = A.pcol[col] + numMatched;
+			if (counter < A.pcol[col+1] && A.irow[counter] == row)
+			{
+				outFile << A.vals[counter] << " ";
+				numMatched++;
+			}
+			else 
+				outFile << 0 << " ";
+		}
+		outFile << endl;
+	}
+
+	/*
 	for (int i = 0; i < A.n; i++)
 	{
 		for (int j = 0; j < A.n; j++)
@@ -186,14 +142,12 @@ int saveMatrixToFile(CSC_MATRIX A,std::string filename)
 		}
 		outFile << endl;
 	}
+	*/
 	outFile.close();
 	return 0;
 }
 double getAij(CSC_MATRIX A,int i,int j)
 {
-	int k = -1;  
-	double ans;
-
 	// flip indices if in upper triangular part of matrix
 	if (j > i)
 	{
@@ -202,22 +156,12 @@ double getAij(CSC_MATRIX A,int i,int j)
 		j = temp;
 	}
 
-	for (int n = A.pcol[j]; n<A.pcol[j+1]; n++)
+	for (int n = A.pcol[j]; n < A.pcol[j+1]; n++)
 	{
 		if (A.irow[n] == i)
 		{
-			k = n-A.pcol[j];
-			break;
+			return A.vals[n];
 		}
 	}
-
-	if (k == -1)
-	{
-		ans = 0;
-	}
-	else 
-	{
-		ans = A.vals[A.pcol[j]+k];
-	}
-	return ans; // not found
+	return 0.0; 
 }
