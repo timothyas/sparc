@@ -19,8 +19,6 @@ int runCoarsenTest()
 
         int numColors;
         vector<int> colorList(coarsen_me.getNumNodes(), -1);
-        vector<int> nodeWeight(coarsen_me.getNumNodes(), 1);
-        vector<int> matchList(coarsen_me.getNumNodes(),-1);
 	std::clock_t start;
 	double duration;
 
@@ -54,12 +52,12 @@ int runCoarsenTest()
         // --- Maximal matching test
 
         start=std::clock();
-        mxm_shared(ptr, colorList, numColors, nodeWeight, matchList); 
+        mxm_shared(ptr, colorList, numColors); 
         duration=(std::clock()-start) / (double) CLOCKS_PER_SEC;
 
         for( int i=0; i<coarsen_me.getNumNodes(); i++){
           for ( int j=i+1; j<coarsen_me.getNumNodes(); j++){
-            if( matchList[i] == matchList[j] && matchList[i] != -1 ){
+            if( coarsen_me.getNodeMatch(i) == coarsen_me.getNodeMatch(j) && coarsen_me.getNodeMatch(i) != -1 ){
               cout << "MATCHING ERROR: Found multiple node matching. " << endl;
               cout << " -- Nodes: " << i << " and " << j << " are trying to match " << matchList[i] << endl;
             
@@ -68,7 +66,7 @@ int runCoarsenTest()
 
               cout << " --- Match list --- " << endl;
               for( int i=0; i<coarsen_me.getNumNodes(); i++){
-                cout << matchList[i] << endl;
+                cout << coarsen_me.getNodeMatch(i) << endl;
               }
               return 1;
             }
@@ -76,6 +74,27 @@ int runCoarsenTest()
         }
 
         cout << "Successfully computed maximal matching in " << duration << " sec" << endl;
+
+        // --- Create coarsened graph
+        
+        start=std::clock();
+        coarseGraph parent(ptr);
+        duration=(std::clock()-start) / (double) CLOCKS_PER_SEC;
+
+        cout << " --- Child Match list --- " << endl;
+        for( int i=0; i<coarsen_me.getNumNodes(); i++){
+          cout << coarsen_me.getNodeMatch(i) << endl;
+        }
+        cout << " --- Coarse neighbor list --- " << endl;
+        for( int i =0; i<parent.getNumNodes(); i++){
+          cout << "node " << i << " : ";
+          for( int j =0; j<parent.getNeighbors(i).size(); j++){
+            cout << j << " ";
+          }
+          cout << endl;
+        }
+
+        cout << "Created coarse graph in " << duration << " sec" << endl;
 
         return 0;
 
