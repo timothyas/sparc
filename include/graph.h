@@ -20,7 +20,12 @@ class Graph {
 		double getEdgePoint(int i,int j);
 		int getNumNodes();
 		int getNumEdges();
-                std::vector<int> getNeighbors(int i);
+                int getNodeWeight(int node);
+                int getEdgeWeight(int node, int neighborInd);
+                int getNodeMatch(int node);
+                void setNodeMatch(int node, int val);
+                std::vector<int> getMatchList();
+                std::vector<int> getNeighbors(int node);
 
 		CSC_MATRIX computeGraphLaplacian(CSC_MATRIX adj);
 		CSC_MATRIX  computeAdjacencyMatrix();
@@ -28,7 +33,20 @@ class Graph {
 		int numEdges, numNodes;
 		std::vector<std::vector<int> > edge;
 		std::vector<std::vector<int> > neighborList;
+                std::vector<int> nodeWeight;
+                std::vector<int> edgeWeight;
+                std::vector<int> matchList;
 };
 
+class coarseGraph: public Graph {
+
+        public:
+                coarseGraph(Graph* g, std::vector<int> &matchList);
+                getChildren();
+
+        private:
+                std::vector<std::vector<int> > parentList;
+                std::vector<int> child2Parent;
+};
 
 #endif
