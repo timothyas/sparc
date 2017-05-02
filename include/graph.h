@@ -33,18 +33,18 @@ class Graph {
 		int numEdges, numNodes;
 		std::vector<std::vector<int> > edge;
 		std::vector<std::vector<int> > neighborList;
-                std::vector<int> nodeWeight;
-                std::vector<int> edgeWeight;
+                std::vector<std::vector<int> > edgeWeights;
+                std::vector<int> nodeWeights;
                 std::vector<int> matchList;
 };
 
-class coarseGraph: public Graph {
+class CoarseGraph : public Graph {
 
         public:
-                coarseGraph(Graph* g, std::vector<int> &matchList);
-                getChildren();
+                CoarseGraph(const Graph& g) : child{g};
 
         private:
+                Graph child;
                 std::vector<std::vector<int> > parentList;
                 std::vector<int> child2Parent;
 };

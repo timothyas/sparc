@@ -26,12 +26,12 @@ int Graph::getNumEdges()
 
 int Graph::getNodeWeight(int node)
 {
-        return nodeWeight[node];
+        return nodeWeights[node];
 }
 
 int Graph::getEdgeWeight(int node, int neighborInd)
 {
-        return edgeWeight[node][neighborInd];
+        return edgeWeights[node][neighborInd];
 }
 
 int Graph::getNodeMatch(int node)
@@ -136,11 +136,11 @@ Graph::Graph(std::string filename)
 	inFile.open(filename.c_str());
 	inFile >> numNodes >> numEdges;
 
-        nodeWeight.resize(numNodes,1);
+        nodeWeights.resize(numNodes,1);
         matchList.resize(numNodes,-1);
 	edge.resize(numEdges,vector<int>(2));
 	neighborList.resize(numNodes,vector<int>(0));
-        edgeWeight.resize(numNodes,vector<int>(0));
+        edgeWeights.resize(numNodes,vector<int>(0));
 
 	int edge1 = 0;
         int edge2 = 0;
@@ -153,8 +153,8 @@ Graph::Graph(std::string filename)
 		edge[row_counter][1]=edge2;
 		neighborList[edge1].push_back(edge2);
 		neighborList[edge2].push_back(edge1);
-                edgeWeight[edge1].push_back(1);
-                edgeWeight[edge2].push_back(1);
+                edgeWeights[edge1].push_back(1);
+                edgeWeights[edge2].push_back(1);
 		row_counter++; 
 		inFile >> edge1 >> edge2; 
 	}
@@ -162,7 +162,8 @@ Graph::Graph(std::string filename)
 	inFile.close();
 }
 
-coarseGraph::coarseGraph(Graph* g) 
+CoarseGraph::CoarseGraph(const Graph& g) 
+        : child(g)
 {
 
         // Find number of nodes for coarsened graph
@@ -172,7 +173,6 @@ coarseGraph::coarseGraph(Graph* g)
 
         if( (g->getNumNodes() - (int)unmatched.size()) % 2 != 0 ) {
           cout << "Error: Creating coarse graph, bad math for numNodes ... " << endl;
-          return 1;
         }
 
         // Create parentList and sum node weights
@@ -181,7 +181,7 @@ coarseGraph::coarseGraph(Graph* g)
          *       child2Parent maps child node number -> parent node
          */
 
-        vector<int> tempMatchList=g->getMatchList;
+        vector<int> tempMatchList=g->getMatchList();
         parentList.resize(numNodes,vector<int>(0));
         nodeWeights.resize(numNodes);
         child2Parent.resize(g->getNumNodes());
@@ -215,7 +215,7 @@ coarseGraph::coarseGraph(Graph* g)
 
         // Create edge and neighborlist
         neighborList.resize(numNodes, vector<int>(0));
-        edgeWeight.resize(numNodes,vector<int>(0));
+        edgeWeights.resize(numNodes,vector<int>(0));
 
         bool mappedToSameNode; 
         vector::iterator neighborLoc, neighborLoc2;
@@ -243,8 +243,8 @@ coarseGraph::coarseGraph(Graph* g)
                 neighborList[i].push_back(child2Parent[currentChildNeighbor]);
                 neighborList[child2Parent[currentChildNeighbor]].push_back(i);
 
-                edgeWeight[i].push_back(g->getEdgeWeight(currentChild,k));
-                edgeWeight[child2Parent[currentChildNeighbor]].push_back(g->getEdgeWeight(currentChild,k));
+                edgeWeights[i].push_back(g->getEdgeWeight(currentChild,k));
+                edgeWeights[child2Parent[currentChildNeighbor]].push_back(g->getEdgeWeight(currentChild,k));
 
                 tempEdge[0] = child2Parent[currentChild];
                 tempEdge[1] = child2Parent[currentChildNeighbor];
@@ -256,17 +256,16 @@ coarseGraph::coarseGraph(Graph* g)
                 
                 // Edge has been accounted for, increment weight
                 neighborInd = distance(neighborList[i].begin(),neighborLoc);
-                edgeWeight[i][neighborInd] += g->getEdgeWeight(currentChild,k);
+                edgeWeights[i][neighborInd] += g->getEdgeWeight(currentChild,k);
 
                 // This seems expensive but I don't know how to do it better
                 neighborLoc2 = find(neighborList[neighborInd].begin(),neighborList[neighborInd].end(), \
                  [](int ii){ return ii == i;} );
                 neighborInd2 = distance(neighborList[neighborInd].begin(),neighborLoc2);
-                edgeWeight[neighborList[neighborInd]][neighborInd2] += g->getEdgeWeight(currentChild,k);
+                edgeWeights[neighborList[neighborInd]][neighborInd2] += g->getEdgeWeight(currentChild,k);
               }
 
             }// end loop thru e/ child's neighbors
           }//end loop thru parent's children
         }//end loop thru parent nodes
-
 }

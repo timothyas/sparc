@@ -59,7 +59,7 @@ int runCoarsenTest()
           for ( int j=i+1; j<coarsen_me.getNumNodes(); j++){
             if( coarsen_me.getNodeMatch(i) == coarsen_me.getNodeMatch(j) && coarsen_me.getNodeMatch(i) != -1 ){
               cout << "MATCHING ERROR: Found multiple node matching. " << endl;
-              cout << " -- Nodes: " << i << " and " << j << " are trying to match " << matchList[i] << endl;
+              cout << " -- Nodes: " << i << " and " << j << " are trying to match " << coarsen_me.getNodeMatch(i) << endl;
             
 
               cout << " Matching done, time: " << duration << endl;
@@ -78,7 +78,7 @@ int runCoarsenTest()
         // --- Create coarsened graph
         
         start=std::clock();
-        coarseGraph parent(ptr);
+        CoarseGraph parent(coarsen_me);
         duration=(std::clock()-start) / (double) CLOCKS_PER_SEC;
 
         cout << " --- Child Match list --- " << endl;
@@ -88,7 +88,7 @@ int runCoarsenTest()
         cout << " --- Coarse neighbor list --- " << endl;
         for( int i =0; i<parent.getNumNodes(); i++){
           cout << "node " << i << " : ";
-          for( int j =0; j<parent.getNeighbors(i).size(); j++){
+          for(unsigned int j =0; j<parent.getNeighbors(i).size(); j++){
             cout << j << " ";
           }
           cout << endl;
