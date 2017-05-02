@@ -5,6 +5,10 @@
 #include<iostream>
 #include<vector>
 #include<algorithm>
+#include<exception>
+#include<assert.h>
+#include<stdexcept>
+
 
 using namespace std; 
 
@@ -38,6 +42,12 @@ int Graph::reorderGraph(std::vector<int> indMap)
 
 double Graph::getEdgePoint(int i,int j)
 {
+	if (j > 1 || i > numEdges-1)
+	{
+		std::cout << "Error: Invalid edge. Must have j <= 1 & i <=numEdges-1" << endl;
+		assert(j < 1);
+		assert(i < numEdges);
+	}
 	return edge[i][j];
 }
 
@@ -65,6 +75,10 @@ CSC_MATRIX Graph::computeGraphLaplacian(CSC_MATRIX adjMat)
 	lapMat.vals.resize(numEdges+numNodes,-1);
 	lapMat.irow.resize(lapMat.vals.size());
 	lapMat.pcol.resize(lapMat.n+1);
+
+	// laplacian has all the points as the adjacency matrix but has 
+	// points on the every diagonal. We can modify the adj pcol and irow 
+	// to get the pcol, irow for the laplacian 
 
 	for (size_t i = 0; i < lapMat.pcol.size(); i++)
 	{
@@ -107,6 +121,9 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 
 	adjMat.pcol[0]=0;
 	adjMat.pcol[adjMat.n]=adjMat.nnz;
+
+	// we determine information from NeighborList because we can gaurentee if 
+	// will be sorted. 
 	std::vector<int> NE; 
 	for (int i = 0; i < numNodes; i++)
 	{
@@ -119,6 +136,9 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 				numCount++; 
 			}
 		}
+		// pcol[0] = 0; 
+		// pcol[i] = pcol[i-1] + nnz in (i-1) column 
+		// pcol[n+1] should thus always be nnz  
 		adjMat.pcol[pcolInd]=adjMat.pcol[pcolInd-1]+numCount;
 		pcolInd++; 
 		numCount= 0; 
@@ -138,9 +158,18 @@ Graph::Graph(int nodes,int edges)
 
 Graph::Graph(std::string filename)
 {
-	cout << "Initalizing graph from " << filename << endl;
+	int error = 0; // error checking for constructor 
+	cout << "Initalizing graph from: " << filename << endl;
 	ifstream inFile; 
-	inFile.open(filename.c_str());
+	try
+	{
+		inFile.open(filename.c_str());
+		if (!inFile.good())
+		{
+			error = 1; 
+			throw std::invalid_argument( "Error: File does not exist.");
+		}
+
 	inFile >> numNodes >> numEdges;
 
 	edge.resize(numEdges,vector<int>(2));
@@ -159,6 +188,11 @@ Graph::Graph(std::string filename)
 		row_counter++; 
 		inFile >> edge1 >> edge2; 
 	}
-
 	inFile.close();
+	}
+	catch(std::exception & e)
+	{
+		cerr << e.what() << endl;
+	}
+	assert(error == 0);
 }
