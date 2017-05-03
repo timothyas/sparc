@@ -18,7 +18,7 @@
 
 using namespace std;
 
-int mxm_shared(Graph* g, vector<int> &colors, int numColors)
+int mxm_shared(Graph& g, vector<int> &colors, int numColors)
 {
         omp_set_num_threads(THREADS);
         
@@ -32,18 +32,18 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors)
         for(int k=0; k<numColors; k++){
 
           // Fill nodeList with unmatched nodes of this color
-          doubleSelect_shared(colors, k, g->getMatchList(), -1,nodeList); 
+          doubleSelect_shared(colors, k, g.getMatchList(), -1,nodeList); 
 
           #pragma omp parallel for private(v,vi,viter,lonelyNeighbors,lonelyWeights)
           for(unsigned int u = 0; u<nodeList.size(); u++){
 
             // Find unmatched neighbors
-            for(unsigned int i = 0; i<g->getNeighbors(nodeList[u]).size(); i++){
-              if(g->getNodeMatch(g->getNeighbors(nodeList[u])[i]) == -1){
+            for(unsigned int i = 0; i<g.getNeighbors(nodeList[u]).size(); i++){
+              if(g.getNodeMatch(g.getNeighbors(nodeList[u])[i]) == -1){
                 #pragma omp critical
                 {
-                  lonelyNeighbors.push_back(g->getNeighbors(nodeList[u])[i]);
-                  lonelyWeights.push_back(g->getNodeWeight(g->getNeighbors(nodeList[u])[i]));
+                  lonelyNeighbors.push_back(g.getNeighbors(nodeList[u])[i]);
+                  lonelyWeights.push_back(g.getNodeWeight(g.getNeighbors(nodeList[u])[i]));
                 }
               }
             }
@@ -57,8 +57,8 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors)
               v = lonelyNeighbors[vi];
 
               // They both swiped right ... 
-              g->setNodeMatch(nodeList[u],v);
-              g->setNodeMatch(v,nodeList[u]);
+              g.setNodeMatch(nodeList[u],v);
+              g.setNodeMatch(v,nodeList[u]);
 
               #pragma omp critical
               { 
@@ -74,8 +74,8 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors)
 
           #pragma omp parallel for
           for( unsigned int u = 0; u<raceList.size(); u++){
-            if( g->getNodeMatch(g->getNodeMatch(raceList[u])) != raceList[u] )
-              g->setNodeMatch(raceList[u],-1);
+            if( g.getNodeMatch(g.getNodeMatch(raceList[u])) != raceList[u] )
+              g.setNodeMatch(raceList[u],-1);
           } //end parallel region
 
           nodeList.clear();
@@ -87,10 +87,10 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors)
 }
 
 
-int colorGraph_shared(Graph* g, vector<int> &colors, int &numColors)
+int colorGraph_shared(Graph& g, vector<int> &colors, int &numColors)
 {
         vector<int> indSet;
-        vector<int> coloredNodes(g->getNumNodes(), 0);
+        vector<int> coloredNodes(g.getNumNodes(), 0);
         int currentColor = 0;
         bool moreColors;
 
@@ -120,20 +120,20 @@ int colorGraph_shared(Graph* g, vector<int> &colors, int &numColors)
         return 0;
 }
 
-int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
+int mis_shared(Graph& g, vector<int> finalRemoveList,  vector<int> &I)
 {
         unsigned int mySeed;
-        vector<int> rand(g->getNumNodes(),0);
-        vector<int> removeList(g->getNumNodes(),0); 
-        vector<int> keepList(g->getNumNodes(),0); 
+        vector<int> rand(g.getNumNodes(),0);
+        vector<int> removeList(g.getNumNodes(),0); 
+        vector<int> keepList(g.getNumNodes(),0); 
 
   	// Each node gets rand integer in [0,N^4)
   	#pragma omp parallel private(mySeed)
         {
           mySeed=(int)time(NULL)*omp_get_thread_num();
          #pragma omp for 
-    	  for(int i=0; i < g->getNumNodes(); i++){
-            rand[i] = (rand_r(&mySeed) % (int)(pow((double)g->getNumNodes(),4)-1));
+    	  for(int i=0; i < g.getNumNodes(); i++){
+            rand[i] = (rand_r(&mySeed) % (int)(pow((double)g.getNumNodes(),4)-1));
           }
         }
     
@@ -145,11 +145,11 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           fill(keepList.begin(),keepList.end(),0);
 
           #pragma omp parallel for  
-          for(int u=0; u<g->getNumNodes(); u++){
-            for(unsigned int j=0; j<g->getNeighbors(u).size(); j++){
+          for(int u=0; u<g.getNumNodes(); u++){
+            for(unsigned int j=0; j<g.getNeighbors(u).size(); j++){
 
               if( finalRemoveList[u]==0 ){
-                if( rand[u] > rand[g->getNeighbors(u)[j]] && finalRemoveList[g->getNeighbors(u)[j]]==0 ){
+                if( rand[u] > rand[g.getNeighbors(u)[j]] && finalRemoveList[g.getNeighbors(u)[j]]==0 ){
                   keepList[u]=1;
                 }
                 else{
@@ -164,8 +164,8 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
 
           // Make independent set, remove from full list
           #pragma omp parallel for  
-          for(int u=0; u<g->getNumNodes(); u++){
-            if( (removeList[u]==1 || g->getNeighbors(u).size()==0) && keepList[u]==0 ){
+          for(int u=0; u<g.getNumNodes(); u++){
+            if( (removeList[u]==1 || g.getNeighbors(u).size()==0) && keepList[u]==0 ){
 
               finalRemoveList[u]=1;
 
@@ -180,8 +180,8 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
           // Remove neighbors from independent set
           #pragma omp parallel for 
           for(unsigned int u=0; u<I.size(); u++){
-            for(unsigned int j=0; j<g->getNeighbors(I[u]).size(); j++)
-              finalRemoveList[g->getNeighbors(I[u])[j]]=1;
+            for(unsigned int j=0; j<g.getNeighbors(I[u]).size(); j++)
+              finalRemoveList[g.getNeighbors(I[u])[j]]=1;
           }//end parallel region
 
         }//end while any node not removed

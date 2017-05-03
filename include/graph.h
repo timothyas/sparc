@@ -28,6 +28,7 @@ class Graph {
                 void setNodeMatch(int node, int val);
                 std::vector<int> getMatchList();
                 std::vector<int> getNeighbors(int node);
+                std::vector<int> getEdges(int node);
 		int reorderGraph(std::vector<int> indMap);
 		int coarsenFrom(Graph & g);
 

@@ -92,6 +92,11 @@ std::vector<int> Graph::getNeighbors(int node)
 	return neighborList[node];
 }
 
+std::vector<int> Graph::getEdges(int node)
+{
+        return edgeWeights[node];
+}
+
 CSC_MATRIX Graph::computeGraphLaplacian(CSC_MATRIX adjMat)
 {
 	CSC_MATRIX lapMat; 
@@ -234,6 +239,14 @@ Graph::Graph()
 }
 int Graph::coarsenFrom(Graph & g) 
 {
+
+        // Perform coloring, then  maximal matching
+        int numColors;
+        vector<int> colorList(g.getNumNodes(),-1);
+        
+        colorGraph_shared(g, colorList, numColors);
+        mxm_shared(g, colorList, numColors);
+
         numChildren = g.getNumNodes();
         
         // Find number of nodes for coarsened graph
@@ -267,7 +280,11 @@ int Graph::coarsenFrom(Graph & g)
             parentList[k].push_back(i);
             nodeWeights[k] = g.getNodeWeight(i);
             child2Parent[i] = k;
-            cout << "k: " << k << " plist[i] " << parentList[k][0] << " " << parentList[k][1] << endl;
+            cout << "k: " << k;
+            for( unsigned int kk=0; kk<parentList[k].size(); kk++){
+                cout << " plist[k] " << parentList[k][kk];
+            }
+            cout << endl;
 
             k++;
           }
@@ -278,7 +295,12 @@ int Graph::coarsenFrom(Graph & g)
             //parentList.push_back(tempEdge);
             parentList[k].push_back(i);
             parentList[k].push_back(tempMatchList[i]);
-            cout << "k: " << k << " plist[k] " << parentList[k][0] << " " << parentList[k][1] << endl;
+            cout << "k: " << k;
+            for( unsigned int kk=0; kk<parentList[k].size(); kk++){
+                cout << " plist[k] " << parentList[k][kk];
+            }
+            cout << endl;
+            //cout << "k: " << k << " plist[k] " << parentList[k][0] << " " << parentList[k][1] << endl;
             nodeWeights[k] = g.getNodeWeight(i)+g.getNodeWeight(tempMatchList[i]);
         
             child2Parent[i] = k;
@@ -317,15 +339,14 @@ int Graph::coarsenFrom(Graph & g)
 	      tempNeighbor = child2Parent[currentChildNeighbor];
 	      tempList = neighborList[i];
               mappedToSameNode = child2Parent[currentChild] == tempNeighbor; //child2Parent[currentChildNeighbor];
+
 	      neighborInd=-1;
-	      for (int ii = 0; ii < tempList.size(); ii++)
-	      {
-		      if (tempList[ii] == tempNeighbor)
-		      {
-			      neighborInd = ii; 
-			      break;
-		      }
-	      }
+	      for (unsigned int ii = 0; ii < tempList.size(); ii++){
+                if (tempList[ii] == tempNeighbor){
+                  neighborInd=ii;
+                  break;
+                }
+              }
 
               //neighborLoc = find(tempList.begin(),tempList.end(),[&tempNeighbor](int ii){ return ii == tempNeighbor;} );
 
@@ -368,11 +389,14 @@ int Graph::coarsenFrom(Graph & g)
                   return 1;
                 }
                 
-                edgeWeights[neighborList[i][neighborInd]][neighborInd2] += g.getEdgeWeight(currentChild,k);
+        //        edgeWeights[neighborList[i][neighborInd]][neighborInd2] += g.getEdgeWeight(currentChild,k);
               }
 
             }// end loop thru e/ child's neighbors
           }//end loop thru parent's children
         }//end loop thru parent nodes
+
+        numEdges = edge.size();
+
 	return 0; 
 }

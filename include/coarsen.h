@@ -9,7 +9,7 @@
  * \param nodeWeight: weight of each node (starts at 1, summed when coarsened)
  * \return Error code (0 = success)
  */
-int mxm_shared(Graph* g, std::vector<int> &colors, int numColors);
+int mxm_shared(Graph& g, std::vector<int> &colors, int numColors);
 
 /* \brief Compute colors for graph coarsening implementing openmp parallelism.
  *
@@ -18,7 +18,7 @@ int mxm_shared(Graph* g, std::vector<int> &colors, int numColors);
  * \param numColors: number of colors
  * \return Error code (0 = success)
  */
-int colorGraph_shared(Graph* g, std::vector<int> &colors, int &numColors);
+int colorGraph_shared(Graph& g, std::vector<int> &colors, int &numColors);
 
 /* \brief Compute maximal independent set.
  *
@@ -27,7 +27,7 @@ int colorGraph_shared(Graph* g, std::vector<int> &colors, int &numColors);
  * \param I: vector to be filled of maximal independent set
  * \return Error code (0 = success)
  */
-int mis_shared(Graph* g, std::vector<int> finalRemoveList, std::vector<int> &I);
+int mis_shared(Graph& g, std::vector<int> finalRemoveList, std::vector<int> &I);
 
 
 /* \brief Find unmatched nodes of a particular color.
