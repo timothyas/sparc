@@ -29,12 +29,12 @@ class Graph {
                 std::vector<int> getMatchList();
                 std::vector<int> getNeighbors(int node);
 		int reorderGraph(std::vector<int> indMap);
-		void coarsenFrom(Graph & g);
+		int coarsenFrom(Graph & g);
 
 		CSC_MATRIX computeGraphLaplacian(CSC_MATRIX adj);
 		CSC_MATRIX  computeAdjacencyMatrix();
 	private:
-		int numEdges, numNodes;
+		int numEdges, numNodes, numChildren;
 		std::vector<std::vector<int> > edge;
 		std::vector<std::vector<int> > neighborList;
                 std::vector<std::vector<int> > edgeWeights;

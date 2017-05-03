@@ -232,16 +232,18 @@ Graph::Graph(std::string filename)
 Graph::Graph()
 {
 }
-void Graph::coarsenFrom(Graph & g) 
+int Graph::coarsenFrom(Graph & g) 
 {
-
+        numChildren = g.getNumNodes();
+        
         // Find number of nodes for coarsened graph
         vector<int> unmatched;
         selectUnmatched_shared(g.getMatchList(),-1,unmatched);
         numNodes = (g.getNumNodes() - (int)unmatched.size()) / 2 + (int)unmatched.size();
 
         if( (g.getNumNodes() - (int)unmatched.size()) % 2 != 0 ) {
-          cout << "Error: Creating coarse graph, bad math for numNodes ... " << endl;
+          cout << "Error: Creating coarse graph, bad math for numNodes. See Graph::coarsenFrom(Graph&) " << endl;
+          return 1;
         }
 
         // Create parentList and sum node weights
@@ -250,7 +252,8 @@ void Graph::coarsenFrom(Graph & g)
          *       child2Parent maps child node number -> parent node
          */
 
-        vector<int> tempMatchList=g.getMatchList();
+        vector<int> tempEdge(2);
+        vector<int> tempMatchList(g.getMatchList());
         parentList.resize(numNodes,vector<int>(0));
         nodeWeights.resize(numNodes);
         child2Parent.resize(g.getNumNodes());
@@ -264,42 +267,50 @@ void Graph::coarsenFrom(Graph & g)
             parentList[k].push_back(i);
             nodeWeights[k] = g.getNodeWeight(i);
             child2Parent[i] = k;
+            cout << "k: " << k << " plist[i] " << parentList[k][0] << " " << parentList[k][1] << endl;
 
             k++;
           }
           else if( tempMatchList[i] != -2 ){
 
+            tempEdge[0] = i;
+            tempEdge[1] = tempMatchList[i];
+            //parentList.push_back(tempEdge);
             parentList[k].push_back(i);
             parentList[k].push_back(tempMatchList[i]);
+            cout << "k: " << k << " plist[k] " << parentList[k][0] << " " << parentList[k][1] << endl;
             nodeWeights[k] = g.getNodeWeight(i)+g.getNodeWeight(tempMatchList[i]);
         
             child2Parent[i] = k;
             child2Parent[tempMatchList[i]] = k;
 
-            tempMatchList[i]=-2;
             tempMatchList[tempMatchList[i]]=-2;
+            tempMatchList[i]=-2;
+
             k++;
           } 
         }
 
         // Create edge and neighborlist
-        neighborList.resize(numNodes, vector<int>(0));
+        neighborList.resize(numNodes,vector<int>(0));
         edgeWeights.resize(numNodes,vector<int>(0));
 
         bool mappedToSameNode; 
         vector<int>::iterator neighborLoc, neighborLoc2;
         int currentChild, currentChildNeighbor, neighborInd, neighborInd2;
-        vector<int> tempEdge(2);
+
 	int tempNeighbor;
 	vector<int> tempList;
 
         for( int i=0; i<numNodes; i++){
+
           for( unsigned int j=0; j<parentList[i].size(); j++){
             
             //current parent = i
             currentChild=parentList[i][j];
 
             for( k=0; k<g.getNeighbors(currentChild).size(); k++){ 
+
 
               currentChildNeighbor = g.getNeighbors(currentChild)[k];
 
@@ -315,6 +326,7 @@ void Graph::coarsenFrom(Graph & g)
 			      break;
 		      }
 	      }
+
               //neighborLoc = find(tempList.begin(),tempList.end(),[&tempNeighbor](int ii){ return ii == tempNeighbor;} );
 
               if( !mappedToSameNode && neighborInd == -1 ){
@@ -340,20 +352,27 @@ void Graph::coarsenFrom(Graph & g)
 
                 // This seems expensive but I don't know how to do it better
 		tempList.clear();
-		tempList=neighborList[neighborInd];
-		for(int ii=0; ii<tempList.size(); ii++){
-			if(tempList[ii]==i){
-				neighborInd2=ii;
-				break;
-			}
-		}
+		tempList=neighborList[child2Parent[currentChildNeighbor]];
+                neighborInd2=-1;
+		for(unsigned int ii=0; ii<tempList.size(); ii++){
+                  if(tempList[ii]==i){
+                    neighborInd2=ii;
+                    break;
+                  }
+                }
                 //neighborLoc2 = find(tempList.begin(),tempList.end(), [&i](int ii){ return ii == i;} );
                 //neighborInd2 = distance(tempList.begin(),neighborLoc2);
+                
+                if( neighborInd2==-1 ){
+                  cout << "Error: couldn't find parent in neighbor's neighbor list. This edge should already be accounted for. See Graph::coarsenFrom(Graph&)." << endl;
+                  return 1;
+                }
+                
                 edgeWeights[neighborList[i][neighborInd]][neighborInd2] += g.getEdgeWeight(currentChild,k);
               }
 
             }// end loop thru e/ child's neighbors
           }//end loop thru parent's children
         }//end loop thru parent nodes
-	return; 
+	return 0; 
 }
