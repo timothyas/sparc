@@ -16,6 +16,7 @@ struct CSC_MATRIX {
 class Graph { 
 
 	public: 
+		Graph();
 		Graph(std::string filename);
 		Graph(int numNodes, int numEdges);
 		double getEdgePoint(int i,int j);
@@ -28,6 +29,7 @@ class Graph {
                 std::vector<int> getMatchList();
                 std::vector<int> getNeighbors(int node);
 		int reorderGraph(std::vector<int> indMap);
+		void coarsenFrom(Graph & g);
 
 		CSC_MATRIX computeGraphLaplacian(CSC_MATRIX adj);
 		CSC_MATRIX  computeAdjacencyMatrix();
@@ -38,17 +40,7 @@ class Graph {
                 std::vector<std::vector<int> > edgeWeights;
                 std::vector<int> nodeWeights;
                 std::vector<int> matchList;
-};
-
-class CoarseGraph : public Graph {
-
-        public:
-                CoarseGraph(const Graph& g) : child{g};
-
-        private:
-                Graph child;
                 std::vector<std::vector<int> > parentList;
                 std::vector<int> child2Parent;
 };
-
 #endif

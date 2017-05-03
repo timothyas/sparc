@@ -229,16 +229,18 @@ Graph::Graph(std::string filename)
 	assert(error == 0);
 }
 
-CoarseGraph::CoarseGraph(const Graph& g) 
-        : child(g)
+Graph::Graph()
+{
+}
+void Graph::coarsenFrom(Graph & g) 
 {
 
         // Find number of nodes for coarsened graph
         vector<int> unmatched;
-        selectUnmatched_shared(g->getMatchList(),-1,unmatched);
-        numNodes = (g->getNumNodes() - (int)unmatched.size()) / 2 + (int)unmatched.size();
+        selectUnmatched_shared(g.getMatchList(),-1,unmatched);
+        numNodes = (g.getNumNodes() - (int)unmatched.size()) / 2 + (int)unmatched.size();
 
-        if( (g->getNumNodes() - (int)unmatched.size()) % 2 != 0 ) {
+        if( (g.getNumNodes() - (int)unmatched.size()) % 2 != 0 ) {
           cout << "Error: Creating coarse graph, bad math for numNodes ... " << endl;
         }
 
@@ -248,10 +250,10 @@ CoarseGraph::CoarseGraph(const Graph& g)
          *       child2Parent maps child node number -> parent node
          */
 
-        vector<int> tempMatchList=g->getMatchList();
+        vector<int> tempMatchList=g.getMatchList();
         parentList.resize(numNodes,vector<int>(0));
         nodeWeights.resize(numNodes);
-        child2Parent.resize(g->getNumNodes());
+        child2Parent.resize(g.getNumNodes());
         matchList.resize(numNodes,-1);
 
         unsigned int k=0;        
@@ -260,7 +262,7 @@ CoarseGraph::CoarseGraph(const Graph& g)
           if( tempMatchList[i] == -1 ){
 
             parentList[k].push_back(i);
-            nodeWeights[k] = g->getNodeWeight(i);
+            nodeWeights[k] = g.getNodeWeight(i);
             child2Parent[i] = k;
 
             k++;
@@ -269,7 +271,7 @@ CoarseGraph::CoarseGraph(const Graph& g)
 
             parentList[k].push_back(i);
             parentList[k].push_back(tempMatchList[i]);
-            nodeWeights[k] = g->getNodeWeight(i)+g->getNodeWeight(tempMatchList[i]);
+            nodeWeights[k] = g.getNodeWeight(i)+g.getNodeWeight(tempMatchList[i]);
         
             child2Parent[i] = k;
             child2Parent[tempMatchList[i]] = k;
@@ -285,10 +287,11 @@ CoarseGraph::CoarseGraph(const Graph& g)
         edgeWeights.resize(numNodes,vector<int>(0));
 
         bool mappedToSameNode; 
-        vector::iterator neighborLoc, neighborLoc2;
+        vector<int>::iterator neighborLoc, neighborLoc2;
         int currentChild, currentChildNeighbor, neighborInd, neighborInd2;
         vector<int> tempEdge(2);
-
+	int tempNeighbor;
+	vector<int> tempList;
 
         for( int i=0; i<numNodes; i++){
           for( unsigned int j=0; j<parentList[i].size(); j++){
@@ -296,22 +299,32 @@ CoarseGraph::CoarseGraph(const Graph& g)
             //current parent = i
             currentChild=parentList[i][j];
 
-            for( k=0; k<g->getNeighbors[currentChild].size(); k++){ 
+            for( k=0; k<g.getNeighbors(currentChild).size(); k++){ 
 
-              currentChildNeighbor = g->getNeighbors[currentChild][k];
+              currentChildNeighbor = g.getNeighbors(currentChild)[k];
 
-              mappedToSameNode = child2Parent[currentChild] == child2Parent[currentChildNeighbor];
-              neighborLoc = find(neighborList[i].begin(),neighborList[i].end(), \
-                 [](int ii){ return ii == child2Parent[currentChildNeighbor];} );
+	      tempNeighbor = child2Parent[currentChildNeighbor];
+	      tempList = neighborList[i];
+              mappedToSameNode = child2Parent[currentChild] == tempNeighbor; //child2Parent[currentChildNeighbor];
+	      neighborInd=-1;
+	      for (int ii = 0; ii < tempList.size(); ii++)
+	      {
+		      if (tempList[ii] == tempNeighbor)
+		      {
+			      neighborInd = ii; 
+			      break;
+		      }
+	      }
+              //neighborLoc = find(tempList.begin(),tempList.end(),[&tempNeighbor](int ii){ return ii == tempNeighbor;} );
 
-              if( !mappedToSameNode && neighborLoc == neighborList[i].end() ){
+              if( !mappedToSameNode && neighborInd == -1 ){
         
                 // Edge hasn't been accounted for
                 neighborList[i].push_back(child2Parent[currentChildNeighbor]);
                 neighborList[child2Parent[currentChildNeighbor]].push_back(i);
 
-                edgeWeights[i].push_back(g->getEdgeWeight(currentChild,k));
-                edgeWeights[child2Parent[currentChildNeighbor]].push_back(g->getEdgeWeight(currentChild,k));
+                edgeWeights[i].push_back(g.getEdgeWeight(currentChild,k));
+                edgeWeights[child2Parent[currentChildNeighbor]].push_back(g.getEdgeWeight(currentChild,k));
 
                 tempEdge[0] = child2Parent[currentChild];
                 tempEdge[1] = child2Parent[currentChildNeighbor];
@@ -319,20 +332,28 @@ CoarseGraph::CoarseGraph(const Graph& g)
                 
               }
               
-              else if( !mappedToSameNode && neighborLoc != neighborList[i].end() ){
+              else if( !mappedToSameNode && neighborInd != -1 ){
                 
                 // Edge has been accounted for, increment weight
-                neighborInd = distance(neighborList[i].begin(),neighborLoc);
-                edgeWeights[i][neighborInd] += g->getEdgeWeight(currentChild,k);
+                //neighborInd = distance(neighborList[i].begin(),neighborLoc);
+                edgeWeights[i][neighborInd] += g.getEdgeWeight(currentChild,k);
 
                 // This seems expensive but I don't know how to do it better
-                neighborLoc2 = find(neighborList[neighborInd].begin(),neighborList[neighborInd].end(), \
-                 [](int ii){ return ii == i;} );
-                neighborInd2 = distance(neighborList[neighborInd].begin(),neighborLoc2);
-                edgeWeights[neighborList[neighborInd]][neighborInd2] += g->getEdgeWeight(currentChild,k);
+		tempList.clear();
+		tempList=neighborList[neighborInd];
+		for(int ii=0; ii<tempList.size(); ii++){
+			if(tempList[ii]==i){
+				neighborInd2=ii;
+				break;
+			}
+		}
+                //neighborLoc2 = find(tempList.begin(),tempList.end(), [&i](int ii){ return ii == i;} );
+                //neighborInd2 = distance(tempList.begin(),neighborLoc2);
+                edgeWeights[neighborList[i][neighborInd]][neighborInd2] += g.getEdgeWeight(currentChild,k);
               }
 
             }// end loop thru e/ child's neighbors
           }//end loop thru parent's children
         }//end loop thru parent nodes
+	return; 
 }

@@ -43,7 +43,7 @@ int mxm_shared(Graph* g, vector<int> &colors, int numColors)
                 #pragma omp critical
                 {
                   lonelyNeighbors.push_back(g->getNeighbors(nodeList[u])[i]);
-                  lonelyWeights.push_back(nodeWeights[g->getNeighbors(nodeList[u])[i]]);
+                  lonelyWeights.push_back(g->getNodeWeight(g->getNeighbors(nodeList[u])[i]));
                 }
               }
             }
@@ -190,7 +190,7 @@ int mis_shared(Graph* g, vector<int> finalRemoveList,  vector<int> &I)
 		
 }
 
-int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> &matchedList, int unmatchedValue, vector<int> &nodeList) 
+int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> matchedList, int unmatchedValue, vector<int> &nodeList) 
 {
         // This is a glorified parallel select 
         int numSelected;
@@ -224,7 +224,7 @@ int doubleSelect_shared(vector<int> &colors, int currentColor, vector<int> &matc
 	return 0;
 }
 
-int selectUnmatched_shared(vector<int> &matchedList, int unmatchedValue, vector<int> &nodeList) 
+int selectUnmatched_shared(vector<int> matchedList, int unmatchedValue, vector<int> &nodeList) 
 {
         // This is a glorified parallel select 
         int numSelected;
@@ -238,7 +238,7 @@ int selectUnmatched_shared(vector<int> &matchedList, int unmatchedValue, vector<
 	}
 
         flagSum=inclusiveScan_shared(flag);
-        numSelected=flagSum[colors.size()-1];
+        numSelected=flagSum[flag.size()-1];
 
         if( nodeList.size() != 0 )
           nodeList.clear(); 

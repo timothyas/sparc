@@ -78,7 +78,8 @@ int runCoarsenTest()
         // --- Create coarsened graph
         
         start=std::clock();
-        CoarseGraph parent(coarsen_me);
+        Graph parent;
+	parent.coarsenFrom(coarsen_me); 
         duration=(std::clock()-start) / (double) CLOCKS_PER_SEC;
 
         cout << " --- Child Match list --- " << endl;
