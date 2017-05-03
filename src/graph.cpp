@@ -12,7 +12,7 @@
 
 using namespace std; 
 
-int Graph::reorderGraph(std::vector<int> indMap)
+std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 {
 	for (int i = 0; i < numEdges; i++)
 	{
@@ -37,7 +37,24 @@ int Graph::reorderGraph(std::vector<int> indMap)
 		std::sort(neighborList[i].begin(),neighborList[i].end());
 	}
 
-	return 0; 
+	std::vector<std::vector<int>> tempParentList = parentList; 
+	for (int i = 0; i < parentList.size(); i++)
+	{
+		tempParentList[i] = parentList[indMap[i]];
+	}
+	parentList = tempParentList; 
+
+	std::vector<int> childIndMap (numChildren,0);
+	int count = 0; 
+	for (int i = 0; i < parentList.size();i++)
+	{
+		for(int j = 0; j < parentList[i].size(); j++)
+		{
+			childIndMap[parentList[i][j]] = count;
+			count ++; 
+		}
+	}
+	return childIndMap; 
 }
 
 double Graph::getEdgePoint(int i,int j)
@@ -232,7 +249,15 @@ Graph::Graph(std::string filename)
 		cerr << e.what() << endl;
 	}
 	assert(error == 0);
+
+	numChildren  = numNodes; 
+	parentList.resize(numNodes,std::vector<int>(0));
+	for (int i = 0; i < parentList.size(); i++)
+	{
+		parentList[i].push_back(i);
+	}
 }
+
 
 Graph::Graph()
 {
@@ -280,11 +305,11 @@ int Graph::coarsenFrom(Graph & g)
             parentList[k].push_back(i);
             nodeWeights[k] = g.getNodeWeight(i);
             child2Parent[i] = k;
-            cout << "k: " << k;
-            for( unsigned int kk=0; kk<parentList[k].size(); kk++){
-                cout << " plist[k] " << parentList[k][kk];
-            }
-            cout << endl;
+            //cout << "k: " << k;
+            //for( unsigned int kk=0; kk<parentList[k].size(); kk++){
+            //    cout << " plist[k] " << parentList[k][kk];
+            //}
+            //cout << endl;
 
             k++;
           }
@@ -295,11 +320,11 @@ int Graph::coarsenFrom(Graph & g)
             //parentList.push_back(tempEdge);
             parentList[k].push_back(i);
             parentList[k].push_back(tempMatchList[i]);
-            cout << "k: " << k;
-            for( unsigned int kk=0; kk<parentList[k].size(); kk++){
-                cout << " plist[k] " << parentList[k][kk];
-            }
-            cout << endl;
+            //cout << "k: " << k;
+            //for( unsigned int kk=0; kk<parentList[k].size(); kk++){
+            //    cout << " plist[k] " << parentList[k][kk];
+            //}
+            //cout << endl;
             //cout << "k: " << k << " plist[k] " << parentList[k][0] << " " << parentList[k][1] << endl;
             nodeWeights[k] = g.getNodeWeight(i)+g.getNodeWeight(tempMatchList[i]);
         

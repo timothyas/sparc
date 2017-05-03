@@ -6,6 +6,7 @@ int simple_graph();
 int runCoarsenTest();
 int complex_graph();
 int corner_cases_graph();
+int facebook();
 
 int main()
 {
@@ -30,6 +31,12 @@ int main()
 		cout << "\033[0;32mPASSED: Coarsening Test\033[0m"  << endl << endl;
 	else
 		cout << "\033[0;31mFAILED: Coarsening Test\033[0m" << endl << endl;
+
+        if(!facebook())
+		cout << "\033[0;32mPASSED: Facebook Test\033[0m"  << endl << endl;
+	else
+		cout << "\033[0;31mFAILED: Facebook Test\033[0m" << endl << endl;
+
 
         return 0;
 

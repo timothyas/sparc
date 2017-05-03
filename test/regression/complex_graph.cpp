@@ -4,6 +4,7 @@
 #include<ctime>
 #include<vector>
 #include"graph.h"
+#include"coarsen.h"
 #include "arlsmat.h"
 #include "areig.h"
 #include "arlssym.h"
@@ -98,5 +99,29 @@ int complex_graph()
 		
 	cout << "Successfully computed graph laplacian in CSC format" << endl;
 
+	Graph coarsen1; 
+        int numColors;
+        vector<int> colorList(complex_graph.getNumNodes(), -1);
+        colorGraph_shared(complex_graph, colorList, numColors);
+        mxm_shared(complex_graph, colorList, numColors); 
+	coarsen1.coarsenFrom(complex_graph);
+
+        cout << " --- Child Match list --- " << endl;
+        for( int i=0; i<complex_graph.getNumNodes(); i++){
+          cout << complex_graph.getNodeMatch(i) << endl;
+        }
+
+	int indMap_temp[] = {5,2,3,1,4,0,6};
+	std::vector<int> indMap (indMap_temp, indMap_temp + sizeof(indMap_temp) / sizeof(int) );	
+
+	indMap = coarsen1.reorderGraph(indMap);
+	indMap = complex_graph.reorderGraph(indMap);
+
+	cout << "Reordered graph" << endl;
+
+	for (int i = 0; i < complex_graph.getNumEdges(); i++)
+	{
+		cout << complex_graph.getEdgePoint(i,0) << " " << complex_graph.getEdgePoint(i,1) << endl;
+	}
 	return 0;
 }
