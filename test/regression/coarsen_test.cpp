@@ -14,10 +14,10 @@ int runCoarsenTest()
 	cout << "Running Graph Coarsening Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
-	Graph coarsen_me("complex_graph.dat");
-	Graph* ptr = &coarsen_me;
+	Graph coarsen_me("coarsen_test.dat");
+	//Graph* ptr = &coarsen_me;
 
-        int numColors;
+        //int numColors;
         vector<int> colorList(coarsen_me.getNumNodes(), -1);
 	std::clock_t start;
 	double duration;
@@ -91,6 +91,14 @@ int runCoarsenTest()
           cout << "node " << i << " : ";
           for(unsigned int j =0; j<parent.getNeighbors(i).size(); j++){
             cout << parent.getNeighbors(i)[j] << " ";
+          }
+          cout << endl;
+        }
+        cout << " --- Parent list --- " << endl;
+        for( int i=0; i<parent.getNumNodes(); i++){
+          cout << "parent node " << i << " has children :  ";
+          for (unsigned int j =0; j< parent.getChildren(i).size(); j++){
+            cout << parent.getChildren(i)[j] << " ";
           }
           cout << endl;
         }

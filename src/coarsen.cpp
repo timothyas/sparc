@@ -43,7 +43,7 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
                 #pragma omp critical
                 {
                   lonelyNeighbors.push_back(g.getNeighbors(nodeList[u])[i]);
-                  lonelyWeights.push_back(g.getNodeWeight(g.getNeighbors(nodeList[u])[i]));
+                  lonelyWeights.push_back(g.getEdgeWeight(nodeList[u],i));
                 }
               }
             }
