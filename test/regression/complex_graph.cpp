@@ -3,6 +3,7 @@
 #include<math.h>
 #include<ctime>
 #include<vector>
+#include"spectralBisection.h"
 #include"graph.h"
 #include"coarsen.h"
 #include "arlsmat.h"
@@ -99,23 +100,175 @@ int complex_graph()
 		
 	cout << "Successfully computed graph laplacian in CSC format" << endl;
 
-	Graph coarsen1; 
-        int numColors;
-        vector<int> colorList(complex_graph.getNumNodes(), -1);
-        colorGraph_shared(complex_graph, colorList, numColors);
-        mxm_shared(complex_graph, colorList, numColors); 
-	coarsen1.coarsenFrom(complex_graph);
+	Graph Graph1; 
+	Graph Graph2;
+
+	Graph1.coarsenFrom(complex_graph);
+	Graph2.coarsenFrom(Graph1);
+	std::vector<int> indMap = spectralBisection(&Graph2);
+
+	cout << "SB Index Map" << endl; 
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		cout << indMap[i] << endl;
+	}
+
+        cout << " --- Child Match list Graph 2 --- " << endl;
+        for( int i=0; i<Graph2.getNumNodes(); i++){
+          cout << Graph2.getNodeMatch(i) << endl;
+        }
+
+	cout << "Graph 2 Before" << endl;
+	for (int i = 0; i < Graph2.getNumNodes(); i++)
+	{
+		std::vector<int> C = Graph2.getChildren(i);
+		for (int j = 0; j < C.size(); j++)
+		{
+			cout << C[j] << " ";
+		}
+		cout << endl; 
+	}
+
+	indMap = Graph2.reorderGraph(indMap);
+	cout << "graph 2 after" << endl;
+	for (int i = 0; i < Graph2.getNumNodes(); i++)
+	{
+		std::vector<int> c = Graph2.getChildren(i);
+		for (int j = 0; j < c.size(); j++)
+		{
+			cout << c[j] << " ";
+		}
+		cout << endl; 
+	}
+
+	cout << "Graph2 Index Map" << endl; 
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		cout << indMap[i] << endl;
+	}
+
+        cout << " --- Child Match list Graph 1 --- " << endl;
+        for( int i=0; i<Graph1.getNumNodes(); i++){
+          cout << Graph1.getNodeMatch(i) << endl;
+        }
+
+	cout << "Chil2Parent Graph1 Before" << endl;
+	for (int i = 0; i < Graph1.getNumNodes(); i++)
+	{
+		std::vector<int> C = Graph1.getChildren(i);
+		for (int j = 0; j < C.size(); j++)
+		{
+			cout << C[j] << " ";
+		}
+		cout << endl; 
+	}
+
+	indMap = Graph1.reorderGraph(indMap);
+	cout << "graph 1 after" << endl;
+	for (int i = 0; i < Graph1.getNumNodes(); i++)
+	{
+		std::vector<int> c = Graph1.getChildren(i);
+		for (int j = 0; j < c.size(); j++)
+		{
+			cout << c[j] << " ";
+		}
+		cout << endl; 
+	}
+
+	cout << "Graph1 Index Map" << endl; 
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		cout << indMap[i] << endl;
+	}
+        cout << " --- Child Match list Complex --- " << endl;
+        for( int i=0; i<complex_graph.getNumNodes(); i++){
+          cout << complex_graph.getNodeMatch(i) << endl;
+        }
+
+	cout << "Complex Graph Before" << endl;
+	for (int i = 0; i < complex_graph.getNumNodes(); i++)
+	{
+		std::vector<int> c = complex_graph.getChildren(i);
+		for (int j = 0; j < c.size(); j++)
+		{
+			cout << c[j] << " ";
+		}
+		cout << endl; 
+	}
+	indMap = complex_graph.reorderGraph(indMap);
+
+	cout << "Complex Graph After" << endl;
+	for (int i = 0; i < complex_graph.getNumNodes(); i++)
+	{
+		std::vector<int> c = complex_graph.getChildren(i);
+		for (int j = 0; j < c.size(); j++)
+		{
+			cout << c[j] << " ";
+		}
+		cout << endl; 
+	}
+
+
+	/*
+	cout << "End Index Map" << endl; 
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		cout << indMap[i] << endl;
+	}
+
 
         cout << " --- Child Match list --- " << endl;
         for( int i=0; i<complex_graph.getNumNodes(); i++){
           cout << complex_graph.getNodeMatch(i) << endl;
         }
+	cout << "Chil2Parent Reorder" << endl;
+	for (int i = 0; i < coarsen1.getNumNodes(); i++)
+	{
+		std::vector<int> C = coarsen1.getChildren(i);
+		for (int j = 0; j < C.size(); j++)
+		{
+			cout << C[j] << " ";
+		}
+		cout << endl; 
+	}
 
-	int indMap_temp[] = {5,2,3,1,4,0,6};
-	std::vector<int> indMap (indMap_temp, indMap_temp + sizeof(indMap_temp) / sizeof(int) );	
+	cout << "Index Map" << endl; 
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		cout << indMap[i] << endl;
+	}
 
-	indMap = coarsen1.reorderGraph(indMap);
+	cout << "Chil2Parent COmplex" << endl;
+	for (int i = 0; i < complex_graph.getNumNodes(); i++)
+	{
+		std::vector<int> C = complex_graph.getChildren(i);
+		for (int j = 0; j < C.size(); j++)
+		{
+			cout << C[j] << " ";
+		}
+		cout << endl; 
+	}
+
+
 	indMap = complex_graph.reorderGraph(indMap);
+
+	cout << "Chil2Parent Reorder COmplex" << endl;
+	for (int i = 0; i < complex_graph.getNumNodes(); i++)
+	{
+		std::vector<int> C = complex_graph.getChildren(i);
+		for (int j = 0; j < C.size(); j++)
+		{
+			cout << C[j] << " ";
+		}
+		cout << endl; 
+	}
+
+
+	cout << "Index Map" << endl; 
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		cout << indMap[i] << endl;
+	}
 
 	cout << "Reordered graph" << endl;
 
@@ -123,5 +276,6 @@ int complex_graph()
 	{
 		cout << complex_graph.getEdgePoint(i,0) << " " << complex_graph.getEdgePoint(i,1) << endl;
 	}
+	*/
 	return 0;
 }
