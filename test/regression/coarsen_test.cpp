@@ -14,7 +14,7 @@ int runCoarsenTest()
 	cout << "Running Graph Coarsening Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
-	Graph coarsen_me("../../data/facebook_combined.txt");
+	Graph coarsen_me("coarsen_test.dat");
 	Graph* ptr = &coarsen_me;
 
         int numColors;
@@ -23,7 +23,7 @@ int runCoarsenTest()
 	double duration;
 
 
-        // --- Color Test
+/*        // --- Color Test
 	start=std::clock();
 
         colorGraph_shared(ptr, colorList, numColors);
@@ -76,7 +76,7 @@ int runCoarsenTest()
         cout << "Successfully computed maximal matching in " << duration << " sec" << endl;
 
         // --- Create coarsened graph
-        
+*/        
         start=std::clock();
         Graph parent;
 	parent.coarsenFrom(coarsen_me); 
@@ -90,10 +90,29 @@ int runCoarsenTest()
         for( int i =0; i<parent.getNumNodes(); i++){
           cout << "node " << i << " : ";
           for(unsigned int j =0; j<parent.getNeighbors(i).size(); j++){
-            cout << j << " ";
+            cout << parent.getNeighbors(i)[j] << " ";
           }
           cout << endl;
         }
+        cout << " --- Coarsened edge weight --- " << endl;
+        for( int i =0; i<parent.getNumNodes(); i++){
+          cout << "node " << i << " : ";
+          for(unsigned int j =0; j<parent.getEdges(i).size(); j++){
+            cout << parent.getEdges(i)[j] << " ";
+          }
+          cout << endl;
+        }
+
+        cout << " --- Coarsened node weight --- " << endl;
+        for( int i =0; i<parent.getNumNodes(); i++){
+          cout << "node " << i << " : " << parent.getNodeWeight(i) << endl;
+        }
+
+        cout << " --- Coarsened edge list --- " << endl;
+        for( int i =0; i<parent.getNumEdges(); i++){
+          cout << parent.getEdgePoint(i,0) << " " << parent.getEdgePoint(i,1) << endl;
+        }
+
 
         cout << "Created coarse graph in " << duration << " sec" << endl;
 
