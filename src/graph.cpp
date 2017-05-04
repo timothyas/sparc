@@ -12,7 +12,7 @@
 
 using namespace std; 
 
-int Graph::reorderGraph(std::vector<int> indMap)
+std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 {
 	for (int i = 0; i < numEdges; i++)
 	{
@@ -29,15 +29,25 @@ int Graph::reorderGraph(std::vector<int> indMap)
 		neighborList[edge[i][1]].push_back(edge[i][0]);
 	}
 
-	//need to sort new neighborList in order to get
-	//the appropriate irow
-	#pragma omp parallel for
-	for (int i = 0; i < numNodes; i++)
-	{
-		std::sort(neighborList[i].begin(),neighborList[i].end());
-	}
 
-	return 0; 
+	std::vector<std::vector<int>> tempParentList = parentList; 
+	for (int i = 0; i < parentList.size(); i++)
+	{
+		tempParentList[i] = parentList[indMap[i]];
+	}
+	parentList = tempParentList; 
+
+	std::vector<int> childIndMap (numChildren,0);
+	int count = 0; 
+	for (int i = 0; i < parentList.size();i++)
+	{
+		for(int j = 0; j < parentList[i].size(); j++)
+		{
+			childIndMap[parentList[i][j]] = count;
+			count ++; 
+		}
+	}
+	return childIndMap; 
 }
 
 double Graph::getEdgePoint(int i,int j)
@@ -140,6 +150,16 @@ CSC_MATRIX Graph::computeGraphLaplacian(CSC_MATRIX adjMat)
 
 CSC_MATRIX Graph::computeAdjacencyMatrix()
 { 
+
+	//need to sort new neighborList in order to get
+	//the appropriate irow
+	#pragma omp parallel for
+	for (int i = 0; i < numNodes; i++)
+	{
+		std::sort(neighborList[i].begin(),neighborList[i].end());
+	}
+
+
 	CSC_MATRIX adjMat;
 	adjMat.n = numNodes;
 	adjMat.nnz = numEdges;
@@ -232,7 +252,15 @@ Graph::Graph(std::string filename)
 		cerr << e.what() << endl;
 	}
 	assert(error == 0);
+
+	numChildren  = numNodes; 
+	parentList.resize(numNodes,std::vector<int>(0));
+	for (int i = 0; i < parentList.size(); i++)
+	{
+		parentList[i].push_back(i);
+	}
 }
+
 
 Graph::Graph()
 {
@@ -280,11 +308,11 @@ int Graph::coarsenFrom(Graph & g)
             parentList[k].push_back(i);
             nodeWeights[k] = g.getNodeWeight(i);
             child2Parent[i] = k;
-            cout << "k: " << k;
-            for( unsigned int kk=0; kk<parentList[k].size(); kk++){
-                cout << " plist[k] " << parentList[k][kk];
-            }
-            cout << endl;
+            //cout << "k: " << k;
+            //for( unsigned int kk=0; kk<parentList[k].size(); kk++){
+            //    cout << " plist[k] " << parentList[k][kk];
+            //}
+            //cout << endl;
 
             k++;
           }
@@ -295,11 +323,11 @@ int Graph::coarsenFrom(Graph & g)
             //parentList.push_back(tempEdge);
             parentList[k].push_back(i);
             parentList[k].push_back(tempMatchList[i]);
-            cout << "k: " << k;
-            for( unsigned int kk=0; kk<parentList[k].size(); kk++){
-                cout << " plist[k] " << parentList[k][kk];
-            }
-            cout << endl;
+            //cout << "k: " << k;
+            //for( unsigned int kk=0; kk<parentList[k].size(); kk++){
+            //    cout << " plist[k] " << parentList[k][kk];
+            //}
+            //cout << endl;
             //cout << "k: " << k << " plist[k] " << parentList[k][0] << " " << parentList[k][1] << endl;
             nodeWeights[k] = g.getNodeWeight(i)+g.getNodeWeight(tempMatchList[i]);
         
@@ -333,64 +361,67 @@ int Graph::coarsenFrom(Graph & g)
 
             for( k=0; k<g.getNeighbors(currentChild).size(); k++){ 
 
+              if( currentChildNeighbor > currentChild ){
 
-              currentChildNeighbor = g.getNeighbors(currentChild)[k];
+                currentChildNeighbor = g.getNeighbors(currentChild)[k];
 
-	      tempNeighbor = child2Parent[currentChildNeighbor];
-	      tempList = neighborList[i];
-              mappedToSameNode = child2Parent[currentChild] == tempNeighbor; //child2Parent[currentChildNeighbor];
+                tempNeighbor = child2Parent[currentChildNeighbor];
+                tempList = neighborList[i];
+                mappedToSameNode = child2Parent[currentChild] == tempNeighbor; //child2Parent[currentChildNeighbor];
 
-	      neighborInd=-1;
-	      for (unsigned int ii = 0; ii < tempList.size(); ii++){
-                if (tempList[ii] == tempNeighbor){
-                  neighborInd=ii;
-                  break;
-                }
-              }
-
-              //neighborLoc = find(tempList.begin(),tempList.end(),[&tempNeighbor](int ii){ return ii == tempNeighbor;} );
-
-              if( !mappedToSameNode && neighborInd == -1 ){
-        
-                // Edge hasn't been accounted for
-                neighborList[i].push_back(child2Parent[currentChildNeighbor]);
-                neighborList[child2Parent[currentChildNeighbor]].push_back(i);
-
-                edgeWeights[i].push_back(g.getEdgeWeight(currentChild,k));
-                edgeWeights[child2Parent[currentChildNeighbor]].push_back(g.getEdgeWeight(currentChild,k));
-
-                tempEdge[0] = child2Parent[currentChild];
-                tempEdge[1] = child2Parent[currentChildNeighbor];
-                edge.push_back(tempEdge);
-                
-              }
-              
-              else if( !mappedToSameNode && neighborInd != -1 ){
-                
-                // Edge has been accounted for, increment weight
-                //neighborInd = distance(neighborList[i].begin(),neighborLoc);
-                edgeWeights[i][neighborInd] += g.getEdgeWeight(currentChild,k);
-
-                // This seems expensive but I don't know how to do it better
-		tempList.clear();
-		tempList=neighborList[child2Parent[currentChildNeighbor]];
-                neighborInd2=-1;
-		for(unsigned int ii=0; ii<tempList.size(); ii++){
-                  if(tempList[ii]==i){
-                    neighborInd2=ii;
+                neighborInd=-1;
+                for (unsigned int ii = 0; ii < tempList.size(); ii++){
+                  if (tempList[ii] == tempNeighbor){
+                    neighborInd=ii;
                     break;
                   }
                 }
-                //neighborLoc2 = find(tempList.begin(),tempList.end(), [&i](int ii){ return ii == i;} );
-                //neighborInd2 = distance(tempList.begin(),neighborLoc2);
-                
-                if( neighborInd2==-1 ){
-                  cout << "Error: couldn't find parent in neighbor's neighbor list. This edge should already be accounted for. See Graph::coarsenFrom(Graph&)." << endl;
-                  return 1;
+
+                //neighborLoc = find(tempList.begin(),tempList.end(),[&tempNeighbor](int ii){ return ii == tempNeighbor;} );
+
+                if( !mappedToSameNode && neighborInd == -1 ){
+          
+                  // Edge hasn't been accounted for
+                  neighborList[i].push_back(child2Parent[currentChildNeighbor]);
+                  neighborList[child2Parent[currentChildNeighbor]].push_back(i);
+
+                  edgeWeights[i].push_back(g.getEdgeWeight(currentChild,k));
+                  edgeWeights[child2Parent[currentChildNeighbor]].push_back(g.getEdgeWeight(currentChild,k));
+
+                  tempEdge[0] = child2Parent[currentChild];
+                  tempEdge[1] = child2Parent[currentChildNeighbor];
+                  edge.push_back(tempEdge);
+                  
                 }
                 
-        //        edgeWeights[neighborList[i][neighborInd]][neighborInd2] += g.getEdgeWeight(currentChild,k);
-              }
+                else if( !mappedToSameNode && neighborInd != -1 ){
+                  
+                  // Edge has been accounted for, increment weight
+                  //neighborInd = distance(neighborList[i].begin(),neighborLoc);
+                  edgeWeights[i][neighborInd] += g.getEdgeWeight(currentChild,k);
+
+                  // This seems expensive but I don't know how to do it better
+          	tempList.clear();
+          	tempList=neighborList[child2Parent[currentChildNeighbor]];
+                  neighborInd2=-1;
+          	for(unsigned int ii=0; ii<tempList.size(); ii++){
+                    if(tempList[ii]==i){
+                      neighborInd2=ii;
+                      break;
+                    }
+                  }
+                  //neighborLoc2 = find(tempList.begin(),tempList.end(), [&i](int ii){ return ii == i;} );
+                  //neighborInd2 = distance(tempList.begin(),neighborLoc2);
+                  
+                  if( neighborInd2==-1 ){
+                    cout << "Error: couldn't find parent in neighbor's neighbor list. This edge should already be accounted for. See Graph::coarsenFrom(Graph&)." << endl;
+                    return 1;
+                  }
+                  
+                  edgeWeights[neighborList[i][neighborInd]][neighborInd2] += g.getEdgeWeight(currentChild,k);
+                }
+
+              }// if neighbor > me
 
             }// end loop thru e/ child's neighbors
           }//end loop thru parent's children

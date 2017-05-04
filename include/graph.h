@@ -29,7 +29,7 @@ class Graph {
                 std::vector<int> getMatchList();
                 std::vector<int> getNeighbors(int node);
                 std::vector<int> getEdges(int node);
-		int reorderGraph(std::vector<int> indMap);
+		std::vector<int> reorderGraph(std::vector<int> indMap);
 		int coarsenFrom(Graph & g);
 
 		CSC_MATRIX computeGraphLaplacian(CSC_MATRIX adj);

@@ -14,7 +14,7 @@ int runCoarsenTest()
 	cout << "Running Graph Coarsening Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
-	Graph coarsen_me("coarsen_test.dat");
+	Graph coarsen_me("complex_graph.dat");
 	Graph* ptr = &coarsen_me;
 
         int numColors;
@@ -26,7 +26,7 @@ int runCoarsenTest()
 /*        // --- Color Test
 	start=std::clock();
 
-        colorGraph_shared(ptr, colorList, numColors);
+        colorGraph_shared(coarsen_me, colorList, numColors);
 
 	duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
 
@@ -52,7 +52,7 @@ int runCoarsenTest()
         // --- Maximal matching test
 
         start=std::clock();
-        mxm_shared(ptr, colorList, numColors); 
+        mxm_shared(coarsen_me, colorList, numColors); 
         duration=(std::clock()-start) / (double) CLOCKS_PER_SEC;
 
         for( int i=0; i<coarsen_me.getNumNodes(); i++){

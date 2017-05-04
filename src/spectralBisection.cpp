@@ -14,10 +14,9 @@
 using namespace std;
 
 
-int spectralBisection(Graph *G)
+std::vector<int> spectralBisection(Graph *G)
 {
 
-	std::string filename = "facebook_SB.txt";
 	//Compute adjacency matrix and graph laplacian
 	double start = std::clock();
 	cout << "Computing adjacency matrix" << endl;
@@ -36,7 +35,7 @@ int spectralBisection(Graph *G)
 	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
 	int nev = 2; 
 	int ncv = min(2*nev+1,lap.n -1);
-	ARluSymStdEig<double> prob(nev,L,"SA",ncv,0,100000);
+	ARluSymStdEig<double> prob(nev,L,"SA",ncv,0,1000000);
 	prob.FindEigenvectors();
 
 	double * Eigvec = prob.RawEigenvector(1);
@@ -52,23 +51,7 @@ int spectralBisection(Graph *G)
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 	cout << setprecision(15) << "--->Time: " << duration << endl;
 
-	start = std::clock();
-	cout << "Reordering Matrix" << endl;
-	G->reorderGraph(indMap);
-	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
-
-	start = std::clock();
-	cout << "Computing new Adj Matrix" << endl;
-	CSC_MATRIX newAdj = G->computeAdjacencyMatrix();
-
-
-	cout << "Saving Matrix to File" << endl;
-	saveMatrixToFile(newAdj,filename);
-	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
-
-	return 0; 
+	return indMap; 
 }
 
 std::vector<int> getIndexMap(vector<double> Eigvec2)
