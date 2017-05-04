@@ -29,13 +29,6 @@ std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 		neighborList[edge[i][1]].push_back(edge[i][0]);
 	}
 
-	//need to sort new neighborList in order to get
-	//the appropriate irow
-	#pragma omp parallel for
-	for (int i = 0; i < numNodes; i++)
-	{
-		std::sort(neighborList[i].begin(),neighborList[i].end());
-	}
 
 	std::vector<std::vector<int>> tempParentList = parentList; 
 	for (int i = 0; i < parentList.size(); i++)
@@ -157,6 +150,16 @@ CSC_MATRIX Graph::computeGraphLaplacian(CSC_MATRIX adjMat)
 
 CSC_MATRIX Graph::computeAdjacencyMatrix()
 { 
+
+	//need to sort new neighborList in order to get
+	//the appropriate irow
+	#pragma omp parallel for
+	for (int i = 0; i < numNodes; i++)
+	{
+		std::sort(neighborList[i].begin(),neighborList[i].end());
+	}
+
+
 	CSC_MATRIX adjMat;
 	adjMat.n = numNodes;
 	adjMat.nnz = numEdges;

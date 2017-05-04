@@ -19,45 +19,24 @@ int facebook()
 
 	Graph Graph1("../../data/facebook_combined.txt");
 	Graph Graph2;
-        int numColors;
-        vector<int> colorList(Graph1.getNumNodes(), -1);
-        colorGraph_shared(Graph1, colorList, numColors);
-        mxm_shared(Graph1, colorList, numColors); 
+	Graph Graph3;
+
+	cout << "Coarsening level 1" << endl; 
 	Graph2.coarsenFrom(Graph1);
 
-	Graph Graph3;
-        colorGraph_shared(Graph2, colorList, numColors);
-        mxm_shared(Graph2, colorList, numColors); 
+	cout << "Coarsening level 2" << endl; 
 	Graph3.coarsenFrom(Graph2);
 
-	CSC_MATRIX adj = Graph3.computeAdjacencyMatrix();
-	CSC_MATRIX lap = Graph3.computeGraphLaplacian(adj);
+	cout << "Spectral Bisection" << endl; 
+	std::vector<int> indMap = spectralBisection(&Graph3);
 
-	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
-	int nev = 2; 
-	int ncv = min(2*nev+1,lap.n -1);
-	ARluSymStdEig<double> prob(nev,L,"SA",ncv,0,100000);
-	prob.FindEigenvectors();
-
-	double	start = std::clock();
-	double * Eigvec = prob.RawEigenvector(1);
-	double * EigVal = prob.RawEigenvalues();
-	cout << "2nd eigenvalue: " << EigVal[1] << endl;
-	double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
-
-	start = std::clock();
-	vector<double> Eigvec2(Eigvec,Eigvec+lap.n);
-	cout << "Getting index Map" << endl;
-	std::vector<int> indMap =  getIndexMap(Eigvec2);
-	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
+	cout << "Uncoarsening"<< endl;
 
 	indMap = Graph3.reorderGraph(indMap);
 	indMap = Graph2.reorderGraph(indMap);
-	indMap = Graph1.reorderGraph(indMap);
+	Graph1.reorderGraph(indMap);
 
-	adj = Graph1.computeAdjacencyMatrix();
+	CSC_MATRIX adj = Graph1.computeAdjacencyMatrix();
 
 	saveMatrixToFile(adj,"Results.dat");
 	return 0;
