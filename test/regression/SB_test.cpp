@@ -9,9 +9,9 @@ using namespace std;
 
 int test_getAij()
 {
-	double value; 
+	//double value; 
 	Graph complex_graph("complex_graph.dat");
-	Graph *ptr = &complex_graph;
+	//Graph *ptr = &complex_graph;
 	CSC_MATRIX adj = complex_graph.computeAdjacencyMatrix();
 
 

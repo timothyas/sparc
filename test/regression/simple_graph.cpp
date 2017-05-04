@@ -16,7 +16,7 @@ int simple_graph()
 	cout << "----------------------------------------------------------------------" << endl; 
 
 	Graph simple_mat("simple_graph.dat");
-	Graph * ptr = &simple_mat;
+//	Graph * ptr = &simple_mat;
 
 	std::vector<std::vector<int> > NE (simple_mat.getNumNodes());
 	NE[0].push_back(1); NE[0].push_back(3);
@@ -113,7 +113,7 @@ int simple_graph()
 	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
 	ARluSymStdEig<double> prob(2,L,"SA");
 	prob.FindEigenvectors();
-	double * Eigvec = prob.RawEigenvector(1);
+	//double * Eigvec = prob.RawEigenvector(1);
 	double * EigVal = prob.RawEigenvalues();
 
 	if (fabs(EigVal[1]- 2) > 1e-10)
