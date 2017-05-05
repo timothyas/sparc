@@ -14,28 +14,34 @@ using namespace std;
 
 std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 {
-	for (int i = 0; i < numEdges; i++)
-	{
-		edge[i][0] = indMap[edge[i][0]];
-		edge[i][1] = indMap[edge[i][1]];
-	}
+        std::vector<int> magicMap(numNodes,0);
+
+        
+        for(unsigned int i=0; i<numNodes; i++){
+          for(unsigned int j=0; j<numNodes; j++){
+            if( indMap[j]==i )
+              magicMap[i]=j;
+          }
+        }
 
 	neighborList.clear();
 	neighborList.resize(numNodes,vector<int>(0));
 
 	for (int i = 0; i < numEdges; i++)
 	{
+		edge[i][0] = magicMap[indMap[edge[i][0]]];
+		edge[i][1] = magicMap[indMap[edge[i][1]]];
 		neighborList[edge[i][0]].push_back(edge[i][1]);
 		neighborList[edge[i][1]].push_back(edge[i][0]);
 	}
 
-
-	std::vector<std::vector<int>> tempParentList = parentList; 
+	std::vector<std::vector<int> > tempParentList; //(parentList); 
 	for (unsigned int i = 0; i < parentList.size(); i++)
 	{
-		tempParentList[i] = parentList[indMap[i]];
+                tempParentList.push_back(parentList[indMap[i]]);
+		//tempParentList[i] = std::move(parentList[indMap[i]]);
 	}
-	parentList = tempParentList; 
+	parentList = std::move(tempParentList); 
 
 	std::vector<int> childIndMap (numChildren,0);
 	int count = 0; 
@@ -43,7 +49,7 @@ std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 	{
 		for(unsigned int j = 0; j < parentList[i].size(); j++)
 		{
-			childIndMap[parentList[i][j]] = count;
+			childIndMap[count] = parentList[i][j];
 			count ++; 
 		}
 	}

@@ -20,6 +20,7 @@ int facebook()
 	Graph Graph1("../../data/facebook_combined.txt");
 	Graph Graph2;
 	Graph Graph3;
+	Graph Graph4;
 
 	cout << "Coarsening level 1" << endl; 
 	Graph2.coarsenFrom(Graph1);
@@ -27,11 +28,15 @@ int facebook()
 	cout << "Coarsening level 2" << endl; 
 	Graph3.coarsenFrom(Graph2);
 
+	cout << "Coarsening level 3" << endl; 
+	Graph4.coarsenFrom(Graph3);
+
 	cout << "Spectral Bisection" << endl; 
-	std::vector<int> indMap = spectralBisection(&Graph3);
+	std::vector<int> indMap = spectralBisection(&Graph4);
 
 	cout << "Uncoarsening"<< endl;
 
+        indMap = Graph4.reorderGraph(indMap);
 	indMap = Graph3.reorderGraph(indMap);
 	indMap = Graph2.reorderGraph(indMap);
 	Graph1.reorderGraph(indMap);

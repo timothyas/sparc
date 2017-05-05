@@ -79,7 +79,6 @@ std::vector<int> getIndexMap(vector<double> Eigvec2)
 
 	ind1.insert(ind1.end(),ind2.begin(),ind2.end());
 	
-
 	for (size_t i = 0; i < ind1.size(); i++)
 	{
 		indMap[ind1[i]]=i;
