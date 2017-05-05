@@ -1,4 +1,5 @@
 #include<iostream>
+#include<omp.h>
 
 using namespace std;
 
@@ -10,6 +11,8 @@ int facebook();
 
 int main()
 {
+	omp_set_num_threads(1);
+
         if(!simple_graph())
 		cout << "\033[0;32mPASSED: Simple Graph Test\033[0m"  << endl << endl;
 	else

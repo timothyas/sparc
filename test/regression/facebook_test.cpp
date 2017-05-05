@@ -32,11 +32,11 @@ int facebook()
 	Graph4.coarsenFrom(Graph3);
 
 	cout << "Spectral Bisection" << endl; 
-	std::vector<int> indMap = spectralBisection(&Graph4);
+	std::vector<int> indMap = spectralBisection(Graph3);
 
 	cout << "Uncoarsening"<< endl;
 
-        indMap = Graph4.reorderGraph(indMap);
+        //indMap = Graph4.reorderGraph(indMap);
 	indMap = Graph3.reorderGraph(indMap);
 	indMap = Graph2.reorderGraph(indMap);
 	Graph1.reorderGraph(indMap);

@@ -13,14 +13,11 @@
 #include"graph.h"
 #include"coarsen.h"
 
-
-#define THREADS 1
-
 using namespace std;
 
 int mxm_shared(Graph& g, vector<int> &colors, int numColors)
 {
-        omp_set_num_threads(THREADS);
+    
         
         int v, vi;
         vector<int>::iterator viter;
@@ -56,12 +53,13 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
               vi = distance(lonelyWeights.begin(),viter);
               v = lonelyNeighbors[vi];
 
-              // They both swiped right ... 
-              g.setNodeMatch(nodeList[u],v);
-              g.setNodeMatch(v,nodeList[u]);
-
               #pragma omp critical
               { 
+                // They both swiped right ... 
+                g.setNodeMatch(nodeList[u],v);
+                g.setNodeMatch(v,nodeList[u]);
+
+
                 raceList.push_back(nodeList[u]);
               }
             }
@@ -94,7 +92,6 @@ int colorGraph_shared(Graph& g, vector<int> &colors, int &numColors)
         int currentColor = 0;
         bool moreColors;
 
-        omp_set_num_threads(THREADS);
         
         // Loop while any nodes have not been assigned a color
   	do{

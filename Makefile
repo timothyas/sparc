@@ -1,8 +1,11 @@
+HELLO:=$(echo hello)
+BOOSTLIB := $(shell env | grep BOOST | grep LIB | cut -f 2 -d=)
+BOOSTINC := $(shell env | grep BOOST | grep INC | cut -f 2 -d=)
 SPIC_DIR = ${PWD}
-INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod 
+INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod -I${BOOSTINC}
 
-LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external 
-LDLIBS     :=   -larpack -lsuperlu -lgfortran -llapack -lblas  
+LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external -L${BOOSTLIB}
+LDLIBS     :=   -larpack -lsuperlu -lgfortran -llapack -lblas -lboost_program_options
 
 # Export variables so check, install, and coverage can all use libraries
 export LDFLAGS
@@ -13,6 +16,7 @@ export LIB
 all: info
 
 info:
+	echo ${BOOSTLIB}
 	@echo "Available make targets:"
 	@echo "  install   : build main program in /src/"
 	@echo "  check	   : build and run test unit test suite in /test/unit"

@@ -14,42 +14,41 @@
 using namespace std;
 
 
-std::vector<int> spectralBisection(Graph *G)
+std::vector<int> spectralBisection(Graph G)
 {
 
 	//Compute adjacency matrix and graph laplacian
 	double start = std::clock();
-	cout << "Computing adjacency matrix" << endl;
-	CSC_MATRIX adj = G->computeAdjacencyMatrix();
+	cout << "--->Computing adjacency matrix ";
+	CSC_MATRIX adj = G.computeAdjacencyMatrix();
 	double duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
+	cout << setprecision(15) << "(Time: " << duration << ")" <<endl;
 
 	start = std::clock();
-	cout << "Computing graph laplacian" << endl;
-	CSC_MATRIX lap = G->computeGraphLaplacian(adj);
+	cout << "--->Computing graph laplacian " ;
+	CSC_MATRIX lap = G.computeGraphLaplacian(adj);
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
+	cout << setprecision(15) << "(Time: " << duration << ")" << endl;
 
 	start = std::clock();
-	cout << "Getting second eigenvector with Arpack++" << endl; 
+	cout << "--->Getting second eigenvector with Arpack++ ";
 	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
 	int nev = 2; 
 	int ncv = min(2*nev+1,lap.n -1);
-	ARluSymStdEig<double> prob(nev,L,"SA",ncv,0,1000000);
+	ARluSymStdEig<double> prob(nev,L,"SM",ncv,0,1000000);
 	prob.FindEigenvectors();
 
 	double * Eigvec = prob.RawEigenvector(1);
 	double * EigVal = prob.RawEigenvalues();
-	cout << "2nd eigenvalue: " << EigVal[1] << endl;
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
+	cout << setprecision(15) << "Time: " << duration << ")" << endl;
 
 	start = std::clock();
 	vector<double> Eigvec2(Eigvec,Eigvec+lap.n);
-	cout << "Getting index Map" << endl;
+	cout << "--->Getting index Map ";
 	std::vector<int> indMap =  getIndexMap(Eigvec2);
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-	cout << setprecision(15) << "--->Time: " << duration << endl;
+	cout << setprecision(15) << "(Time: " << duration << ")" << endl;
 
 	return indMap; 
 }
@@ -81,10 +80,10 @@ std::vector<int> getIndexMap(vector<double> Eigvec2)
 	
 	for (size_t i = 0; i < ind1.size(); i++)
 	{
-		indMap[ind1[i]]=i;
+	//	indMap[ind1[i]]=i;
 	}
 
-	return indMap;
+	return ind1;
 }
 
 int saveMatrixToFile(CSC_MATRIX A,std::string filename)

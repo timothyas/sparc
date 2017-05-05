@@ -105,8 +105,9 @@ int complex_graph()
 
 	Graph1.coarsenFrom(complex_graph);
 	Graph2.coarsenFrom(Graph1);
-	std::vector<int> indMap = spectralBisection(&Graph2);
+	std::vector<int> indMap = spectralBisection(Graph2);
 
+	/*
 	cout << "SB Index Map" << endl; 
 	for (int i = 0; i < indMap.size(); i++)
 	{
@@ -128,8 +129,10 @@ int complex_graph()
 		}
 		cout << endl; 
 	}
+	*/
 
 	indMap = Graph2.reorderGraph(indMap);
+	/*
 	cout << "graph 2 after" << endl;
 	for (int i = 0; i < Graph2.getNumNodes(); i++)
 	{
@@ -162,8 +165,10 @@ int complex_graph()
 		}
 		cout << endl; 
 	}
+	*/
 
 	indMap = Graph1.reorderGraph(indMap);
+	/*
 	cout << "graph 1 after" << endl;
 	for (int i = 0; i < Graph1.getNumNodes(); i++)
 	{
@@ -195,8 +200,10 @@ int complex_graph()
 		}
 		cout << endl; 
 	}
+	*/
 	indMap = complex_graph.reorderGraph(indMap);
 
+	/*
 	cout << "Complex Graph After" << endl;
 	for (int i = 0; i < complex_graph.getNumNodes(); i++)
 	{
@@ -209,7 +216,6 @@ int complex_graph()
 	}
 
 
-	/*
 	cout << "End Index Map" << endl; 
 	for (int i = 0; i < indMap.size(); i++)
 	{
@@ -249,9 +255,11 @@ int complex_graph()
 		cout << endl; 
 	}
 
+	*/
 
-	indMap = complex_graph.reorderGraph(indMap);
+//	indMap = complex_graph.reorderGraph(indMap);
 
+	
 	cout << "Chil2Parent Reorder COmplex" << endl;
 	for (int i = 0; i < complex_graph.getNumNodes(); i++)
 	{
@@ -276,6 +284,6 @@ int complex_graph()
 	{
 		cout << complex_graph.getEdgePoint(i,0) << " " << complex_graph.getEdgePoint(i,1) << endl;
 	}
-	*/
+	
 	return 0;
 }

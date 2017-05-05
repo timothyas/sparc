@@ -26,13 +26,31 @@ std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 
 	neighborList.clear();
 	neighborList.resize(numNodes,vector<int>(0));
+	cout << " - index map " << endl;
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		cout << indMap[i] << endl;
+	}
+		
+
+	cout << "-- before reordering " << endl;
 
 	for (int i = 0; i < numEdges; i++)
 	{
-		edge[i][0] = magicMap[indMap[edge[i][0]]];
-		edge[i][1] = magicMap[indMap[edge[i][1]]];
+		cout << edge[i][0] << " " << edge[i][1] << endl;
+	}
+	for (int i = 0; i < numEdges; i++)
+	{
+		edge[i][0] = magicMap[edge[i][0]];
+		edge[i][1] = magicMap[edge[i][1]];
 		neighborList[edge[i][0]].push_back(edge[i][1]);
 		neighborList[edge[i][1]].push_back(edge[i][0]);
+	}
+	cout << "-- after reordering " << endl;
+
+	for (int i = 0; i < numEdges; i++)
+	{
+		cout << edge[i][0] << " " << edge[i][1] << endl;
 	}
 
 	std::vector<std::vector<int> > tempParentList; //(parentList); 
@@ -164,7 +182,7 @@ CSC_MATRIX Graph::computeAdjacencyMatrix()
 
 	//need to sort new neighborList in order to get
 	//the appropriate irow
-	#pragma omp parallel for
+//	#pragma omp parallel for
 	for (int i = 0; i < numNodes; i++)
 	{
 		std::sort(neighborList[i].begin(),neighborList[i].end());
