@@ -25,6 +25,8 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
         vector<int> lonelyWeights;
         vector<int> nodeList;
         vector<int> raceList;
+        int me,partner,opponent, indMe, indOpponent;
+        vector<int>::iterator itMe, itOpponent;
 
         for(int k=0; k<numColors; k++){
 
@@ -44,7 +46,7 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
                 }
               }
             }
-
+                
             if( lonelyWeights.size() != 0 ){
 
               // Find heaviest lonely neighbor, partner up!
@@ -59,7 +61,6 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
                 g.setNodeMatch(nodeList[u],v);
                 g.setNodeMatch(v,nodeList[u]);
 
-
                 raceList.push_back(nodeList[u]);
               }
             }
@@ -70,10 +71,27 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
         
           } //end parallel region
 
+
+        
           #pragma omp parallel for
           for( unsigned int u = 0; u<raceList.size(); u++){
-            if( g.getNodeMatch(g.getNodeMatch(raceList[u])) != raceList[u] )
-              g.setNodeMatch(raceList[u],-1);
+            me = raceList[u];
+            partner = g.getNodeMatch(me);
+            opponent = g.getNodeMatch(partner);
+            if( opponent != me ){
+              itMe = std::find(g.getNeighbors(partner).begin(),g.getNeighbors(partner).end(),me);
+              itOpponent = std::find(g.getNeighbors(partner).begin(),g.getNeighbors(partner).begin(),opponent);
+              indMe = std::distance(g.getNeighbors(partner).begin(),itMe);
+              indOpponent = std::distance(g.getNeighbors(partner).end(),itOpponent);
+
+              if( g.getEdgeWeight(partner,indMe) > g.getEdgeWeight(partner,indOpponent)){
+                g.setNodeMatch(opponent,-1);
+                g.setNodeMatch(partner,me);
+              }
+              else{
+                g.setNodeMatch(me,-1);
+              }
+            }//end if me != opponent
           } //end parallel region
 
           nodeList.clear();
