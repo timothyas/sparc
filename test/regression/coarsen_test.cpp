@@ -1,7 +1,7 @@
 #include<iostream>
 #include<iomanip>
 #include<math.h>
-#include<ctime>
+#include<sys/time.h>
 #include<vector>
 #include"graph.h"
 #include"coarsen.h"
@@ -16,29 +16,29 @@ int runCoarsenTest()
 
 	Graph coarsen_me("coarsen_test.dat");
 
+        int numColors;
         vector<int> colorList(coarsen_me.getNumNodes(), -1);
-	std::clock_t start;
+	struct timeval start, end;
 	double duration;
 
 
-/*        // --- Color Test
-	start=std::clock();
-
+        // --- Color Test
+	gettimeofday(&start,NULL);
         colorGraph_shared(coarsen_me, colorList, numColors);
-
-	duration = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+	gettimeofday(&end,NULL);
+	duration = ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
 
 
         for( int i=0; i<coarsen_me.getNumNodes(); i++){
           for( unsigned int j=0; j<coarsen_me.getNeighbors(i).size(); j++){
             if( colorList[i] == colorList[coarsen_me.getNeighbors(i)[j]] ){
 
-              cout << "COLORING ERROR: Node " << i << " and " << coarsen_me.getNeighbors(i)[j] << " have the same color and are neighbors. " << endl;
+              cout << "COLORING ERROR: Node " << i << " and " << coarsen_me.getNeighbors(i)[j];
+              cout << " have the same color and are neighbors. " << endl;
 
               cout << " --- Color list --- " << endl << endl;
               for( int i=0; i<coarsen_me.getNumNodes(); i++)
                 cout << "Node: " << i << "    Color: " << colorList[i] << endl;
-
 
               return 1;
             }
@@ -46,15 +46,14 @@ int runCoarsenTest()
         }
 
         cout << "Successfully colored graph in " << duration << " sec" << endl;
-*/        
-
-        // --- Create coarsened graph
-        start=std::clock();
-        Graph parent;
-	parent.coarsenFrom(coarsen_me); 
-        duration=(std::clock()-start) / (double) CLOCKS_PER_SEC;
+        
 
         // --- Maximal matching test
+	gettimeofday(&start,NULL);
+        mxm_shared(coarsen_me, colorList, numColors);
+	gettimeofday(&end,NULL);
+	duration = ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
+
         for( int i=0; i<coarsen_me.getNumNodes(); i++){
           for ( int j=i+1; j<coarsen_me.getNumNodes(); j++){
             if( coarsen_me.getNodeMatch(i) == coarsen_me.getNodeMatch(j) && coarsen_me.getNodeMatch(i) != -1 ){
@@ -72,47 +71,56 @@ int runCoarsenTest()
 
         cout << "Successfully computed maximal matching in " << duration << " sec" << endl;
 
-//        cout << " --- Child Match list --- " << endl;
-//        for( int i=0; i<coarsen_me.getNumNodes(); i++){
-//          cout << coarsen_me.getNodeMatch(i) << endl;
-//        }
-//        cout << " --- Coarse neighbor list --- " << endl;
-//        for( int i =0; i<parent.getNumNodes(); i++){
-//          cout << "node " << i << " : ";
-//          for(unsigned int j =0; j<parent.getNeighbors(i).size(); j++){
-//            cout << parent.getNeighbors(i)[j] << " ";
-//          }
-//          cout << endl;
-//        }
-//        cout << " --- Parent list --- " << endl;
-//        for( int i=0; i<parent.getNumNodes(); i++){
-//          cout << "parent node " << i << " has children :  ";
-//          for (unsigned int j =0; j< parent.getChildren(i).size(); j++){
-//            cout << parent.getChildren(i)[j] << " ";
-//          }
-//          cout << endl;
-//        }
-//        cout << " --- Coarsened edge weight --- " << endl;
-//        for( int i =0; i<parent.getNumNodes(); i++){
-//          cout << "node " << i << " : ";
-//          for(unsigned int j =0; j<parent.getEdges(i).size(); j++){
-//            cout << parent.getEdges(i)[j] << " ";
-//          }
-//          cout << endl;
-//        }
-//
-//        cout << " --- Coarsened node weight --- " << endl;
-//        for( int i =0; i<parent.getNumNodes(); i++){
-//          cout << "node " << i << " : " << parent.getNodeWeight(i) << endl;
-//        }
-//
-//        cout << " --- Coarsened edge list --- " << endl;
-//        for( int i =0; i<parent.getNumEdges(); i++){
-//          cout << parent.getEdgePoint(i,0) << " " << parent.getEdgePoint(i,1) << endl;
-//        }
+        // --- Create coarsened graph
+        Graph parent;
+
+	gettimeofday(&start,NULL);
+	parent.coarsenFrom(coarsen_me); 
+	gettimeofday(&end,NULL);
+	duration = ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
 
 
-        cout << "Created coarse graph in " << duration << " sec" << endl;
+        cout << " --- Child Match list --- " << endl;
+        for( int i=0; i<coarsen_me.getNumNodes(); i++){
+          cout << coarsen_me.getNodeMatch(i) << endl;
+        }
+        cout << " --- Coarse neighbor list --- " << endl;
+        for( int i =0; i<parent.getNumNodes(); i++){
+          cout << "node " << i << " : ";
+          for(unsigned int j =0; j<parent.getNeighbors(i).size(); j++){
+            cout << parent.getNeighbors(i)[j] << " ";
+          }
+          cout << endl;
+        }
+        cout << " --- Parent list --- " << endl;
+        for( int i=0; i<parent.getNumNodes(); i++){
+          cout << "parent node " << i << " has children :  ";
+          for (unsigned int j =0; j< parent.getChildren(i).size(); j++){
+            cout << parent.getChildren(i)[j] << " ";
+          }
+          cout << endl;
+        }
+        cout << " --- Coarsened edge weight --- " << endl;
+        for( int i =0; i<parent.getNumNodes(); i++){
+          cout << "node " << i << " : ";
+          for(unsigned int j =0; j<parent.getEdges(i).size(); j++){
+            cout << parent.getEdges(i)[j] << " ";
+          }
+          cout << endl;
+        }
+
+        cout << " --- Coarsened node weight --- " << endl;
+        for( int i =0; i<parent.getNumNodes(); i++){
+          cout << "node " << i << " : " << parent.getNodeWeight(i) << endl;
+        }
+
+        cout << " --- Coarsened edge list --- " << endl;
+        for( int i =0; i<parent.getNumEdges(); i++){
+          cout << parent.getEdgePoint(i,0) << " " << parent.getEdgePoint(i,1) << endl;
+        }
+
+
+        cout << "Successfully coarsened graph in " << duration << " sec" << endl;
 
         return 0;
 
