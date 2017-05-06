@@ -32,6 +32,7 @@ class Graph {
 		std::vector<int> reorderGraph(std::vector<int> indMap);
                 std::vector<int> getChildren(int node);
 		int coarsenFrom(Graph & g);
+                int writeEdgeList(std::string filename);
 
 		CSC_MATRIX computeGraphLaplacian(CSC_MATRIX adj);
 		CSC_MATRIX  computeAdjacencyMatrix();
