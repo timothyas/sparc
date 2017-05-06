@@ -62,6 +62,10 @@ int main(int argc, char * argv[])
         std::string outName("Results.dat");
 	saveMatrixToFile(adj,outName);
         cout <<  outName << " written" << endl;
+
+        std::string edgeName("edgeList.txt");
+        G.writeEdgeList(edgeName);
+        cout << edgeName << " written" << endl;
 	}
 	//Catch errors and exceptions. 
 	catch(exception & e) {
