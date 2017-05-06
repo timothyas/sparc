@@ -414,3 +414,20 @@ int Graph::coarsenFrom(Graph & g)
 
 	return 0; 
 }
+
+int Graph::writeEdgeList(std::string filename)
+{
+	ofstream outFile; 
+	outFile.open(filename.c_str());
+
+	int counter; 
+	int numMatched;
+	int row, col; 
+
+        for (int i=0; i< numEdges; i++){
+          outFile << edge[i][0] << " " << edge[i][1] << endl;
+        }
+
+        outFile.close();
+        return 0;       
+}
