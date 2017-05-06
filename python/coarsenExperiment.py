@@ -10,7 +10,7 @@ import scipy.sparse as sps
 
 nCoarse=20
 nProcs=1
-fbData="../data/facebook_combined.txt"
+fbData="../data/facebook_jumbled.txt"
 outName="Results.dat"
 outEdgeName="edgeList.txt"
 edgeNameBase = "../results/multi-coarsen/edge_"
@@ -71,7 +71,7 @@ for n in range(0,nCoarse):
         plt.figure(figsize=(15,15))
         mh=plt.spy(a,markersize=1.5)
 
-        legStr = 'NNz: %d \n Off Diag NNz: %d' % (N,odNNz[n])
+        legStr = 'N/2: %d \n Off Diag NNz: %d' % (N/2,odNNz[n])
         plt.legend((legStr,))
         
        # plt.show()
