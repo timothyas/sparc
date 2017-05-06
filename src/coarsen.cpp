@@ -73,7 +73,7 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
 
 
         
-          #pragma omp parallel for
+          #pragma omp parallel for private(me,partner,opponent,itMe,itOpponent,indMe,indOpponent)
           for( unsigned int u = 0; u<raceList.size(); u++){
             me = raceList[u];
             partner = g.getNodeMatch(me);
@@ -85,11 +85,17 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
               indOpponent = std::distance(g.getNeighbors(partner).end(),itOpponent);
 
               if( g.getEdgeWeight(partner,indMe) > g.getEdgeWeight(partner,indOpponent)){
-                g.setNodeMatch(opponent,-1);
-                g.setNodeMatch(partner,me);
+                #pragma omp critical
+                {
+                  g.setNodeMatch(opponent,-1);
+                  g.setNodeMatch(partner,me);
+                }
               }
               else{
-                g.setNodeMatch(me,-1);
+                #pragma omp critical
+                {
+                  g.setNodeMatch(me,-1);
+                }
               }
             }//end if me != opponent
           } //end parallel region
