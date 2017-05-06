@@ -260,7 +260,7 @@ int complex_graph()
 //	indMap = complex_graph.reorderGraph(indMap);
 
 	
-	cout << "Chil2Parent Reorder COmplex" << endl;
+/*	cout << "Chil2Parent Reorder COmplex" << endl;
 	for (int i = 0; i < complex_graph.getNumNodes(); i++)
 	{
 		std::vector<int> C = complex_graph.getChildren(i);
@@ -284,6 +284,7 @@ int complex_graph()
 	{
 		cout << complex_graph.getEdgePoint(i,0) << " " << complex_graph.getEdgePoint(i,1) << endl;
 	}
+*/
 	
 	return 0;
 }
