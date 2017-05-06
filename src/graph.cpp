@@ -26,19 +26,6 @@ std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 
 	neighborList.clear();
 	neighborList.resize(numNodes,vector<int>(0));
-	cout << " - index map " << endl;
-	for (int i = 0; i < indMap.size(); i++)
-	{
-		cout << indMap[i] << endl;
-	}
-		
-
-	cout << "-- before reordering " << endl;
-
-	for (int i = 0; i < numEdges; i++)
-	{
-		cout << edge[i][0] << " " << edge[i][1] << endl;
-	}
 	for (int i = 0; i < numEdges; i++)
 	{
 		edge[i][0] = magicMap[edge[i][0]];
@@ -46,18 +33,11 @@ std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 		neighborList[edge[i][0]].push_back(edge[i][1]);
 		neighborList[edge[i][1]].push_back(edge[i][0]);
 	}
-	cout << "-- after reordering " << endl;
 
-	for (int i = 0; i < numEdges; i++)
-	{
-		cout << edge[i][0] << " " << edge[i][1] << endl;
-	}
-
-	std::vector<std::vector<int> > tempParentList; //(parentList); 
+	std::vector<std::vector<int> > tempParentList; 
 	for (unsigned int i = 0; i < parentList.size(); i++)
 	{
                 tempParentList.push_back(parentList[indMap[i]]);
-		//tempParentList[i] = std::move(parentList[indMap[i]]);
 	}
 	parentList = std::move(tempParentList); 
 
@@ -416,8 +396,6 @@ int Graph::coarsenFrom(Graph & g)
                       break;
                     }
                   }
-                  //neighborLoc2 = find(tempList.begin(),tempList.end(), [&i](int ii){ return ii == i;} );
-                  //neighborInd2 = distance(tempList.begin(),neighborLoc2);
                   
                   if( neighborInd2==-1 ){
                     cout << "Error: couldn't find parent in neighbor's neighbor list. This edge should already be accounted for. See Graph::coarsenFrom(Graph&)." << endl;

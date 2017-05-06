@@ -56,9 +56,7 @@ std::vector<int> spectralBisection(Graph G)
 std::vector<int> getIndexMap(vector<double> Eigvec2)
 {
 	std::vector<int> ind1,ind2;
-	std::vector<double> sortedEigvec2 = Eigvec2;  
-
-	std::vector<int> indMap (Eigvec2.size(),0);
+	std::vector<double> sortedEigvec2(Eigvec2);  
 
 	std::sort(sortedEigvec2.data(),sortedEigvec2.data()+sortedEigvec2.size());
 	double split = sortedEigvec2[sortedEigvec2.size()/2];
@@ -77,11 +75,6 @@ std::vector<int> getIndexMap(vector<double> Eigvec2)
 	}
 
 	ind1.insert(ind1.end(),ind2.begin(),ind2.end());
-	
-	for (size_t i = 0; i < ind1.size(); i++)
-	{
-	//	indMap[ind1[i]]=i;
-	}
 
 	return ind1;
 }

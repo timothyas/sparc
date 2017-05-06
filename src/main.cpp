@@ -58,7 +58,10 @@ int main(int argc, char * argv[])
 	Graph G(input_file);
 	CSC_MATRIX adj;
 	std::vector<int> indMap = GetMatrix(G,coarsen_levels,adj);
-	saveMatrixToFile(adj,"Results.dat");
+
+        std::string outName("Results.dat");
+	saveMatrixToFile(adj,outName);
+        cout <<  outName << " written" << endl;
 	}
 	//Catch errors and exceptions. 
 	catch(exception & e) {
@@ -95,15 +98,15 @@ std::vector<int> GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj)
 	}
 
 
-	for (int i = 0; i < coarsen_levels; i++)
-	{
-		cout << "LEVEL " << i << endl;
-		for (int j = 0; j < coarseGraphs[i].getNumEdges();j++)
-		{
-			cout << coarseGraphs[i].getEdgePoint(j,0) << " " << coarseGraphs[i].getEdgePoint(j,1) << endl;
-		}
-		cout << endl;
-	}
+//	for (int i = 0; i < coarsen_levels; i++)
+//	{
+//		cout << "LEVEL " << i << endl;
+//		for (int j = 0; j < coarseGraphs[i].getNumEdges();j++)
+//		{
+//			cout << coarseGraphs[i].getEdgePoint(j,0) << " " << coarseGraphs[i].getEdgePoint(j,1) << endl;
+//		}
+//		cout << endl;
+//	}
 
 	cout << "Spectral Bisection on Coarsest Level" << endl;
 	if (coarsen_levels==0)
@@ -112,36 +115,36 @@ std::vector<int> GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj)
 		indMap = spectralBisection(coarseGraphs[coarsen_levels-1]);
 
 
-	for (int i = 0; i < indMap.size(); i++)
-	{
-		cout << indMap[i] << endl;
-	}
-
-
+//	for (int i = 0; i < indMap.size(); i++)
+//	{
+//		cout << indMap[i] << endl;
+//	}
+//
+//
 	for (int i = coarseGraphs.size()-1 ; i>=0;i--)
 	{
 		cout << "Uncoarsening level " << i+1 << endl;
 		indMap = coarseGraphs[i].reorderGraph(indMap);
 	}
-	
-
-	for (int i = 0; i < indMap.size(); i++)
-	{
-		cout << indMap[i] << endl;
-	}
+//	
+//
+//	for (int i = 0; i < indMap.size(); i++)
+//	{
+//		cout << indMap[i] << endl;
+//	}
 
 	cout << "Uncoarsening level " << 0<< endl; 
 	indMap = G.reorderGraph(indMap);
 
-	for (int i = 0; i < G.getNumEdges(); i++)
-	{
-		cout << G.getEdgePoint(i,0) << " " << G.getEdgePoint(i,1) << endl;
-	}
-
-	for (int i = 0; i < indMap.size(); i++)
-	{
-		cout << indMap[i] << endl;
-	}
+//	for (int i = 0; i < G.getNumEdges(); i++)
+//	{
+//		cout << G.getEdgePoint(i,0) << " " << G.getEdgePoint(i,1) << endl;
+//	}
+//
+//	for (int i = 0; i < indMap.size(); i++)
+//	{
+//		cout << indMap[i] << endl;
+//	}
 	
 	adj = G.computeAdjacencyMatrix();
 	return indMap;
