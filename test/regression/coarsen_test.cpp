@@ -79,47 +79,6 @@ int runCoarsenTest()
 	gettimeofday(&end,NULL);
 	duration = ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
 
-
-        cout << " --- Child Match list --- " << endl;
-        for( int i=0; i<coarsen_me.getNumNodes(); i++){
-          cout << coarsen_me.getNodeMatch(i) << endl;
-        }
-        cout << " --- Coarse neighbor list --- " << endl;
-        for( int i =0; i<parent.getNumNodes(); i++){
-          cout << "node " << i << " : ";
-          for(unsigned int j =0; j<parent.getNeighbors(i).size(); j++){
-            cout << parent.getNeighbors(i)[j] << " ";
-          }
-          cout << endl;
-        }
-        cout << " --- Parent list --- " << endl;
-        for( int i=0; i<parent.getNumNodes(); i++){
-          cout << "parent node " << i << " has children :  ";
-          for (unsigned int j =0; j< parent.getChildren(i).size(); j++){
-            cout << parent.getChildren(i)[j] << " ";
-          }
-          cout << endl;
-        }
-        cout << " --- Coarsened edge weight --- " << endl;
-        for( int i =0; i<parent.getNumNodes(); i++){
-          cout << "node " << i << " : ";
-          for(unsigned int j =0; j<parent.getEdges(i).size(); j++){
-            cout << parent.getEdges(i)[j] << " ";
-          }
-          cout << endl;
-        }
-
-        cout << " --- Coarsened node weight --- " << endl;
-        for( int i =0; i<parent.getNumNodes(); i++){
-          cout << "node " << i << " : " << parent.getNodeWeight(i) << endl;
-        }
-
-        cout << " --- Coarsened edge list --- " << endl;
-        for( int i =0; i<parent.getNumEdges(); i++){
-          cout << parent.getEdgePoint(i,0) << " " << parent.getEdgePoint(i,1) << endl;
-        }
-
-
         cout << "Successfully coarsened graph in " << duration << " sec" << endl;
 
         return 0;
