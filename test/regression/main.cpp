@@ -9,6 +9,7 @@ int complex_graph();
 int corner_cases_graph();
 int facebook();
 int ompTest();  
+int matrixManip();
 
 int main()
 {
@@ -36,15 +37,23 @@ int main()
 	else
 		cout << "\033[0;31mFAILED: Coarsening Test\033[0m" << endl << endl;
 
-//        if(!facebook())
-//		cout << "\033[0;32mPASSED: Facebook Test\033[0m"  << endl << endl;
-//	else
-//		cout << "\033[0;31mFAILED: Facebook Test\033[0m" << endl << endl;
+	/*
+        if(!facebook())
+		cout << "\033[0;32mPASSED: Facebook Test\033[0m"  << endl << endl;
+	else
+		cout << "\033[0;31mFAILED: Facebook Test\033[0m" << endl << endl;
+		*/
 
         if(!ompTest())
 		cout << "\033[0;32mPASSED: OpenMP Test\033[0m"  << endl << endl;
 	else
 		cout << "\033[0;31mFAILED: OpenMP Test\033[0m" << endl << endl;
+
+        if(!matrixManip())
+		cout << "\033[0;32mPASSED: Matrix Operations Test\033[0m"  << endl << endl;
+	else
+		cout << "\033[0;31mFAILED: Matrix Operations Test\033[0m" << endl << endl;
+
 
 
         return 0;

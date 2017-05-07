@@ -31,11 +31,13 @@ check:
 	-cp ./src/graph.cpp ./test/regression
 	-cp ./src/coarsen.cpp ./test/regression
 	-cp ./src/spectralBisection.cpp ./test/regression
+	-cp ./src/matrixOperations.cpp ./test/regression
 	$(MAKE)	-C ./test/regression
 	$(MAKE) -C ./test/regression check
 	-rm ./test/regression/graph.cpp
 	-rm ./test/regression/coarsen.cpp
 	-rm ./test/regression/spectralBisection.cpp
+	-rm ./test/regression/matrixOperations.cpp
 	$(MAKE) -C ./test/regression clean
 
 coverage:

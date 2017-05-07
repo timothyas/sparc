@@ -156,17 +156,20 @@ CSC_MATRIX Graph::computeGraphLaplacian(CSC_MATRIX adjMat)
 	return lapMat;
 }
 
-CSC_MATRIX Graph::computeAdjacencyMatrix()
-{ 
-
+void Graph::sortNeighborList()
+{
 	//need to sort new neighborList in order to get
 	//the appropriate irow
-//	#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = 0; i < numNodes; i++)
 	{
 		std::sort(neighborList[i].begin(),neighborList[i].end());
 	}
+}
 
+CSC_MATRIX Graph::computeAdjacencyMatrix()
+{ 
+	this->sortNeighborList();
 
 	CSC_MATRIX adjMat;
 	adjMat.n = numNodes;

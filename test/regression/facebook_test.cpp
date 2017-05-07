@@ -9,6 +9,7 @@
 #include "areig.h"
 #include "arlssym.h"
 #include "spectralBisection.h"
+#include"matrixOperations.h"
 using namespace std;
 
 int facebook()
@@ -42,7 +43,8 @@ int facebook()
 	Graph1.reorderGraph(indMap);
 
 	CSC_MATRIX adj = Graph1.computeAdjacencyMatrix();
+	std::string outFile= "Results.dat";
 
-	saveMatrixToFile(adj,"Results.dat");
+	//saveMatrixToFile(adj,outFile);
 	return 0;
 }
