@@ -289,10 +289,15 @@ int Graph::coarsenFrom(Graph & g)
         // Find number of nodes for coarsened graph
         vector<int> unmatched;
         selectUnmatched_shared(g.getMatchList(),-1,unmatched);
-        numNodes = (g.getNumNodes() - (int)unmatched.size()) / 2 + (int)unmatched.size();
+        numNodes = (numChildren - (int)unmatched.size()) / 2 + (int)unmatched.size();
 
-        if( (g.getNumNodes() - (int)unmatched.size()) % 2 != 0 ) {
+        if( (numChildren - (int)unmatched.size()) % 2 != 0 ) {
           cout << "Error: Creating coarse graph, bad math for numNodes. See Graph::coarsenFrom(Graph&) " << endl;
+          cout << " -- Computed parentNumNodes = " << numNodes << endl;
+          cout << " -- Unmatched children = " << unmatched.size() << endl;
+          cout << " -- Total children = " << g.getNumNodes() << endl;
+          cout << " -- Matched children = (child.NumNodes-#unmatched)" << g.getNumNodes()-(int)unmatched.size() << " <-- should be divisible by 2 " << endl;
+
           return 1;
         }
 
