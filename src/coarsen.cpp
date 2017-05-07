@@ -20,9 +20,9 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
     
         
         int v, vi, me;
-        vector<int>::iterator viter;
+        vector<double>::iterator viter;
         vector<int> lonelyNeighbors;
-        vector<int> lonelyWeights;
+        vector<double> lonelyWeights;
         vector<int> nodeList;
         vector<int> raceList;
         vector<int> myNeighbors;

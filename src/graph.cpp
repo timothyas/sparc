@@ -53,7 +53,7 @@ std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 	return childIndMap; 
 }
 
-double Graph::getEdgePoint(int i,int j)
+int Graph::getEdgePoint(int i,int j)
 {
 	if (j > 1 || i > numEdges-1)
 	{
@@ -79,7 +79,7 @@ int Graph::getNodeWeight(int node)
         return nodeWeights[node];
 }
 
-int Graph::getEdgeWeight(int node, int neighborInd)
+double Graph::getEdgeWeight(int node, int neighborInd)
 {
         return edgeWeights[node][neighborInd];
 }
@@ -105,14 +105,14 @@ std::vector<int> Graph::getNeighbors(int node)
 	return neighborList[node];
 }
 
-std::vector<int> Graph::getEdges(int node)
-{
-        return edgeWeights[node];
-}
-
 std::vector<int> Graph::getChildren(int node)
 {
         return parentList[node];
+}
+
+std::vector<double> Graph::getEdges(int node)
+{
+        return edgeWeights[node];
 }
 
 CSC_MATRIX Graph::computeGraphLaplacian(CSC_MATRIX adjMat)
@@ -235,7 +235,7 @@ Graph::Graph(std::string filename)
         matchList.resize(numNodes,-1);
 	edge.resize(numEdges,vector<int>(2));
 	neighborList.resize(numNodes,vector<int>(0));
-        edgeWeights.resize(numNodes,vector<int>(0));
+        edgeWeights.resize(numNodes,vector<double>(0));
 
 	int edge1 = 0;
         int edge2 = 0;
@@ -248,8 +248,8 @@ Graph::Graph(std::string filename)
 		edge[row_counter][1]=edge2;
 		neighborList[edge1].push_back(edge2);
 		neighborList[edge2].push_back(edge1);
-                edgeWeights[edge1].push_back(1);
-                edgeWeights[edge2].push_back(1);
+                edgeWeights[edge1].push_back(1.0);
+                edgeWeights[edge2].push_back(1.0);
 		row_counter++; 
 		inFile >> edge1 >> edge2; 
 	}
@@ -273,7 +273,7 @@ Graph::Graph(std::string filename)
         #pragma omp parallel for
         for(int i=0; i<numNodes; i++){
           for(unsigned int j=0; j<edgeWeights[i].size(); j++){
-            edgeWeights[i][j] /= edgeWeights[ neighborList[i][j] ].size();
+            edgeWeights[i][j] /= (double)edgeWeights[ neighborList[i][j] ].size();
           }
         }
 }
@@ -349,7 +349,7 @@ int Graph::coarsenFrom(Graph & g)
 
         // Create edge and neighborlist
         neighborList.resize(numNodes,vector<int>(0));
-        edgeWeights.resize(numNodes,vector<int>(0));
+        edgeWeights.resize(numNodes,vector<double>(0));
 
         bool mappedToSameNode; 
         int currentChild, currentChildNeighbor, neighborInd, neighborInd2;
