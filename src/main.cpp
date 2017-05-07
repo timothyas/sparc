@@ -12,7 +12,7 @@
 using namespace std;
 using namespace boost::program_options; 
 
-std::vector<int> GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj);
+int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& indMap);
 // Determine if conflicting options are passed
 void conflicting_options(const variables_map& vm, const char* opt1, const char* opt2)
 {
@@ -57,7 +57,11 @@ int main(int argc, char * argv[])
 	int coarsen_levels = vm["coarse_levels"].as<int>();
 	Graph G(input_file);
 	CSC_MATRIX adj;
-	std::vector<int> indMap = GetMatrix(G,coarsen_levels,adj);
+	std::vector<int> indMap;
+        if(GetMatrix(G,coarsen_levels,adj,indMap)){
+          cout << "Error getting index map, exiting ... " << endl;
+          return 1;
+        }
 
         std::string outName("Results.dat");
 	saveMatrixToFile(adj,outName);
@@ -81,10 +85,10 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-std::vector<int> GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj)
+int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& indMap)
 {
 	std::vector<Graph> coarseGraphs (coarsen_levels);
-	std::vector<int> indMap;
+	//std::vector<int> indMap;
 	//double start, durations;
 
 	for (int i = 0; i < coarsen_levels;i++)
@@ -92,12 +96,18 @@ std::vector<int> GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj)
 		if (i==0)
 		{
 			cout << "Coarsening level " << i+1 << endl; 
-			coarseGraphs[i].coarsenFrom(G);
+			if(coarseGraphs[i].coarsenFrom(G)){
+                          cout << "Error coarsening graph at level " << i+1 << endl;
+                          return 1;     
+                        }
 		}
 		else
 		{
 			cout << "Coarsening level " << i+1 << endl; 
-			coarseGraphs[i].coarsenFrom(coarseGraphs[i-1]);
+			if(coarseGraphs[i].coarsenFrom(coarseGraphs[i-1])){
+                          cout << "Error coarsening graph at level " << i+1 << endl;
+                          return 1;     
+                        }
 		}
 	}
 
@@ -151,5 +161,5 @@ std::vector<int> GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj)
 //	}
 	
 	adj = G.computeAdjacencyMatrix();
-	return indMap;
+	return 0;
 }
