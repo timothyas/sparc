@@ -19,14 +19,12 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
 {
     
         
-        int v, vi;
+        int v, vi, me;
         vector<int>::iterator viter;
         vector<int> lonelyNeighbors;
         vector<int> lonelyWeights;
         vector<int> nodeList;
         vector<int> raceList;
-        int me, partner, opponent, indMe, indOpponent;
-        vector<int>::iterator itMe, itOpponent;
         vector<int> myNeighbors;
 
         for(int k=0; k<numColors; k++){
@@ -58,7 +56,7 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
               viter = std::max_element(lonelyWeights.begin(), lonelyWeights.end());
               vi = std::distance(lonelyWeights.begin(),viter);
               v = lonelyNeighbors[vi];
-
+        
               #pragma omp critical
               { 
                 // They both swiped right ... 
@@ -78,34 +76,10 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
 
 
         
-          #pragma omp parallel for private(me,partner,opponent,itMe,itOpponent,indMe,indOpponent)
+          #pragma omp parallel for 
           for( unsigned int u = 0; u<raceList.size(); u++){
-            me = raceList[u];
-            partner = g.getNodeMatch(me);
-            opponent = g.getNodeMatch(partner);
-            if( opponent != me ){
-              itMe = std::find(g.getNeighbors(partner).begin(),g.getNeighbors(partner).end(),me);
-              itOpponent = std::find(g.getNeighbors(partner).begin(),g.getNeighbors(partner).end(),opponent);
-              indMe = std::distance(g.getNeighbors(partner).begin(),itMe);
-              indOpponent = std::distance(g.getNeighbors(partner).begin(),itOpponent);
-
-              if( g.getEdgeWeight(partner,indMe) > g.getEdgeWeight(partner,indOpponent)){
-                #pragma omp critical
-                {
-                  g.setNodeMatch(opponent,-1);
-                  g.setNodeMatch(partner,me);
-              //    cout << "-- IT HAPPENED --" << endl;
-              //    cout << "me: " << me << " partner: " << partner << " opponent: " << opponent << endl;
-                }
-              }
-              else{
-                #pragma omp critical
-                {
-                  g.setNodeMatch(me,-1);
-              //    cout << "-- Opposite HAPPENED --" << endl;
-              //    cout << "me: " << me << " partner: " << partner << " opponent: " << opponent << endl;
-                }
-              }
+            if( raceList[u] != g.getNodeMatch(g.getNodeMatch(raceList[u])) ){
+              g.setNodeMatch(raceList[u],-1);
             }//end if me != opponent
           } //end parallel region
 

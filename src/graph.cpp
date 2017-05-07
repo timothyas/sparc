@@ -16,9 +16,8 @@ std::vector<int> Graph::reorderGraph(std::vector<int> indMap)
 {
         std::vector<int> magicMap(numNodes,0);
 
-        
-        for(unsigned int i=0; i<numNodes; i++){
-          for(unsigned int j=0; j<numNodes; j++){
+        for(int i=0; i<numNodes; i++){
+          for(int j=0; j<numNodes; j++){
             if( indMap[j]==i )
               magicMap[i]=j;
           }
@@ -268,6 +267,15 @@ Graph::Graph(std::string filename)
 	{
 		parentList[i].push_back(i);
 	}
+
+
+        // Assign nontrivial edgeweight
+        #pragma omp parallel for
+        for(int i=0; i<numNodes; i++){
+          for(unsigned int j=0; j<edgeWeights[i].size(); j++){
+            edgeWeights[i][j] /= edgeWeights[ neighborList[i][j] ].size();
+          }
+        }
 }
 
 
@@ -403,7 +411,8 @@ int Graph::coarsenFrom(Graph & g)
                   }
                   
                   if( neighborInd2==-1 ){
-                    cout << "Error: couldn't find parent in neighbor's neighbor list. This edge should already be accounted for. See Graph::coarsenFrom(Graph&)." << endl;
+                    cout << "Error: couldn't find parent in neighbor's neighbor list." << endl;
+                    cout << " -- This edge should already be accounted for. See Graph::coarsenFrom(Graph&)." << endl;
                     return 1;
                   }
                   
@@ -424,10 +433,6 @@ int Graph::writeEdgeList(std::string filename)
 {
 	ofstream outFile; 
 	outFile.open(filename.c_str());
-
-	int counter; 
-	int numMatched;
-	int row, col; 
 
         for (int i=0; i< numEdges; i++){
           outFile << edge[i][0] << " " << edge[i][1] << endl;
