@@ -18,7 +18,7 @@ include/arpackpp
 *.pdf
 results/*
 figs/*
-src/edgeList.txt
+edgeList.txt
 
 
 # C++ #
