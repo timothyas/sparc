@@ -8,26 +8,39 @@ import matplotlib.pyplot as plt
 import scipy.sparse as sps
 
 
-nCoarse=20
-nProcs=1
-fbData="../data/facebook_jumbled.txt"
+# --- Run time options & output files
+nCoarse=10
+nProcs=12
+fbData="../data/facebook_combined.txt"
 outName="Results.dat"
 outEdgeName="edgeList.txt"
-edgeNameBase = "../results/multi-coarsen/edge_"
-saveNameBase = "../results/multi-coarsen/adjacency_"
-plotNameBase = "../figs/multi-coarsen/adjacency_"
 
-if not os.path.isdir('../results'):
-        os.makedirs('../results')
-if not os.path.isdir('../results/multi-coarsen'):
-        os.makedirs('../results/multi-coarsen')
-if not os.path.isdir('../figs'):
-        os.makedirs('../figs')
-if not os.path.isdir('../figs/multi-coarsen'):
-        os.makedirs('../figs/multi-coarsen')
+# -- Result directory name
+if nProcs > 9:
+        runDir = "multi-coarsen-%d-procs" % nProcs
+else:
+        runDir = "multi-coarsen-0%d-procs" % nProcs
+
+# --- Set up dirs
+resultsDir = "../results"
+figsDir = "../figs"
+expOutput = "%s/%s" % (resultsDir,runDir)
+expFigs = "%s/%s" % (figsDir,runDir)
+edgeNameBase = "%s/edge_" % expOutput
+saveNameBase = "%s/adjacency_" % expOutput
+plotNameBase = "%s/adjacency_" % expFigs
+
+if not os.path.isdir(resultsDir):
+        os.makedirs(resultsDir)
+if not os.path.isdir(figsDir):
+        os.makedirs(figsDir)
+if not os.path.isdir(expOutput):
+        os.makedirs(expOutput)
+if not os.path.isdir(expFigs):
+        os.makedirs(expFigs)
 
 
-# Lets get spicy
+# --- Lets get spicy
 odNNz = np.zeros(nCoarse)
 
 for n in range(0,nCoarse):
@@ -58,7 +71,7 @@ for n in range(0,nCoarse):
                 print ""
                 print " -- Moving results to: ", saveName
                 move(outName,saveName)
-                move(outEdgeName,edgeName)
+                #move(outEdgeName,edgeName)
 
         # Load and plot
         a = np.loadtxt(saveName)
@@ -78,8 +91,9 @@ for n in range(0,nCoarse):
         plt.savefig(plotName,bbox_inches='tight',dpi=100)
         
 # Plot off diagonal nnz
+odnnzFig="%s/offDiagNNz.png" % expFigs
 plt.figure(figsize=(15,10))
 plt.plot(odNNz)
 plt.xlabel('Levels Coarsened')
 plt.ylabel('Off Diagonal Black NNz')
-plt.savefig("../figs/multi-coarsen/offDiagNNz.png",bbox_inches='tight',dpi=100)
+plt.savefig(odnnzFig,bbox_inches='tight',dpi=100)
