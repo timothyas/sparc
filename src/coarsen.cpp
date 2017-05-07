@@ -25,24 +25,28 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
         vector<int> lonelyWeights;
         vector<int> nodeList;
         vector<int> raceList;
-        int me,partner,opponent, indMe, indOpponent;
+        int me, partner, opponent, indMe, indOpponent;
         vector<int>::iterator itMe, itOpponent;
+        vector<int> myNeighbors;
 
         for(int k=0; k<numColors; k++){
 
           // Fill nodeList with unmatched nodes of this color
           doubleSelect_shared(colors, k, g.getMatchList(), -1,nodeList); 
 
-          #pragma omp parallel for private(v,vi,viter,lonelyNeighbors,lonelyWeights)
+          #pragma omp parallel for private(v,vi,viter,lonelyNeighbors,lonelyWeights,me,myNeighbors)
           for(unsigned int u = 0; u<nodeList.size(); u++){
 
+            me=nodeList[u];
+            myNeighbors=g.getNeighbors(me);
+
             // Find unmatched neighbors
-            for(unsigned int i = 0; i<g.getNeighbors(nodeList[u]).size(); i++){
-              if(g.getNodeMatch(g.getNeighbors(nodeList[u])[i]) == -1){
+            for(unsigned int i = 0; i<myNeighbors.size(); i++){
+              if(g.getNodeMatch(myNeighbors[i]) == -1){
                 #pragma omp critical
                 {
-                  lonelyNeighbors.push_back(g.getNeighbors(nodeList[u])[i]);
-                  lonelyWeights.push_back(g.getEdgeWeight(nodeList[u],i));
+                  lonelyNeighbors.push_back(myNeighbors[i]);
+                  lonelyWeights.push_back(g.getEdgeWeight(me,i));
                 }
               }
             }
@@ -51,23 +55,24 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
 
               // Find heaviest lonely neighbor, partner up!
               // Note: max_element returns iterator
-              viter = max_element(lonelyWeights.begin(), lonelyWeights.end());
-              vi = distance(lonelyWeights.begin(),viter);
+              viter = std::max_element(lonelyWeights.begin(), lonelyWeights.end());
+              vi = std::distance(lonelyWeights.begin(),viter);
               v = lonelyNeighbors[vi];
 
               #pragma omp critical
               { 
                 // They both swiped right ... 
-                g.setNodeMatch(nodeList[u],v);
-                g.setNodeMatch(v,nodeList[u]);
+                g.setNodeMatch(me,v);
+                g.setNodeMatch(v,me);
 
-                raceList.push_back(nodeList[u]);
+                raceList.push_back(me);
               }
             }
 
             // Clear neighbors for next round
             lonelyNeighbors.clear();
             lonelyWeights.clear();
+            myNeighbors.clear();
         
           } //end parallel region
 
@@ -80,21 +85,25 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
             opponent = g.getNodeMatch(partner);
             if( opponent != me ){
               itMe = std::find(g.getNeighbors(partner).begin(),g.getNeighbors(partner).end(),me);
-              itOpponent = std::find(g.getNeighbors(partner).begin(),g.getNeighbors(partner).begin(),opponent);
+              itOpponent = std::find(g.getNeighbors(partner).begin(),g.getNeighbors(partner).end(),opponent);
               indMe = std::distance(g.getNeighbors(partner).begin(),itMe);
-              indOpponent = std::distance(g.getNeighbors(partner).end(),itOpponent);
+              indOpponent = std::distance(g.getNeighbors(partner).begin(),itOpponent);
 
               if( g.getEdgeWeight(partner,indMe) > g.getEdgeWeight(partner,indOpponent)){
                 #pragma omp critical
                 {
                   g.setNodeMatch(opponent,-1);
                   g.setNodeMatch(partner,me);
+              //    cout << "-- IT HAPPENED --" << endl;
+              //    cout << "me: " << me << " partner: " << partner << " opponent: " << opponent << endl;
                 }
               }
               else{
                 #pragma omp critical
                 {
                   g.setNodeMatch(me,-1);
+              //    cout << "-- Opposite HAPPENED --" << endl;
+              //    cout << "me: " << me << " partner: " << partner << " opponent: " << opponent << endl;
                 }
               }
             }//end if me != opponent
