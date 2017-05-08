@@ -10,6 +10,7 @@
 #include<fstream>
 #include"matrixOperations.h"
 #include<ctime>
+#include<sys/time.h>
 #include<exception>
 #include<assert.h>
 #include<stdexcept>
@@ -17,15 +18,15 @@
 using namespace std;
 using namespace boost::program_options; 
 
-int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap);
+int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<std::vector<double> >& timeKeeper);
 std::vector<double> readV(std::string file);
-
 // Determine if conflicting options are passed
 void conflicting_options(const variables_map& vm, const char* opt1, const char* opt2)
 {
 	if (vm.count(opt1) && !vm[opt1].defaulted()  && vm.count(opt2) && !vm[opt2].defaulted())
 		throw logic_error(string("Conflicting options '") + opt1 + "' and '" + opt2 + "'.");
 }
+
 
 int main(int argc, char * argv[])
 {
@@ -82,8 +83,13 @@ int main(int argc, char * argv[])
 		}
 	}
 	
+        struct timeval start, end;
 	cout << "Solving Linear System" << endl;
+        gettimeofday(&start,NULL);
 	std::vector<double> b = iterSolver(G,v,alpha);
+        gettimeofday(&end,NULL);
+        timeKeeper[4].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+        cout << setprecision(5) << "--->Linear system solved (Time: " << timeKeeper[4][0] << ")" << endl;
 
 	if (!vm["noSB"].as<bool>())
 	{
@@ -103,6 +109,11 @@ int main(int argc, char * argv[])
         std::string edgeName("edgeList.txt");
         G.writeEdgeList(edgeName);
         cout << edgeName << " written" << endl;
+
+        std::string timeFile("timing.txt");
+        writeTimingToFile(timeKeeper,timeFile);
+        cout << timeFile << " written" << endl;
+
 	}
 	//Catch errors and exceptions. 
 	catch(exception & e) {
@@ -118,34 +129,51 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap)
+int PrepareGraph(Graph & G, int coarsen_levels, std::vector<int>& indMap, std::vector<std::vector<double> >& timeKeeper)
 {
 	std::vector<Graph> coarseGraphs (coarsen_levels);
+        struct timeval start, end;
+
 	for (int i = 0; i < coarsen_levels;i++)
 	{
 		if (i==0)
 		{
 			cout << "Coarsening level " << i+1 << endl; 
-			if(coarseGraphs[i].coarsenFrom(G)){
+			if(coarseGraphs[i].coarsenFrom(G,timeKeeper)){
                           cout << "Error coarsening graph at level " << i+1 << endl;
                           return 1;     
                         }
+                        cout << setprecision(5) << "--->Level " << i+1 << " complete (Time: ";
+                        cout << timeKeeper[0][i]+timeKeeper[1][i]+timeKeeper[2][i] << ")" << endl;
 		}
 		else
 		{
 			cout << "Coarsening level " << i+1 << endl; 
-			if(coarseGraphs[i].coarsenFrom(coarseGraphs[i-1])){
+			if(coarseGraphs[i].coarsenFrom(coarseGraphs[i-1],timeKeeper)){
                           cout << "Error coarsening graph at level " << i+1 << endl;
                           return 1;     
                         }
+                        cout << setprecision(5) << "--->Level " << i+1 << " complete (Time: ";
+                        cout << timeKeeper[0][i]+timeKeeper[1][i]+timeKeeper[2][i] << ")" << endl;
 		}
 	}
 
 	cout << "Spectral Bisection on Coarsest Level" << endl;
-	if (coarsen_levels==0)
+	if (coarsen_levels==0){
+                gettimeofday(&start,NULL);
 		indMap = spectralBisection(G);
-	else
+                gettimeofday(&end,NULL);
+                timeKeeper[3].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+                cout << setprecision(5) << "--->Spectral Bisection complete (Time: " << timeKeeper[3][0] << ")" << endl;
+        }       
+
+	else{
+                gettimeofday(&start,NULL);
 		indMap = spectralBisection(coarseGraphs[coarsen_levels-1]);
+                gettimeofday(&end,NULL);
+                timeKeeper[3].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+                cout << setprecision(5) << "--->Spectral Bisection complete (Time: " << timeKeeper[3][0] << ")" << endl;
+        }
 
 	for (int i = coarseGraphs.size()-1 ; i>=0;i--)
 	{
@@ -155,6 +183,7 @@ int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap)
 
 	cout << "Uncoarsening level " << 0<< endl; 
 	indMap = G.reorderGraph(indMap);
+
 	return 0;
 }
 

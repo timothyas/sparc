@@ -20,6 +20,7 @@ int runCoarsenTest()
         vector<int> colorList(coarsen_me.getNumNodes(), -1);
 	struct timeval start, end;
 	double duration;
+        vector<vector<double> > timeKeeper(5,0.0);
 
 
         // --- Color Test
@@ -75,7 +76,7 @@ int runCoarsenTest()
         Graph parent;
 
 	gettimeofday(&start,NULL);
-	parent.coarsenFrom(coarsen_me); 
+	parent.coarsenFrom(coarsen_me,timeKeeper); 
 	gettimeofday(&end,NULL);
 	duration = ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
 

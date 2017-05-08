@@ -31,7 +31,7 @@ class Graph {
                 std::vector<double> getEdges(int node);
 		std::vector<int> reorderGraph(std::vector<int> indMap);
                 std::vector<int> getChildren(int node);
-		int coarsenFrom(Graph & g);
+		int coarsenFrom(Graph & g, std::vector<std::vector<double> >& timeKeeper);
                 int writeEdgeList(std::string filename);
 		void sortNeighborList();
 

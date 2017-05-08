@@ -9,6 +9,8 @@
 #include<exception>
 #include<assert.h>
 #include<stdexcept>
+#include<sys/time.h>
+#include<iomanip>
 
 using namespace std; 
 
@@ -285,15 +287,29 @@ Graph::Graph(std::string filename)
 Graph::Graph()
 {
 }
-int Graph::coarsenFrom(Graph & g) 
+int Graph::coarsenFrom(Graph & g, std::vector<std::vector<double> >& timeKeeper) 
 {
 
-        // Perform coloring, then  maximal matching
         int numColors;
         vector<int> colorList(g.getNumNodes(),-1);
-        
+	struct timeval start, end;
+
+        // -- Coloring
+	gettimeofday(&start,NULL);
         colorGraph_shared(g, colorList, numColors);
+	gettimeofday(&end,NULL);
+	timeKeeper[0].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+        cout << setprecision(5) << "--->Graph coloring computed (Time: " << timeKeeper[0][timeKeeper[0].size()-1] << ")" << endl;
+
+        // -- Maximal matching
+	gettimeofday(&start,NULL);
         mxm_shared(g, colorList, numColors);
+	gettimeofday(&end,NULL);
+	timeKeeper[1].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+        cout << setprecision(5) << "--->Maximal matching computed (Time: " << timeKeeper[1][timeKeeper[1].size()-1] << ")" << endl;
+
+        // -- Create parent graph
+	gettimeofday(&start,NULL);
 
         numChildren = g.getNumNodes();
         
@@ -428,6 +444,12 @@ int Graph::coarsenFrom(Graph & g)
         }//end loop thru parent nodes
 
         numEdges = edge.size();
+
+        // -- end timing
+        gettimeofday(&end,NULL);
+	timeKeeper[2].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+        cout << setprecision(5) << "--->Parent graph computed (Time: " << timeKeeper[2][timeKeeper[2].size()-1] << ")" << endl;
+
 
 	return 0; 
 }

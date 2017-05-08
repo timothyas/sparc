@@ -37,13 +37,14 @@ int ompTest()
 
 	Graph Graph1; 
         std::vector<int> sbIndMap, g1IndMap;
+        std::vector<std::vector<double> > timeKeeper(5,0.0);
 
         // Set known values
-        sbIndMap = {0,1,2,3,4};
-        g1IndMap = {0,9,1,2,3,6,4,5,7,8};
+        sbIndMap = {2,3,4,0,1};
+        g1IndMap = {3,6,4,5,7,8,0,9,1,2};
 
         // --- Do the coarsening
-	Graph1.coarsenFrom(complex_graph);
+	Graph1.coarsenFrom(complex_graph,timeKeeper);
 
 	std::vector<int> indMap = spectralBisection(Graph1);
 	
