@@ -37,10 +37,10 @@ std::vector<double> iterSolver(Graph G,std::vector<double> v, double alpha)
 		applyScalar(bn1,alpha);
 		addVector(bn1,v);
 		residual = computeResidual(bn1,bn);
-		if (isnan(residual))
+		if (std::isnan(residual))
 		{
 			cout << "Error: Iterative solver is diverging...exiting" << endl; 
-			assert(isnan(residual)==false);
+			assert(std::isnan(residual)==false);
 		}
 	}
 
