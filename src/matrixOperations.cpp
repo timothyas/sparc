@@ -9,6 +9,7 @@
 #include<fstream>
 #include<vector>
 #include<assert.h>
+#include<omp.h>
 
 using namespace std;
 
@@ -110,10 +111,26 @@ std::vector<double> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CS
 	std::vector<double> b (Mats[0].n,0);
 	std::vector<std::vector<double> > temp_results(numMatVecs,std::vector<double> (Mats[0].n,0));
 
-	for (unsigned int i = 0; i < Mats.size(); i++)
-	{
-		temp_results[i] = CSC_singleMatVec(Mats[i],X[i]);
-	}
+        if( omp_get_num_threads() == 1 ){
+	  for (unsigned int i = 0; i < Mats.size(); i++)
+	  {
+	  	temp_results[i] = CSC_singleMatVec(Mats[i],X[i]);
+	  }
+        }
+        else{
+
+          #pragma omp parallel
+          {
+  
+            if(omp_get_thread_num() < omp_get_num_threads()/2){
+              temp_results[0] = CSC_singleMatVec(Mats[0],X[0]);
+            }
+            else{
+              temp_results[1] = CSC_singleMatVec(Mats[1],X[1]);
+            }
+          }//end parallel region
+        }
+
 
 	/*
 	cout << "temp results" << endl;
@@ -153,15 +170,13 @@ std::vector<double> CSC_singleMatVec(CSC_MATRIX A,CSC_MATRIX X)
 		return b; 
 	}
 
-	for (unsigned int j = 0; j < A.pcol.size()-1; j++)
-	{
-		if (X.irow[count]==j)
+	//for (unsigned int j = 0; j < A.pcol.size()-1; j++)
+	#pragma omp for schedule(static)
+        for (int j =0; j < X.irow.size();j++)
+        {
+	        for (int i = A.pcol[X.irow[j]]; i < A.pcol[X.irow[j]+1];i++)
 		{
-			for (int i = A.pcol[j]; i < A.pcol[j+1];i++)
-			{
-				b[A.irow[i]] += A.vals[i]*X.vals[count];
-			}
-			count++;
+			b[A.irow[i]] += A.vals[i]*X.vals[j];
 		}
 	}
 	return b; 
