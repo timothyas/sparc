@@ -38,6 +38,11 @@ std::vector<double> iterSolver(Graph G,std::vector<double> v, double alpha)
 		applyScalar(bn1,alpha);
 		addVector(bn1,v);
 		residual = computeResidual(bn1,bn);
+		if (std::isnan(residual))
+		{
+			cout << "Error: Iterative solver is diverging...exiting" << endl; 
+			assert(std::isnan(residual)==false);
+		}
 	}
 
 	cout << "--->Converged in " << iterations << " iterations. Residual = " << residual << endl;
@@ -50,6 +55,7 @@ int reorderVec(std::vector<double> &b, std::vector<int> indMap)
 	if (indMap.size() != b.size())
 	{
 		cerr << "Error: inconsistent information, cannot reorder" << endl;
+		assert(indMap.size() == b.size());
 		return 1; 
 	}
 
@@ -67,6 +73,7 @@ double computeResidual(std::vector<double> bn1,std::vector<double> bn)
 	if (bn1.size() != bn.size())
 	{
 		cerr << "Vectors must be of same size to compute residual...exiting" << endl; 
+		assert(bn1.size()==bn.size());
 		return 1; 
 	}
 
@@ -83,6 +90,7 @@ int addVector(std::vector<double> & b,std::vector<double> v)
 	if (b.size() != v.size())
 	{
 		cerr << "Vectors must be of same size to add...exiting" << endl; 
+		assert(b.size()==v.size());
 		return 1; 
 	}
 
