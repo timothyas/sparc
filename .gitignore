@@ -19,6 +19,7 @@ include/arpackpp
 results/*
 figs/*
 edgeList.txt
+src/Results.dat
 
 
 # C++ #
