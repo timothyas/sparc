@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
         cout << edgeName << " written" << endl;
 
         std::string timeFile("timing.txt");
-        writeTimingToFile(timeKeeper,timeFile);
+        writeTimingToFile(timeKeeper,timeFile,coarsen_levels);
         cout << timeFile << " written" << endl;
 
 	}

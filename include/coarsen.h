@@ -27,7 +27,7 @@ int colorGraph_shared(Graph& g, std::vector<int> &colors, int &numColors);
  * \param I: vector to be filled of maximal independent set
  * \return Error code (0 = success)
  */
-int mis_shared(Graph& g, std::vector<int> finalRemoveList, std::vector<int> &I);
+int mis_shared(Graph& g, std::vector<int> finalRemoveList, std::vector<int> &I, int currentColor);
 
 
 /* \brief Find unmatched nodes of a particular color.

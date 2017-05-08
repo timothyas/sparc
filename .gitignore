@@ -21,6 +21,7 @@ figs/*
 edgeList.txt
 src/Results.dat
 timing.txt
+src/timingExperiment.py
 
 
 # C++ #

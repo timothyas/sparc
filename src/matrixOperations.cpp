@@ -351,14 +351,19 @@ double getAij(CSC_MATRIX A,int i,int j)
 	}
 	return 0.0; 
 }
-int writeTimingToFile(std::vector<std::vector<double> >& timeKeeper, std::string filename)
+int writeTimingToFile(std::vector<std::vector<double> >& timeKeeper, std::string filename, int coarsen_levels)
 {
 	ofstream outFile; 
 	outFile.open(filename.c_str());
 
         for(unsigned int i=0; i<timeKeeper.size(); i++){
-          for(unsigned int j=0; j<timeKeeper[i].size(); j++){
-            outFile << setprecision(5) << timeKeeper[i][j] << " ";
+          for(int j=0; j<coarsen_levels; j++){
+            if( j > (int)timeKeeper[i].size()-1 ){
+              outFile << setprecision(5) << 0.0 << " ";
+            }   
+            else{
+              outFile << setprecision(5) << timeKeeper[i][j] << " ";
+            }
           }
           outFile << endl;
         }
