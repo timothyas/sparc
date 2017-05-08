@@ -37,7 +37,7 @@ int ompTest()
 
 	Graph Graph1; 
         std::vector<int> sbIndMap, g1IndMap;
-        std::vector<double> timeKeeper(4,0.0);
+        std::vector<double> timeKeeper(5,0.0);
 
         // Set known values
         sbIndMap = {2,3,4,0,1};

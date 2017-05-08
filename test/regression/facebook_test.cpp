@@ -18,7 +18,7 @@ int facebook()
 	cout << "Running Facebook Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
-        vector<double> timeKeeper(4,0.0);
+        vector<double> timeKeeper(5,0.0);
 	Graph Graph1("../../data/facebook_combined.txt");
 	Graph Graph2;
 	Graph Graph3;

@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
 	//Set up and solve for page rank vector
 	Graph G(input_file);
 	std::vector<int> indMap;
-        std::vector<double> timeKeeper(4,0.0);
+        std::vector<double> timeKeeper(5,0.0);
         if(PrepareGraph(G,coarsen_levels,indMap,timeKeeper))
 	{
           cout << "Error getting index map, exiting ... " << endl;
@@ -79,8 +79,14 @@ int main(int argc, char * argv[])
 
 	cout << "Reading in V" << endl;
 	std::vector<double> v = readV("VinFile.dat");
+
+        struct timeval start, end;
+
 	cout << "Solving Linear System" << endl;
+        gettimeofday(&start,NULL);
 	std::vector<double> b = iterSolver(G,v,alpha);
+        gettimeofday(&end,NULL);
+        timeKeeper[4] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
 
 	cout << "Reordering Answer" << endl;
 	if(reorderVec(b,indMap))
