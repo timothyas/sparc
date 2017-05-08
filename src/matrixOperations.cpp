@@ -104,6 +104,7 @@ int applyScalar(std::vector<double> & v, double Scalar)
 	
 std::vector<double> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CSC_MATRIX> X)
 {
+
 	assert(Mats.size()==X.size());
 	int numMatVecs = Mats.size();
 	std::vector<double> b (Mats[0].n,0);
@@ -140,6 +141,8 @@ std::vector<double> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CS
 
 std::vector<double> CSC_singleMatVec(CSC_MATRIX A,CSC_MATRIX X)
 {
+
+
 	assert(A.pcol.size()-1==X.n); //matrix dimensions agree
 	int count = 0;
 	std::vector<double> b (A.n,0);

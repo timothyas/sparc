@@ -242,8 +242,14 @@ Graph::Graph(std::string filename)
 	neighborList.resize(numNodes,vector<int>(0));
         edgeWeights.resize(numNodes,vector<double>(0));
 
+        for(int i=0; i<numNodes; i++){
+          neighborList[i].reserve(1000); 
+          edgeWeights[i].reserve(1000); 
+        }
+
 	int edge1 = 0;
         int edge2 = 0;
+        int maxEdge=0;
 	size_t row_counter=0; 
 
 	inFile >> edge1 >> edge2; 
@@ -251,6 +257,15 @@ Graph::Graph(std::string filename)
 	{
 		edge[row_counter][0]=edge1;
 		edge[row_counter][1]=edge2;
+
+                
+                if( edge2>numNodes ){
+                  if(edge2>maxEdge){
+                    maxEdge=edge2;
+                    cout << "Error: found node bigger than expected while assigning edges" << endl;
+                  }
+                }
+
 		neighborList[edge1].push_back(edge2);
 		neighborList[edge2].push_back(edge1);
                 edgeWeights[edge1].push_back(1.0);
@@ -272,6 +287,7 @@ Graph::Graph(std::string filename)
 	{
 		parentList[i].push_back(i);
 	}
+
 
 
         // Assign nontrivial edgeweight

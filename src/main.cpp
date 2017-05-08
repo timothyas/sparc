@@ -14,6 +14,7 @@
 #include<exception>
 #include<assert.h>
 #include<stdexcept>
+#include<numeric>
 
 using namespace std;
 using namespace boost::program_options; 
@@ -72,11 +73,12 @@ int main(int argc, char * argv[])
 	Graph G(input_file);
 	cout << "Reading in V" << endl;
 	std::vector<double> v = readV("VinFile.dat");
+        std::vector<std::vector<double> > timeKeeper(5,vector<double>(0));
 
 	std::vector<int> indMap;
 	if (!vm["noSB"].as<bool>())
 	{
-	        if(PrepareGraph(G,coarsen_levels,indMap))
+	        if(PrepareGraph(G,coarsen_levels,indMap,timeKeeper))
 		{
        		   cout << "Error getting index map, exiting ... " << endl;
        		   return 1;
@@ -87,6 +89,7 @@ int main(int argc, char * argv[])
 	cout << "Solving Linear System" << endl;
         gettimeofday(&start,NULL);
 	std::vector<double> b = iterSolver(G,v,alpha);
+
         gettimeofday(&end,NULL);
         timeKeeper[4].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
         cout << setprecision(5) << "--->Linear system solved (Time: " << timeKeeper[4][0] << ")" << endl;
@@ -195,12 +198,13 @@ std::vector<double> readV(std::string file)
 	inFile.open(file.c_str());
 	assert(inFile.good()!=0);
 	inFile >> val; 
-	b.push_back(val);
 	while(!inFile.eof())
 	{
+	        b.push_back(val);
 		inFile >> val; 
-		b.push_back(val);
 	}
+        inFile.close();
+
 	return b;
 }
 
