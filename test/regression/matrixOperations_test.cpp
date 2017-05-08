@@ -111,7 +111,7 @@ int matrixManip()
 		}	
 	cout << "Successfully divide vector in CSC format" << endl;
 
-	std::vector<int> b  = CSC_globalMatVec(Mats,X);
+	std::vector<double> b  = CSC_globalMatVec(Mats,X);
 
 	int bExacttemp[] = {2,2,1,4,1};
 	std::vector<int> bExact(bExacttemp,bExacttemp+sizeof(bExacttemp) / sizeof(int));
@@ -125,6 +125,46 @@ int matrixManip()
 		}
 	}
 	cout << "Successfully performed Matvec" << endl; 
+
+	double ExactSolvetemp[] = {0.56837607,  0.12393162,  0.03988604,  0.15384615,  0.11396011};
+	std::vector<double> ExactSolve(ExactSolvetemp,ExactSolvetemp+sizeof(ExactSolvetemp) / sizeof(double));
+
+	std::vector<double> v(5,0);
+	v[0]=1;
+
+	std::vector<double> Solve = iterSolver(G,v,0.5);
+	for (int i = 0; i < Solve.size(); i++)
+	{
+		if (fabs(Solve[i]-ExactSolve[i]) > 1e-7)
+		{
+			cout << "Error in iterative solver...exiting" << endl; 
+			return 1; 
+		}
+	}
+	cout << "Successfully solved system with iterative solver" << endl; 
+
+	double ExactSolvetemp1[] = { 0.03988604,0.12393162, 0.11396011,0.15384615, 0.56837607};
+	std::vector<double> ExactSolve1(ExactSolvetemp1,ExactSolvetemp1+sizeof(ExactSolvetemp1) / sizeof(double));
+
+	std::vector<int> indMap (5,0);
+	indMap[0] = 4; 
+	indMap[1] = 1; 
+	indMap[2] = 0; 
+	indMap[3] = 3; 
+	indMap[4] = 2; 
+
+	reorderVec(Solve,indMap);
+	for (int i = 0; i < Solve.size(); i++)
+	{
+		if (fabs(Solve[i]-ExactSolve1[i]) > 1e-7)
+		{
+			cout << "Error reordering vector...exiting" << endl; 
+			return 1; 
+		}
+	}
+	cout << "Successfully reordered vector" << endl; 
+
+
 
 	return 0;
 }

@@ -40,8 +40,8 @@ int ompTest()
         std::vector<double> timeKeeper(4,0.0);
 
         // Set known values
-        sbIndMap = {0,1,2,3,4};
-        g1IndMap = {0,9,1,2,3,6,4,5,7,8};
+        sbIndMap = {2,3,4,0,1};
+        g1IndMap = {3,6,4,5,7,8,0,9,1,2};
 
         // --- Do the coarsening
 	Graph1.coarsenFrom(complex_graph,timeKeeper);

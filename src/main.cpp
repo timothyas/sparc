@@ -1,5 +1,6 @@
 #include<iostream>
 #include<iomanip>
+#include<fstream>
 #include<math.h>
 #include"string.h"
 #include<omp.h>
@@ -10,11 +11,15 @@
 #include"matrixOperations.h"
 #include<ctime>
 #include<sys/time.h>
+#include<exception>
+#include<assert.h>
+#include<stdexcept>
 
 using namespace std;
 using namespace boost::program_options; 
 
-int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& indMap,std::vector<double>& timeKeeper);
+int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<double>& timeKeeper);
+std::vector<double> readV(std::string file);
 // Determine if conflicting options are passed
 void conflicting_options(const variables_map& vm, const char* opt1, const char* opt2)
 {
@@ -31,8 +36,10 @@ int main(int argc, char * argv[])
 		options_description desc("Allowed Options");
 		desc.add_options()
 			("help,h","show this mesage and exit")
-			("filename,f",value<std::string>()->required(),"(required) file containing initial graph data")
-			("coarse_levels,c",value<int>()->default_value(4),"Set coarsen levels")
+			("graphFile,f",value<std::string>()->required(),"(required) file containing initial graph data")
+			("alpha,a",value<double>()->default_value(0.5),"Set probability praramer alpha")
+			("coarse_levels,c",value<int>()->default_value(0),"Set coarsen levels")
+
 			("nprocs,p",value<int>()->default_value(4),"Set number of procs");
 		
 		// Second, store command line information
@@ -54,20 +61,36 @@ int main(int argc, char * argv[])
 
 		notify(vm);
 
+	//Get inputs 
 	omp_set_num_threads(vm["nprocs"].as<int>());
-
-	string input_file = vm["filename"].as< std::string >();
+	string input_file = vm["graphFile"].as< std::string >();
 	int coarsen_levels = vm["coarse_levels"].as<int>();
+	double alpha = vm["alpha"].as<double>();
+
+	//Set up and solve for page rank vector
 	Graph G(input_file);
-	CSC_MATRIX adj;
 	std::vector<int> indMap;
         std::vector<double> timeKeeper(4,0.0);
-        if(GetMatrix(G,coarsen_levels,adj,indMap,timeKeeper)){
+        if(PrepareGraph(G,coarsen_levels,indMap,timeKeeper))
+	{
           cout << "Error getting index map, exiting ... " << endl;
           return 1;
         }
 
-        std::string outName("Results.dat");
+	cout << "Reading in V" << endl;
+	std::vector<double> v = readV("VinFile.dat");
+	cout << "Solving Linear System" << endl;
+	std::vector<double> b = iterSolver(G,v,alpha);
+
+	cout << "Reordering Answer" << endl;
+	if(reorderVec(b,indMap))
+	{
+		return 1; 
+	}
+	cout << "Writing Results" << endl;
+	//Save Results
+	std::string outName = "Results.dat";
+	CSC_MATRIX adj = G.computeAdjacencyMatrix();
 	saveMatrixToFile(adj,outName);
         cout <<  outName << " written" << endl;
 
@@ -94,7 +117,7 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& indMap, std::vector<double>& timeKeeper)
+int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<double>& timeKeeper)
 {
 	std::vector<Graph> coarseGraphs (coarsen_levels);
         struct timeval start, end;
@@ -119,7 +142,6 @@ int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& i
 		}
 	}
 
-
 	cout << "Spectral Bisection on Coarsest Level" << endl;
 	if (coarsen_levels==0){
                 gettimeofday(&start,NULL);
@@ -135,7 +157,6 @@ int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& i
                 timeKeeper[3] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
         }
 
-
 	for (int i = coarseGraphs.size()-1 ; i>=0;i--)
 	{
 		cout << "Uncoarsening level " << i+1 << endl;
@@ -145,6 +166,21 @@ int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& i
 	cout << "Uncoarsening level " << 0<< endl; 
 	indMap = G.reorderGraph(indMap);
 
-	adj = G.computeAdjacencyMatrix();
 	return 0;
 }
+
+std::vector<double> readV(std::string file)
+{
+	std::vector<double> b; 
+	double val; 
+	ifstream inFile;
+	inFile.open(file.c_str());
+	assert(inFile.good()!=0);
+	while(!inFile.eof())
+	{
+		inFile >> val; 
+		b.push_back(val);
+	}
+	return b;
+}
+

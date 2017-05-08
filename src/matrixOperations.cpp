@@ -12,16 +12,121 @@
 
 using namespace std;
 
-std::vector<int> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CSC_MATRIX> X)
+std::vector<double> iterSolver(Graph G,std::vector<double> v, double alpha)
+{
+	double residual=1; 
+	double tol = 1e-14;
+	int iterations = 0; 
+
+	std::vector<CSC_MATRIX> Mats = getSubMatrices(G);
+	std::vector<CSC_MATRIX> X; 
+	CSC_MATRIX D = getDegreeMatrix(G);
+	std::vector<double> bn; 
+	CSC_MATRIX x = convertVecToCSC(v);
+	std::vector<double> bn1 = v; 
+	applyScalar(v,1-alpha);
+	
+	while(residual>tol)
+	{
+		iterations++; 
+		bn = bn1; 
+		x = convertVecToCSC(bn);
+		applyDinv(D,x);
+		X = divideVec(x);
+		bn1 = CSC_globalMatVec(Mats,X);
+		applyScalar(bn1,alpha);
+		addVector(bn1,v);
+		residual = computeResidual(bn1,bn);
+	}
+
+	cout << "--->Converged in " << iterations << " iterations. Residual = " << residual << endl;
+	return bn1;
+}
+
+int reorderVec(std::vector<double> &b, std::vector<int> indMap)
+{
+	std::vector<double> oldb = b; 
+	if (indMap.size() != b.size())
+	{
+		cerr << "Error: inconsistent information, cannot reorder" << endl;
+		return 1; 
+	}
+
+	for (int i = 0; i < indMap.size(); i++)
+	{
+		b[indMap[i]] = oldb[i];
+	}
+
+	return 0; 
+}
+
+double computeResidual(std::vector<double> bn1,std::vector<double> bn)
+{
+	double res = 0; 
+	if (bn1.size() != bn.size())
+	{
+		cerr << "Vectors must be of same size to compute residual...exiting" << endl; 
+		return 1; 
+	}
+
+	for (int i = 0; i < bn.size(); i++)
+	{
+		res+= pow(bn1[i]-bn[i],2);
+	}
+	res= pow(res,0.5);
+	return res;
+}
+
+int addVector(std::vector<double> & b,std::vector<double> v)
+{
+	if (b.size() != v.size())
+	{
+		cerr << "Vectors must be of same size to add...exiting" << endl; 
+		return 1; 
+	}
+
+	for (int i = 0; i < b.size(); i++)
+	{
+		b[i] += v[i];
+	}
+	return 0; 
+
+}
+
+int applyScalar(std::vector<double> & v, double Scalar)
+{
+	for (int i = 0; i < v.size(); i++)
+	{
+		v[i]=v[i]*Scalar;
+	}
+	return 0;
+}
+	
+std::vector<double> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CSC_MATRIX> X)
 {
 	assert(Mats.size()==X.size());
 	int numMatVecs = Mats.size();
-	std::vector<int> b (Mats[0].n,0);
-	std::vector<std::vector<int> > temp_results(numMatVecs,std::vector<int> (Mats[0].n,0));
+	std::vector<double> b (Mats[0].n,0);
+	std::vector<std::vector<double> > temp_results(numMatVecs,std::vector<double> (Mats[0].n,0));
+
 	for (int i = 0; i < Mats.size(); i++)
 	{
 		temp_results[i] = CSC_singleMatVec(Mats[i],X[i]);
 	}
+
+	/*
+	cout << "temp results" << endl;
+	for (int i = 0; i < temp_results.size(); i++)
+	{
+		
+		for (int j = 0; j < temp_results[i].size();j++)
+		{
+			cout << temp_results[i][j] << " ";
+
+		}
+		cout << endl;
+	}
+	*/
 
 	for (int i = 0; i < Mats[0].n; i++)
 	{
@@ -33,12 +138,19 @@ std::vector<int> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CSC_M
 	return b;
 }
 
-std::vector<int> CSC_singleMatVec(CSC_MATRIX A,CSC_MATRIX X)
+std::vector<double> CSC_singleMatVec(CSC_MATRIX A,CSC_MATRIX X)
 {
+	assert(A.pcol.size()-1==X.n); //matrix dimensions agree
 	int count = 0;
-	std::vector<int> b (A.n,0);
+	std::vector<double> b (A.n,0);
 
-	for (int j = 0; j < A.pcol.size(); j++)
+	// if X is all zeros, just return b of all zeros 
+	if (X.vals.size() == 0)
+	{
+		return b; 
+	}
+
+	for (int j = 0; j < A.pcol.size()-1; j++)
 	{
 		if (X.irow[count]==j)
 		{
@@ -59,7 +171,8 @@ std::vector<CSC_MATRIX> divideVec(CSC_MATRIX x)
 	int finalBlockSize = blockSize+ x.n%blockSize;
 	int remainder = x.n%blockSize;
 	std::vector<CSC_MATRIX> X (pow(2,numSB));
-	int val, row;
+	int row; 
+	double val;
 
 	for (int i = 0; i < x.irow.size(); i++)
 	{
@@ -84,6 +197,21 @@ std::vector<CSC_MATRIX> divideVec(CSC_MATRIX x)
 	X[X.size()-1].n = finalBlockSize;
 
 	return X;
+}
+
+CSC_MATRIX convertVecToCSC(std::vector<double> b)
+{
+	CSC_MATRIX x; 
+	x.n = b.size();
+	for (int i = 0; i < b.size(); i++)
+	{
+		if(b[i] != 0)
+		{
+			x.irow.push_back(i);
+			x.vals.push_back(b[i]);
+		}
+	}
+	return x;
 }
 
 std::vector<CSC_MATRIX> getSubMatrices(Graph G)
@@ -128,6 +256,38 @@ std::vector<CSC_MATRIX> getSubMatrices(Graph G)
 	}
 
 	return Mats;
+}
+
+int applyDinv(CSC_MATRIX D, CSC_MATRIX&  x)
+{
+	for (int i = 0; i < x.irow.size(); i++)
+	{
+		x.vals[i] = x.vals[i]/D.vals[i];
+	}
+
+	return 0; 
+
+
+}
+
+CSC_MATRIX getDegreeMatrix(Graph G)
+{
+	CSC_MATRIX D; 
+	D.n = G.getNumNodes();
+	D.irow.resize (D.n,0);
+	D.pcol.resize (D.n+1,0);
+	D.vals.resize (D.n,0);
+	std::vector<int> NE; 
+
+	for (int i = 0; i < D.n; i++)
+	{
+		NE = G.getNeighbors(i);
+		D.irow[i] = i; 
+		D.vals[i] = NE.size();
+		D.pcol[i] = i; 
+	}
+	D.pcol[D.n]=D.n;
+	return D; 
 }
 
 int saveMatrixToFile(CSC_MATRIX A,std::string filename)
