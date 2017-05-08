@@ -52,7 +52,7 @@ int reorderVec(std::vector<double> &b, std::vector<int> indMap)
 		return 1; 
 	}
 
-	for (int i = 0; i < indMap.size(); i++)
+	for (unsigned int i = 0; i < indMap.size(); i++)
 	{
 		b[indMap[i]] = oldb[i];
 	}
@@ -69,7 +69,7 @@ double computeResidual(std::vector<double> bn1,std::vector<double> bn)
 		return 1; 
 	}
 
-	for (int i = 0; i < bn.size(); i++)
+	for (unsigned int i = 0; i < bn.size(); i++)
 	{
 		res+= pow(bn1[i]-bn[i],2);
 	}
@@ -85,7 +85,7 @@ int addVector(std::vector<double> & b,std::vector<double> v)
 		return 1; 
 	}
 
-	for (int i = 0; i < b.size(); i++)
+	for (unsigned int i = 0; i < b.size(); i++)
 	{
 		b[i] += v[i];
 	}
@@ -95,7 +95,7 @@ int addVector(std::vector<double> & b,std::vector<double> v)
 
 int applyScalar(std::vector<double> & v, double Scalar)
 {
-	for (int i = 0; i < v.size(); i++)
+	for (unsigned int i = 0; i < v.size(); i++)
 	{
 		v[i]=v[i]*Scalar;
 	}
@@ -109,7 +109,7 @@ std::vector<double> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CS
 	std::vector<double> b (Mats[0].n,0);
 	std::vector<std::vector<double> > temp_results(numMatVecs,std::vector<double> (Mats[0].n,0));
 
-	for (int i = 0; i < Mats.size(); i++)
+	for (unsigned int i = 0; i < Mats.size(); i++)
 	{
 		temp_results[i] = CSC_singleMatVec(Mats[i],X[i]);
 	}
@@ -150,7 +150,7 @@ std::vector<double> CSC_singleMatVec(CSC_MATRIX A,CSC_MATRIX X)
 		return b; 
 	}
 
-	for (int j = 0; j < A.pcol.size()-1; j++)
+	for (unsigned int j = 0; j < A.pcol.size()-1; j++)
 	{
 		if (X.irow[count]==j)
 		{
@@ -174,7 +174,7 @@ std::vector<CSC_MATRIX> divideVec(CSC_MATRIX x)
 	int row; 
 	double val;
 
-	for (int i = 0; i < x.irow.size(); i++)
+	for (unsigned int i = 0; i < x.irow.size(); i++)
 	{
 		row = x.irow[i];
 		val= x.vals[i];
@@ -190,7 +190,7 @@ std::vector<CSC_MATRIX> divideVec(CSC_MATRIX x)
 		}
 	}
 
-	for (int i = 0; i < X.size()-1; i++)
+	for (unsigned int i = 0; i < X.size()-1; i++)
 	{
 		X[i].n = blockSize;
 	}
@@ -203,7 +203,7 @@ CSC_MATRIX convertVecToCSC(std::vector<double> b)
 {
 	CSC_MATRIX x; 
 	x.n = b.size();
-	for (int i = 0; i < b.size(); i++)
+	for (unsigned int i = 0; i < b.size(); i++)
 	{
 		if(b[i] != 0)
 		{
@@ -231,7 +231,7 @@ std::vector<CSC_MATRIX> getSubMatrices(Graph G)
 		{
 			NE = G.getNeighbors(j);
 			Mats[i].pcol.push_back(NE.size()+Mats[i].pcol.back());
-			for (int k = 0; k < NE.size(); k++)
+			for (unsigned int k = 0; k < NE.size(); k++)
 			{
 				Mats[i].irow.push_back(NE[k]);
 				Mats[i].vals.push_back(1);
@@ -248,7 +248,7 @@ std::vector<CSC_MATRIX> getSubMatrices(Graph G)
 	{
 		NE = G.getNeighbors(j);
 		Mats[i].pcol.push_back(NE.size()+Mats[i].pcol.back());
-		for (int k = 0; k < NE.size(); k++)
+		for (unsigned int k = 0; k < NE.size(); k++)
 		{
 			Mats[i].irow.push_back(NE[k]);
 			Mats[i].vals.push_back(1);
@@ -260,7 +260,7 @@ std::vector<CSC_MATRIX> getSubMatrices(Graph G)
 
 int applyDinv(CSC_MATRIX D, CSC_MATRIX&  x)
 {
-	for (int i = 0; i < x.irow.size(); i++)
+	for (unsigned int i = 0; i < x.irow.size(); i++)
 	{
 		x.vals[i] = x.vals[i]/D.vals[i];
 	}
@@ -351,13 +351,16 @@ double getAij(CSC_MATRIX A,int i,int j)
 	}
 	return 0.0; 
 }
-int writeTimingToFile(std::vector<double>& timeKeeper, std::string filename)
+int writeTimingToFile(std::vector<std::vector<double> >& timeKeeper, std::string filename)
 {
 	ofstream outFile; 
 	outFile.open(filename.c_str());
 
         for(unsigned int i=0; i<timeKeeper.size(); i++){
-          outFile << timeKeeper[i] << endl;
+          for(unsigned int j=0; j<timeKeeper[i].size(); j++){
+            outFile << setprecision(5) << timeKeeper[i][j] << " ";
+          }
+          outFile << endl;
         }
 
         outFile.close();

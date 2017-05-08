@@ -18,7 +18,7 @@
 using namespace std;
 using namespace boost::program_options; 
 
-int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<double>& timeKeeper);
+int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<std::vector<double> >& timeKeeper);
 std::vector<double> readV(std::string file);
 // Determine if conflicting options are passed
 void conflicting_options(const variables_map& vm, const char* opt1, const char* opt2)
@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
 	//Set up and solve for page rank vector
 	Graph G(input_file);
 	std::vector<int> indMap;
-        std::vector<double> timeKeeper(5,0.0);
+        std::vector<std::vector<double> > timeKeeper(5,vector<double>(0));
         if(PrepareGraph(G,coarsen_levels,indMap,timeKeeper))
 	{
           cout << "Error getting index map, exiting ... " << endl;
@@ -86,7 +86,8 @@ int main(int argc, char * argv[])
         gettimeofday(&start,NULL);
 	std::vector<double> b = iterSolver(G,v,alpha);
         gettimeofday(&end,NULL);
-        timeKeeper[4] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
+        timeKeeper[4].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+        cout << setprecision(5) << "--->Linear system solved (Time: " << timeKeeper[4][0] << ")" << endl;
 
 	cout << "Reordering Answer" << endl;
 	if(reorderVec(b,indMap))
@@ -123,7 +124,7 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<double>& timeKeeper)
+int PrepareGraph(Graph & G, int coarsen_levels, std::vector<int>& indMap, std::vector<std::vector<double> >& timeKeeper)
 {
 	std::vector<Graph> coarseGraphs (coarsen_levels);
         struct timeval start, end;
@@ -137,6 +138,8 @@ int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vec
                           cout << "Error coarsening graph at level " << i+1 << endl;
                           return 1;     
                         }
+                        cout << setprecision(5) << "--->Level " << i+1 << " complete (Time: ";
+                        cout << timeKeeper[0][i]+timeKeeper[1][i]+timeKeeper[2][i] << ")" << endl;
 		}
 		else
 		{
@@ -145,6 +148,8 @@ int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vec
                           cout << "Error coarsening graph at level " << i+1 << endl;
                           return 1;     
                         }
+                        cout << setprecision(5) << "--->Level " << i+1 << " complete (Time: ";
+                        cout << timeKeeper[0][i]+timeKeeper[1][i]+timeKeeper[2][i] << ")" << endl;
 		}
 	}
 
@@ -153,14 +158,16 @@ int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vec
                 gettimeofday(&start,NULL);
 		indMap = spectralBisection(G);
                 gettimeofday(&end,NULL);
-                timeKeeper[3] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
+                timeKeeper[3].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+                cout << setprecision(5) << "--->Spectral Bisection complete (Time: " << timeKeeper[3][0] << ")" << endl;
         }       
 
 	else{
                 gettimeofday(&start,NULL);
 		indMap = spectralBisection(coarseGraphs[coarsen_levels-1]);
                 gettimeofday(&end,NULL);
-                timeKeeper[3] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
+                timeKeeper[3].push_back(((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6);
+                cout << setprecision(5) << "--->Spectral Bisection complete (Time: " << timeKeeper[3][0] << ")" << endl;
         }
 
 	for (int i = coarseGraphs.size()-1 ; i>=0;i--)

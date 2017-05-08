@@ -20,7 +20,7 @@ int runCoarsenTest()
         vector<int> colorList(coarsen_me.getNumNodes(), -1);
 	struct timeval start, end;
 	double duration;
-        vector<double> timeKeeper(5,0.0);
+        vector<vector<double> > timeKeeper(5,0.0);
 
 
         // --- Color Test

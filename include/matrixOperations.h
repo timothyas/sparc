@@ -9,7 +9,7 @@ std::vector<CSC_MATRIX> getSubMatrices(Graph G);
 double getAij(CSC_MATRIX A,int i,int j);
 int saveMatrixToFile(CSC_MATRIX A,std::string filename);
 std::vector<CSC_MATRIX> divideVec(CSC_MATRIX X);
-int writeTimingToFile(std::vector<double>& timeKeeper, std::string filename);
+int writeTimingToFile(std::vector<std::vector<double> >& timeKeeper, std::string filename);
 std::vector<double> CSC_singleMatVec(CSC_MATRIX A,CSC_MATRIX X);
 std::vector<double> CSC_globalMatVec(std::vector<CSC_MATRIX> Mats,std::vector<CSC_MATRIX> X);
 CSC_MATRIX convertVecToCSC(std::vector<double> b);

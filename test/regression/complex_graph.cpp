@@ -21,7 +21,7 @@ int complex_graph()
 
 	CSC_MATRIX adj = complex_graph.computeAdjacencyMatrix();
 
-        vector<double> timeKeeper(5,0.0);
+        vector<vector<double> > timeKeeper(5,0.0);
 	int irow_temp[] = {1,6,9,2,3,4,6,5,6,7,8};
 	int pcol_temp[] = {0,3,5,5,7,8,9,10,11,11,11};
 	int vals_temp[] = {1,1,1,1,1,1,1,1,1,1,1};
