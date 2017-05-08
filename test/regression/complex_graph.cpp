@@ -21,6 +21,7 @@ int complex_graph()
 
 	CSC_MATRIX adj = complex_graph.computeAdjacencyMatrix();
 
+        vector<double> timeKeeper(4,0.0);
 	int irow_temp[] = {1,6,9,2,3,4,6,5,6,7,8};
 	int pcol_temp[] = {0,3,5,5,7,8,9,10,11,11,11};
 	int vals_temp[] = {1,1,1,1,1,1,1,1,1,1,1};
@@ -103,8 +104,8 @@ int complex_graph()
 	Graph Graph1; 
 	Graph Graph2;
 
-	Graph1.coarsenFrom(complex_graph);
-	Graph2.coarsenFrom(Graph1);
+	Graph1.coarsenFrom(complex_graph,timeKeeper);
+	Graph2.coarsenFrom(Graph1,timeKeeper);
 	std::vector<int> indMap = spectralBisection(Graph2);
 
 	/*

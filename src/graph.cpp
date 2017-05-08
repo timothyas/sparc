@@ -9,6 +9,7 @@
 #include<exception>
 #include<assert.h>
 #include<stdexcept>
+#include<sys/time.h>
 
 using namespace std; 
 
@@ -285,15 +286,27 @@ Graph::Graph(std::string filename)
 Graph::Graph()
 {
 }
-int Graph::coarsenFrom(Graph & g) 
+int Graph::coarsenFrom(Graph & g, std::vector<double>& timeKeeper) 
 {
 
-        // Perform coloring, then  maximal matching
         int numColors;
         vector<int> colorList(g.getNumNodes(),-1);
-        
+	struct timeval start, end;
+
+        // -- Coloring
+	gettimeofday(&start,NULL);
         colorGraph_shared(g, colorList, numColors);
+	gettimeofday(&end,NULL);
+	timeKeeper[0] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
+
+        // -- Maximal matching
+	gettimeofday(&start,NULL);
         mxm_shared(g, colorList, numColors);
+	gettimeofday(&end,NULL);
+	timeKeeper[1] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
+
+        // -- Create parent graph
+	gettimeofday(&start,NULL);
 
         numChildren = g.getNumNodes();
         
@@ -428,6 +441,11 @@ int Graph::coarsenFrom(Graph & g)
         }//end loop thru parent nodes
 
         numEdges = edge.size();
+
+        // -- end timing
+        gettimeofday(&end,NULL);
+	timeKeeper[2] += ((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6;
+
 
 	return 0; 
 }

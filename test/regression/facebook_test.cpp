@@ -18,19 +18,20 @@ int facebook()
 	cout << "Running Facebook Test" << endl; 
 	cout << "----------------------------------------------------------------------" << endl; 
 
+        vector<double> timeKeeper(4,0.0);
 	Graph Graph1("../../data/facebook_combined.txt");
 	Graph Graph2;
 	Graph Graph3;
 	Graph Graph4;
 
 	cout << "Coarsening level 1" << endl; 
-	Graph2.coarsenFrom(Graph1);
+	Graph2.coarsenFrom(Graph1,timeKeeper);
 
 	cout << "Coarsening level 2" << endl; 
-	Graph3.coarsenFrom(Graph2);
+	Graph3.coarsenFrom(Graph2,timeKeeper);
 
 	cout << "Coarsening level 3" << endl; 
-	Graph4.coarsenFrom(Graph3);
+	Graph4.coarsenFrom(Graph3,timeKeeper);
 
 	cout << "Spectral Bisection" << endl; 
 	std::vector<int> indMap = spectralBisection(Graph3);

@@ -191,3 +191,15 @@ double getAij(CSC_MATRIX A,int i,int j)
 	}
 	return 0.0; 
 }
+int writeTimingToFile(std::vector<double>& timeKeeper, std::string filename)
+{
+	ofstream outFile; 
+	outFile.open(filename.c_str());
+
+        for(unsigned int i=0; i<timeKeeper.size(); i++){
+          outFile << timeKeeper[i] << endl;
+        }
+
+        outFile.close();
+        return 0;
+}
