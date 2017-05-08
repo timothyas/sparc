@@ -21,6 +21,7 @@ using namespace boost::program_options;
 
 int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<std::vector<double> >& timeKeeper);
 std::vector<double> readV(std::string file);
+int saveVec(std::vector<double> b, std::string file);
 // Determine if conflicting options are passed
 void conflicting_options(const variables_map& vm, const char* opt1, const char* opt2)
 {
@@ -108,6 +109,9 @@ int main(int argc, char * argv[])
 	CSC_MATRIX adj = G.computeAdjacencyMatrix();
 	saveMatrixToFile(adj,outName);
         cout <<  outName << " written" << endl;
+
+	std::string prvec = "Page_Rank_Vec.txt";
+	saveVec(b,prvec);
 
         std::string edgeName("edgeList.txt");
         G.writeEdgeList(edgeName);
@@ -206,5 +210,18 @@ std::vector<double> readV(std::string file)
         inFile.close();
 
 	return b;
+}
+
+int saveVec(std::vector<double> b, std::string file)
+{
+	ofstream outFile; 
+	outFile.open(file.c_str());
+	for (int i = 0; i < b.size();i++)
+	{
+		outFile << b[i] << "\n";
+	}
+	outFile.close();
+	return 0;
+
 }
 

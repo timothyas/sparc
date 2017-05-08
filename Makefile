@@ -4,8 +4,8 @@ BOOSTINC := $(shell env | grep BOOST | grep INC | cut -f 2 -d=)
 SPIC_DIR = ${PWD}
 INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod -I${BOOSTINC}
 
-LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external -L${BOOSTLIB}
-LDLIBS     :=   -larpack -lsuperlu -lgfortran -llapack -lblas -lboost_program_options
+LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external -L${BOOSTLIB} 
+LDLIBS     :=  -larpack -lsuperlu -lgfortran  -llapack  -lblas -lboost_program_options
 
 # Export variables so check, install, and coverage can all use libraries
 export LDFLAGS
