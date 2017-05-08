@@ -6,8 +6,6 @@ OBJ  := $(patsubst %.cpp,%.o,$(SRC))
 # OPTIONS
 CC      := g++ 
 CFLAGS  :=-O3 -g -p -Wall -std=c++11
-IMP	:= ../../include/graph.h \
-	   ../../include/coarsen.h
 
 # RULES
 $(EXEC): $(OBJ)

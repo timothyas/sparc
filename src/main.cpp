@@ -7,6 +7,7 @@
 #include"graph.h"
 #include"spectralBisection.h"
 #include<fstream>
+#include"matrixOperations.h"
 #include<ctime>
 
 using namespace std;
