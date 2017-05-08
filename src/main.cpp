@@ -38,8 +38,9 @@ int main(int argc, char * argv[])
 			("graphFile,f",value<std::string>()->required(),"(required) file containing initial graph data")
 			("alpha,a",value<double>()->default_value(0.5),"Set probability praramer alpha")
 			("coarse_levels,c",value<int>()->default_value(0),"Set coarsen levels")
-
+			("noSB,n",bool_switch(),"Don't do spectral bisection. Just solve pagerank problem with original graph.")
 			("nprocs,p",value<int>()->default_value(4),"Set number of procs");
+			
 		
 		// Second, store command line information
 		variables_map vm;
@@ -68,22 +69,29 @@ int main(int argc, char * argv[])
 
 	//Set up and solve for page rank vector
 	Graph G(input_file);
-	std::vector<int> indMap;
-        if(PrepareGraph(G,coarsen_levels,indMap))
-	{
-          cout << "Error getting index map, exiting ... " << endl;
-          return 1;
-        }
-
 	cout << "Reading in V" << endl;
 	std::vector<double> v = readV("VinFile.dat");
+
+	std::vector<int> indMap;
+	if (!vm["noSB"].as<bool>())
+	{
+	        if(PrepareGraph(G,coarsen_levels,indMap))
+		{
+       		   cout << "Error getting index map, exiting ... " << endl;
+       		   return 1;
+		}
+	}
+	
 	cout << "Solving Linear System" << endl;
 	std::vector<double> b = iterSolver(G,v,alpha);
 
+	if (!vm["noSB"].as<bool>())
+	{
 	cout << "Reordering Answer" << endl;
 	if(reorderVec(b,indMap))
 	{
 		return 1; 
+	}
 	}
 	cout << "Writing Results" << endl;
 	//Save Results
@@ -157,6 +165,8 @@ std::vector<double> readV(std::string file)
 	ifstream inFile;
 	inFile.open(file.c_str());
 	assert(inFile.good()!=0);
+	inFile >> val; 
+	b.push_back(val);
 	while(!inFile.eof())
 	{
 		inFile >> val; 
