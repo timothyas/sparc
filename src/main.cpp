@@ -86,6 +86,10 @@ int main(int argc, char * argv[])
 		}
 	}
 	
+	std::string reEdge("ReorderedGraph.txt");
+        G.writeEdgeList(reEdge);
+        cout << reEdge << " written" << endl;
+
         struct timeval start, end;
 	cout << "Solving Linear System" << endl;
         gettimeofday(&start,NULL);

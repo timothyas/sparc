@@ -1,4 +1,3 @@
-HELLO:=$(echo hello)
 BOOSTLIB := $(shell env | grep BOOST | grep LIB | cut -f 2 -d=)
 BOOSTINC := $(shell env | grep BOOST | grep INC | cut -f 2 -d=)
 SPIC_DIR = ${PWD}

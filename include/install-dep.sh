@@ -11,14 +11,10 @@ fi
 
 if $(ldconfig -p | grep -q "[b]las");then
 	echo Found blas
-else
-	echo Warning, cannot find blas. 
 fi
 
 if $(ldconfig -p | grep -q "[l]apack");then
 	echo Found lapack
-else
-	echo Warning, cannot find lapack. 
 fi
 
 
@@ -47,7 +43,6 @@ else
 		cd $SPIC_DIR/include/
 		./install-superlu.sh
 fi
-
 
 #if [ -d "./external/SuiteSparse" ]; then 
 #	echo Found SuiteSparse

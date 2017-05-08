@@ -36,7 +36,7 @@ std::vector<int> spectralBisection(Graph G)
 	int nev = 2; 
 	int ncv = min(2*nev+1,lap.n);
 
-	ARluSymStdEig<double> prob(nev,L,"SM",ncv,0,1000000);
+	ARluSymStdEig<double> prob(nev,L,"SM",ncv,0,1000000000);
 	prob.FindEigenvectors();
 
 	double * Eigvec = prob.RawEigenvector(1);
