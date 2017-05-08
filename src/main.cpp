@@ -1,5 +1,6 @@
 #include<iostream>
 #include<iomanip>
+#include<fstream>
 #include<math.h>
 #include"string.h"
 #include<omp.h>
@@ -9,11 +10,16 @@
 #include<fstream>
 #include"matrixOperations.h"
 #include<ctime>
+#include<exception>
+#include<assert.h>
+#include<stdexcept>
 
 using namespace std;
 using namespace boost::program_options; 
 
-int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& indMap);
+int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap);
+std::vector<double> readV(std::string file);
+
 // Determine if conflicting options are passed
 void conflicting_options(const variables_map& vm, const char* opt1, const char* opt2)
 {
@@ -29,8 +35,10 @@ int main(int argc, char * argv[])
 		options_description desc("Allowed Options");
 		desc.add_options()
 			("help,h","show this mesage and exit")
-			("filename,f",value<std::string>()->required(),"(required) file containing initial graph data")
-			("coarse_levels,c",value<int>()->default_value(4),"Set coarsen levels")
+			("graphFile,f",value<std::string>()->required(),"(required) file containing initial graph data")
+			("alpha,a",value<double>()->default_value(0.5),"Set probability praramer alpha")
+			("coarse_levels,c",value<int>()->default_value(0),"Set coarsen levels")
+
 			("nprocs,p",value<int>()->default_value(4),"Set number of procs");
 		
 		// Second, store command line information
@@ -52,19 +60,35 @@ int main(int argc, char * argv[])
 
 		notify(vm);
 
+	//Get inputs 
 	omp_set_num_threads(vm["nprocs"].as<int>());
-
-	string input_file = vm["filename"].as< std::string >();
+	string input_file = vm["graphFile"].as< std::string >();
 	int coarsen_levels = vm["coarse_levels"].as<int>();
+	double alpha = vm["alpha"].as<double>();
+
+	//Set up and solve for page rank vector
 	Graph G(input_file);
-	CSC_MATRIX adj;
 	std::vector<int> indMap;
-        if(GetMatrix(G,coarsen_levels,adj,indMap)){
+        if(PrepareGraph(G,coarsen_levels,indMap))
+	{
           cout << "Error getting index map, exiting ... " << endl;
           return 1;
         }
 
-        std::string outName("Results.dat");
+	cout << "Reading in V" << endl;
+	std::vector<double> v = readV("VinFile.dat");
+	cout << "Solving Linear System" << endl;
+	std::vector<double> b = iterSolver(G,v,alpha);
+
+	cout << "Reordering Answer" << endl;
+	if(reorderVec(b,indMap))
+	{
+		return 1; 
+	}
+	cout << "Writing Results" << endl;
+	//Save Results
+	std::string outName = "Results.dat";
+	CSC_MATRIX adj = G.computeAdjacencyMatrix();
 	saveMatrixToFile(adj,outName);
         cout <<  outName << " written" << endl;
 
@@ -86,12 +110,9 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& indMap)
+int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap)
 {
 	std::vector<Graph> coarseGraphs (coarsen_levels);
-	//std::vector<int> indMap;
-	//double start, durations;
-
 	for (int i = 0; i < coarsen_levels;i++)
 	{
 		if (i==0)
@@ -112,55 +133,35 @@ int GetMatrix(Graph & G,int coarsen_levels,CSC_MATRIX & adj, std::vector<int>& i
 		}
 	}
 
-
-//	for (int i = 0; i < coarsen_levels; i++)
-//	{
-//		cout << "LEVEL " << i << endl;
-//		for (int j = 0; j < coarseGraphs[i].getNumEdges();j++)
-//		{
-//			cout << coarseGraphs[i].getEdgePoint(j,0) << " " << coarseGraphs[i].getEdgePoint(j,1) << endl;
-//		}
-//		cout << endl;
-//	}
-
 	cout << "Spectral Bisection on Coarsest Level" << endl;
 	if (coarsen_levels==0)
 		indMap = spectralBisection(G);
 	else
 		indMap = spectralBisection(coarseGraphs[coarsen_levels-1]);
 
-
-//	for (int i = 0; i < indMap.size(); i++)
-//	{
-//		cout << indMap[i] << endl;
-//	}
-//
-//
 	for (int i = coarseGraphs.size()-1 ; i>=0;i--)
 	{
 		cout << "Uncoarsening level " << i+1 << endl;
 		indMap = coarseGraphs[i].reorderGraph(indMap);
 	}
-//	
-//
-//	for (int i = 0; i < indMap.size(); i++)
-//	{
-//		cout << indMap[i] << endl;
-//	}
 
 	cout << "Uncoarsening level " << 0<< endl; 
 	indMap = G.reorderGraph(indMap);
-
-//	for (int i = 0; i < G.getNumEdges(); i++)
-//	{
-//		cout << G.getEdgePoint(i,0) << " " << G.getEdgePoint(i,1) << endl;
-//	}
-//
-//	for (int i = 0; i < indMap.size(); i++)
-//	{
-//		cout << indMap[i] << endl;
-//	}
-	
-	adj = G.computeAdjacencyMatrix();
 	return 0;
 }
+
+std::vector<double> readV(std::string file)
+{
+	std::vector<double> b; 
+	double val; 
+	ifstream inFile;
+	inFile.open(file.c_str());
+	assert(inFile.good()!=0);
+	while(!inFile.eof())
+	{
+		inFile >> val; 
+		b.push_back(val);
+	}
+	return b;
+}
+
