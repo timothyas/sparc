@@ -21,21 +21,30 @@ def adj_plotter(dataFile,plotName,ms):
         vals = [float(x) for x in line2.split()];
         pcol = [int(x) for x in line3.split()];
 
-        N=len(pcol)-1
-        NNz=pcol[N]
+
         
         a = sps.csc_matrix( (vals,irow,pcol) )
+        offDiagNNz = 0; 
+        n = len(pcol)-1
+        NNz=pcol[n]
+        for i in xrange(0,n/2-1):
+        	for j in xrange(pcol[i],pcol[i+1]):
+        		if (irow[j] > (n/2.0-1)):
+        			offDiagNNz += 1; 
+
         
         plt.figure(figsize=(15,15))
         mh=plt.spy(a,markersize=ms)
         plt.spy(a.transpose(),markersize=ms)
+        plt.xlabel(("Total nnz = %d,     Off-Diagonal Blocks nnz = %d" % (NNz,2*offDiagNNz)),fontsize=32)
+
         
         #plt.show()
         plt.savefig(plotName,bbox_inches='tight',dpi=100)
 
 #Data dir
-dataDir="../results/multi-coarsen-12-procs"
-figDir="../figs/multi-coarsen-12-procs"
+dataDir="../results/multi-coarsen-01-procs"
+figDir="../figs/multi-coarsen-01-procs"
 
 # Make the plots
 dataFileList = [("%s/adj_fb.dat" % dataDir),
@@ -52,7 +61,7 @@ figNameList = [("%s/adj_fb.png" % figDir),
                 ("%s/adj_fb_reorder.png" % figDir)];
 
 
-ms=np.array([5,6,8,8,6,5])
+ms=np.array([5.5,6.5,9,9,6.5,5.5])
 
 for i in range(0,len(dataFileList)):
         adj_plotter(dataFileList[i],figNameList[i],ms[i])

@@ -23,7 +23,7 @@ int plotCoarsen()
 
         cout << "Setting up truncated facebook data " << endl;
         
-        if(rewriteEdgeList("../../data/facebook_combined.txt","../../data/facebook_truncated.txt",200)){
+        if(rewriteEdgeList("../../data/facebook_combined.txt","../../data/facebook_truncated.txt",201)){
           cout << "Error rewriting edgelist, exiting ... " << endl;
           return 1;
         }
@@ -104,8 +104,8 @@ int rewriteEdgeList(std::string readfile, std::string writefile, int maxNode)
         
         while(!infile.eof()){
         
-          if(edge1 < maxNode && edge2<maxNode ) {
-        //  && edge1 > 49 && edge2 > 49){
+          if(edge1 < maxNode && edge2<maxNode \ 
+          && edge1 > 0 && edge2 > 0){
             edgeList[row_counter][0]=edge1;
             edgeList[row_counter][1]=edge2;
             row_counter++;
@@ -122,10 +122,10 @@ int rewriteEdgeList(std::string readfile, std::string writefile, int maxNode)
         ofstream outfile;
         outfile.open(writefile.c_str());
 
-        outfile << maxNode << " " << row_counter << endl;
+        outfile << maxNode-1 << " " << row_counter << endl;
 
         for(int i=0; i<row_counter; i++){
-          outfile << edgeList[i][0] << " " << edgeList[i][1] << endl;
+          outfile << edgeList[i][0]-1 << " " << edgeList[i][1]-1 << endl;
         }
 
         outfile.close();
