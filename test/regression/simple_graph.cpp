@@ -3,6 +3,7 @@
 #include<math.h>
 #include<ctime>
 #include<vector>
+#include<spectralBisection.h>
 #include"graph.h"
 #include "arlsmat.h"
 #include "areig.h"
@@ -111,10 +112,19 @@ int simple_graph()
 	
 	
 	ARluSymMatrix<double> L(lap.n,lap.nnz,&lap.vals[0],&lap.irow[0],&lap.pcol[0],'L');
-	ARluSymStdEig<double> prob(2,L,"SA");
+	int nev = 2; 
+	int ncv = min(2*nev+1,lap.n);
+
+	ARluSymStdEig<double> prob(nev,L,"SM",ncv,0,1000000000);
 	prob.FindEigenvectors();
-	//double * Eigvec = prob.RawEigenvector(1);
+	double * Eigvec = prob.RawEigenvector(0);
 	double * EigVal = prob.RawEigenvalues();
+
+	for (int i = 0; i < simple_mat.getNumNodes();i++)
+	{
+		cout << EigVal[0] << endl;
+		cout << *(Eigvec+i) << endl;
+	}
 
 	if (fabs(EigVal[1]- 2) > 1e-10)
 	{
@@ -123,7 +133,5 @@ int simple_graph()
 	}
 	cout << "Successfully computed smallest two eigenvalues" << endl;
 	
-	
-
 	return 0;
 }
