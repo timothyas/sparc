@@ -109,8 +109,8 @@ int main(int argc, char * argv[])
 	cout << "Writing Results" << endl;
 	//Save Results
 	std::string outName = "Results.dat";
-	CSC_MATRIX adj = G.computeAdjacencyMatrix();
-	saveCSCMatrixToFile(adj,outName);
+	//CSC_MATRIX adj = G.computeAdjacencyMatrix();
+	saveCSCMatrixToFile(G,outName);
         cout <<  outName << " written" << endl;
 
 	std::string prvec = "Page_Rank_Vec.txt";

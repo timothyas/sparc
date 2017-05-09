@@ -23,15 +23,19 @@ pcol = [int(x) for x in line3.split()];
 a = sps.csc_matrix( (vals,irow,pcol) )
 
 plt.figure(figsize=(15,15))
-mh=plt.spy(a,markersize=0.1)
+mh=plt.spy(a,markersize=1)
 
-plt.show()
+#plt.show()
+plotName = "Facebook_SB_C0.png"
+plt.xlabel('nnz = ' + str((len(vals))))
+plt.title('Facebook Spectral Bisection')
 plt.savefig(plotName,bbox_inches='tight',dpi=100)
         
+
 # Plot off diagonal nnz
-odnnzFig="%s/offDiagNNz.png" % expFigs
-plt.figure(figsize=(15,10))
-plt.plot(odNNz)
-plt.xlabel('Levels Coarsened')
-plt.ylabel('Off Diagonal Black NNz')
-plt.savefig(odnnzFig,bbox_inches='tight',dpi=100)
+#odnnzFig="%s/offDiagNNz.png" % expFigs
+#plt.figure(figsize=(15,10))
+#plt.plot(odNNz)
+#plt.xlabel('Levels Coarsened')
+#plt.ylabel('Off Diagonal Black NNz')
+#plt.savefig(odnnzFig,bbox_inches='tight',dpi=100)

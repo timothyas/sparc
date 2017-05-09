@@ -5,7 +5,7 @@ OBJ  := $(patsubst %.cpp,%.o,$(SRC))
 
 # OPTIONS
 CC      := g++ 
-CFLAGS  :=-O3 -g -p -Wall -std=c++11 -mavx512f
+CFLAGS  :=-O3 -g -p -Wall -std=c++11 
 
 # RULES
 $(EXEC): $(OBJ)
