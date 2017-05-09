@@ -84,12 +84,13 @@ int main(int argc, char * argv[])
        		   cout << "Error getting index map, exiting ... " << endl;
        		   return 1;
 		}
+
+
+		std::string reEdge("ReorderedGraph.txt");
+		G.writeEdgeList(reEdge);
+		cout << reEdge << " written" << endl;
 	}
 	
-	std::string reEdge("ReorderedGraph.txt");
-        G.writeEdgeList(reEdge);
-        cout << reEdge << " written" << endl;
-
         struct timeval start, end;
 	cout << "Solving Linear System" << endl;
         gettimeofday(&start,NULL);
@@ -111,7 +112,7 @@ int main(int argc, char * argv[])
 	//Save Results
 	std::string outName = "Results.dat";
 	CSC_MATRIX adj = G.computeAdjacencyMatrix();
-	saveMatrixToFile(adj,outName);
+	saveCSCMatrixToFile(adj,outName);
         cout <<  outName << " written" << endl;
 
 	std::string prvec = "Page_Rank_Vec.txt";

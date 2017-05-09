@@ -301,6 +301,33 @@ CSC_MATRIX getDegreeMatrix(Graph G)
 	return D; 
 }
 
+int saveCSCMatrixToFile(CSC_MATRIX A,std::string filename)
+{
+	ofstream outFile; 
+	outFile.open(filename.c_str(),ios::out);
+
+	outFile << endl;
+	for (int i = 0; i < A.irow.size(); i++)
+	{
+		outFile << A.irow[i] << " ";
+	}
+	outFile << std::endl;
+
+	for (int i = 0; i < A.vals.size(); i++)
+	{
+		outFile << A.vals[i] << " "; 
+	}
+	outFile << std::endl;
+
+	for (int i = 0; i < A.pcol.size(); i++)
+	{
+		outFile << A.pcol[i] << " "; 
+	}
+	outFile.close();
+
+	return 0;
+}
+
 int saveMatrixToFile(CSC_MATRIX A,std::string filename)
 {
 	ofstream outFile; 
