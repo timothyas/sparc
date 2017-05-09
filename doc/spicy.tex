@@ -1,12 +1,14 @@
-\documentclass[a4paper,11pt]{article}
+\documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{geometry,amsmath,color,graphicx}
 \usepackage{authblk}
 \geometry{margin=1in}
 
 % %opening
-% \title{\vspace{-10ex}AMOC at 34S}
-\date{\vspace{-3ex}}
+\title{Finding Parallelism in the Edge-Weighted Page Rank Problem}
+\author{Sam Estes, Tim Smith, Siddhant Wahal, Gopal Yalla}
+\date{May 10, 2017}
+%\institute{CSE 392: Parallel Algorithms \\ Final Report}
 
 %% --- New commands
 \newcommand{\pderiv}[3][]{% \pderiv[<order>]{<func>}{<var>} 
@@ -23,15 +25,82 @@
 
 \begin{document}
 
+\maketitle
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. Introduction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--> They're slow
--> we're fast
--> ready for the facebook job offer
+\section{Introduction}
 
+We consider the problem of ranking webpages on the internet based on a user's
+query. We view the internet as a graph where the webpages are nodes and the
+links are edges. 
+In the PageRank problem a random walker moves across a graph, transitioning to
+adjacent nodes along an edge or jumping to a new, non-adjacent node. The
+distribution of positions for a walker at time $t$ is given by the discrete-time
+Markov process: 
+
+\begin{equation}
+        x^{(t+1)}=\alpha P x^{(t)} + (1-\alpha) v \; ,
+\label{eq:pagerank_markov}
+\end{equation}
+
+\noi where $P$ is the edge transition probability matrix and $v$ represents jump or
+teleport probabilities. Here $\alpha$ is the edge
+transition probability (i.e. how likely the walker is to transition to an
+adjacent node), and $(1-\alpha)$ represents the teleport probability (e.g. the
+probability a user goes to a webpage in their bookmarks rather clicking a link).
+Defining $w$ as a vector of personalization parameters specified by the user's
+query, we seek to solve the
+edge-weighted personalized PageRank problem: 
+
+\begin{equation}
+        Mx=b
+\label{eq:pagerank_linear}
+\end{equation}
+
+\noi where $M(w) = (I-\alpha P(w))$ and $b = (1-\alpha)v(w)$, and $w \in \R^d$ is
+the \textit{personalization vector}, which specifies the topic preference for
+a given query. 
+
+In general, computing the edge-weighted personalized page rank vector is expensive
+and not feasible for online, interactive situations. \cite{xie} present a
+solution to this problem, where they solve Eqn. (\ref{eq:pagerank_linear}) for many
+sample queries preemptively (i.e. in an ``offline'' computation). They find low
+dimensional subspaces for
+approximating each of these samples and solve a constrained least squares
+problem to estimate the PageRank vector in an ``online'' query. The solution to
+these low dimensional systems can be computed almost immediately, such that
+a user can query a database at interactive speeds.   
+
+Since the algorithm presented in \cite{xie} was already so fast, it seemed
+unnecessary to try to formulate a parallel implementation. Therefore we looked
+to improving the more expensive offline computation, which solves Eqn.
+(\ref{eq:pagerank_linear}) exactly. Speeding up this computation could allow for
+an implementation presented by \cite{xie} where the database is updated
+frequently, requiring successive offline computations for producing sample
+PageRank vectors.
+
+The sequential complexity for solving Eqn. (\ref{eq:pagerank_linear}) amounts to
+solving iteratively applying a MatVec (e.g. for a Jacobi iteration), which is
+naively $\mathcal{O}(N^2)$ complexity. In our approach, we first reorder the
+matrix $M$ by successively coarsening the related adjacency matrix and
+implementing a spectral bisection algorithm to improve data locality. We then
+solve Eqn. (\ref{eq:pagerank_linear}) with a Jacobi iterative scheme motivated
+by the Markov process given by Eqn. (\ref{eq:pagerank_markov}). Here all
+matrices and vectors are stored using Compressed Sparse Column (CSC) format. We
+implemented our method using a shared memory approach in C++ using OpenMP on the Knights Landing (KNL) processors on
+Stampede. We tested our methods on the DBLP computer science citation database
+\cite{dblp} and a network of facebook users \cite{facebook}. 
+
+We found that the computations involved with reordering the matrix $M$ (i.e.
+coarsening and spectral bisection) were much more complex than simply solving
+the linear system. The key here was rewriting the linear solver to handle the
+CSC format, and only perform computations for nonzero entries of the right hand
+side, $b$. Thus while the coarsening and reordering strategies are theoretically
+very interesting and scaled well up to 32 cores on the KNL nodes, 
+we did not find them useful for this particular application. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,7 +123,7 @@
 
 
 
-\end{document}
+
 
 
 
@@ -64,4 +133,15 @@
         W. Xie, D. Bindel, A. Demers, and J. Gehrke, “Edge-Weighted Personalized
 PageRank: Breaking A Decade-Old Performance Barrier,” in Proceedings of ACM KDD
 2015, 2015.  
+
+\bibitem{dblp}
+        J. Yang and J. Leskovec. Defining and Evaluating Network Communities based on Ground-truth. ICDM, 2012.
+
+\bibitem{facebook}
+        J. McAuley and J. Leskovec. Learning to Discover Social Circles in Ego
+Networks. NIPS, 2012.
+
 \end{thebibliography}
+
+
+\end{document}
