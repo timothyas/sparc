@@ -120,12 +120,6 @@ int simple_graph()
 	double * Eigvec = prob.RawEigenvector(0);
 	double * EigVal = prob.RawEigenvalues();
 
-	for (int i = 0; i < simple_mat.getNumNodes();i++)
-	{
-		cout << EigVal[0] << endl;
-		cout << *(Eigvec+i) << endl;
-	}
-
 	if (fabs(EigVal[1]- 2) > 1e-10)
 	{
 		cout << "Error computing eigenvalues...exiting" << endl;
