@@ -23,13 +23,13 @@ int plotCoarsen()
 
         cout << "Setting up truncated facebook data " << endl;
         
-        if(rewriteEdgeList("../../data/facebook_jumbled.txt","../../data/facebook_truncated.txt",200)){
+        if(rewriteEdgeList("../../data/facebook_combined.txt","../../data/facebook_truncated.txt",200)){
           cout << "Error rewriting edgelist, exiting ... " << endl;
           return 1;
         }
 
 
-        omp_set_num_threads(12);
+        omp_set_num_threads(1);
         vector<vector<double> > timeKeeper(5,vector<double>(0));
 	Graph Graph1("../../data/facebook_truncated.txt");
 	Graph Graph2;
@@ -98,18 +98,25 @@ int rewriteEdgeList(std::string readfile, std::string writefile, int maxNode)
         row_counter=0;
 
         infile >> edge1 >> edge2;
+
+        cout << edge1 << " " << edge2 << endl;
+        cout << "maxnode: " << maxNode << endl;
         
-        while(!infile){
+        while(!infile.eof()){
         
-          if(edge1 < maxNode && edge2<maxNode){
+          if(edge1 < maxNode && edge2<maxNode ) {
+        //  && edge1 > 49 && edge2 > 49){
             edgeList[row_counter][0]=edge1;
             edgeList[row_counter][1]=edge2;
+            row_counter++;
           }
 
           infile >> edge1 >> edge2;
-          row_counter++;
+
         }
         infile.close();
+
+        cout << "row_counter: "<< row_counter;
 
         // Now write out this list
         ofstream outfile;
