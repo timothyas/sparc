@@ -27,7 +27,7 @@ int mxm_shared(Graph& g, vector<int> &colors, int numColors)
         vector<int> raceList;
         vector<int> myNeighbors;
 
-        for(int k=1; k<=numColors; k++){
+        for(int k=1; k<numColors; k++){
 
           // Fill nodeList with unmatched nodes of this color
           doubleSelect_shared(colors, k, g.getMatchList(), -1,nodeList); 
