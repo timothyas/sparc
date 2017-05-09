@@ -84,8 +84,6 @@ int main(int argc, char * argv[])
        		   cout << "Error getting index map, exiting ... " << endl;
        		   return 1;
 		}
-
-
 		std::string reEdge("ReorderedGraph.txt");
 		G.writeEdgeList(reEdge);
 		cout << reEdge << " written" << endl;

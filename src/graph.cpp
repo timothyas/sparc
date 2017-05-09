@@ -255,6 +255,7 @@ Graph::Graph(std::string filename)
 	inFile >> edge1 >> edge2; 
 	while(!inFile.eof())
 	{
+		
 		edge[row_counter][0]=edge1;
 		edge[row_counter][1]=edge2;
 
@@ -274,6 +275,11 @@ Graph::Graph(std::string filename)
 		inFile >> edge1 >> edge2; 
 	}
 	inFile.close();
+
+	if(maxEdge!=0){
+		cout << "Max node number: " << maxEdge << endl;
+		assert(maxEdge==0);
+	}
 	}
 	catch(std::exception & e)
 	{
