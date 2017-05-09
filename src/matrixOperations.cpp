@@ -422,11 +422,17 @@ double getAij(CSC_MATRIX A,int i,int j)
 }
 int writeTimingToFile(std::vector<std::vector<double> >& timeKeeper, std::string filename, int coarsen_levels)
 {
+        int N;
+        if(coarsen_levels==0)
+          N=1;
+        else
+          N=coarsen_levels;
+        
 	ofstream outFile; 
 	outFile.open(filename.c_str());
 
         for(unsigned int i=0; i<timeKeeper.size(); i++){
-          for(int j=0; j<coarsen_levels; j++){
+          for(int j=0; j<N; j++){
             if( j > (int)timeKeeper[i].size()-1 ){
               outFile << setprecision(5) << 0.0 << " ";
             }   
