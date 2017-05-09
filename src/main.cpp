@@ -87,6 +87,11 @@ int main(int argc, char * argv[])
 		std::string reEdge("ReorderedGraph.txt");
 		G.writeEdgeList(reEdge);
 		cout << reEdge << " written" << endl;
+		cout << "Reordering Input Vector" << endl;
+		if(reorderVec(v,indMap))
+		{
+			return 1; 
+		}
 	}
 	
         struct timeval start, end;
@@ -100,8 +105,8 @@ int main(int argc, char * argv[])
 
 	if (!vm["noSB"].as<bool>())
 	{
-	cout << "Reordering Answer" << endl;
-	if(reorderVec(b,indMap))
+		cout << "Reordering Answer" << endl;
+		if(reorderVec(b,indMap))
 	{
 		return 1; 
 	}
