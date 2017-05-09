@@ -107,6 +107,17 @@ we did not find them useful for this particular application.
 %% 2. Methodology
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Our problem takes the view of a network of users in the facebook data or
+citations in the DBLP database. Two vertices are connected by an edge when e.g. two
+users are friends on facebook or when one paper cites another in the DBLP graph.
+These graphs are highly sparse, and randomly ordered.
+The algorithm we implemented follows three basic steps: (1) successively coarsen
+the graph to reduce the number of effective nodes, (2) reorder the graph via
+spectral bisection, and (3) solve the linear system with a Jacobi iterative
+method motivated by Eqn. (\ref{eq:pagerank_markov}) in Compressed Sparse
+Column (CSC) format. We discuss each of these separate parts in detail here. 
+
+The graph coarsening 
 
 
 
