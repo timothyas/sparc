@@ -10,7 +10,8 @@ import scipy.sparse as sps
 
 
 # Load and plot
-f=open("Results.dat")
+f=open("../src/Results.dat")
+f.readline()
 line1=f.readline()
 line2=f.readline()
 line3=f.readline()
@@ -19,10 +20,10 @@ irow = [int(x) for x in line1.split()];
 vals = [float(x) for x in line2.split()];
 pcol = [int(x) for x in line3.split()];
 
-a = csc_matrix( (val,irow,pcol) )
+a = sps.csc_matrix( (vals,irow,pcol) )
 
 plt.figure(figsize=(15,15))
-mh=plt.spy(a,markersize=1.5)
+mh=plt.spy(a,markersize=0.1)
 
 plt.show()
 plt.savefig(plotName,bbox_inches='tight',dpi=100)
