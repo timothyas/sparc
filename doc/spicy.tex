@@ -1,7 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
-\usepackage{geometry,amsmath,color,graphicx}
-\usepackage{authblk}
+\usepackage{geometry,amsmath,color,graphicx,latexsym,amsfonts}
+%\usepackage{authblk}
 \geometry{margin=1in}
 
 % %opening
@@ -13,16 +13,15 @@
 %% --- New commands
 \newcommand{\pderiv}[3][]{% \pderiv[<order>]{<func>}{<var>} 
   \ensuremath{\frac{\partial^{#1} {#2}}{\partial {#3}^{#1}}}}
-  
+\newcommand{\R}{\mathbb{R}}
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \newcommand{\blue}[1]{\textcolor{blue}{#1}}
 \newcommand{\degSym}{$^{\circ}$}
 \newcommand{\noi}{\noindent}
+\newcommand{\bigo}[1]{\mathcal{O}\left( #1 \right)}
 
-\renewcommand\Authfont{\small}
-\renewcommand\Affilfont{\itshape\footnotesize}
-
-
+%\renewcommand\Authfont{\small}
+%\renewcommand\Affilfont{\itshape\footnotesize}
 \begin{document}
 
 \maketitle
@@ -60,7 +59,8 @@ edge-weighted personalized PageRank problem:
 \label{eq:pagerank_linear}
 \end{equation}
 
-\noi where $M(w) = (I-\alpha P(w))$ and $b = (1-\alpha)v(w)$, and $w \in \R^d$ is
+\noi where $M(w) = (I-\alpha P(w))$ and $b = (1-\alpha)v(w)$, and $w \in
+\mathbb{R}^d$ is
 the \textit{personalization vector}, which specifies the topic preference for
 a given query. 
 
@@ -124,7 +124,31 @@ The graph coarsening
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Experimental setup
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimental Setup}
+\subsection{Implementation Details}
 
+In order to test our methodology, we wrote a C++
+package called {\rm spiC} (Sparse Pagerank Implementation in C). Given a
+graph, our pacakge can solve the page rank problem using a combination of coarsening, spectral
+bisection, and a parallel matvec with CSC formatted data inside a Jacobi
+iterator. The code was built on the ICES machines, as well as on \textit{Stampede 2} at TACC using the gnu
+compilers g++/gcc. Regarding external dependencies, {\rm spiC}, makes use of
+{\rm ARPACK}, {\rm SuperLU}, and {\rm Boost}. {\rm ARPACK} is used in conjuction
+with {\rm SuperLU} to solve for the two least significant eigenvalues and
+eigenvectors of a given
+matrix; this is the same package used by the Matlab function ``eigs()''. {\rm
+Boost} program options is used for the API. Our package comes with two
+makefiles: one for KNL, which requires the use of Intel's MKL package for BLAS
+and LAPACK, and one for the ICES desktops and similar machines. Issuing a `make
+dep' will build all external dependencies. Moreover, issuing a `make install' will
+build the source code and issuing a `make check' command will run the unit test suite.  
+
+\subsection{List of Experiments}
+
+Aside from the unit test suite in the code, which contained small example graphs
+for verification purposes, we tested our codes on two main datasets: The DBLP
+collaboration network dataset and the Facebook social circles data set
+\cite{snapnets}.
 
 
 
@@ -135,24 +159,19 @@ The graph coarsening
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CITATIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 
+%\addcontentsline{toc}{subsubsection}{\protect\numberline{\thesubsubsection}
+%  line added to TOC: subsubsection one}
 
+%\addcontentsline{toc}{section}{References} 
 
-\begin{thebibliography}{3}
-
-\bibitem{xie} 
-        W. Xie, D. Bindel, A. Demers, and J. Gehrke, “Edge-Weighted Personalized
-PageRank: Breaking A Decade-Old Performance Barrier,” in Proceedings of ACM KDD
-2015, 2015.  
-
-\bibitem{dblp}
-        J. Yang and J. Leskovec. Defining and Evaluating Network Communities based on Ground-truth. ICDM, 2012.
-
-\bibitem{facebook}
-        J. McAuley and J. Leskovec. Learning to Discover Social Circles in Ego
-Networks. NIPS, 2012.
-
-\end{thebibliography}
+\bibliographystyle{ieeetr} 
+\bibliography{spicy}
 
 
 \end{document}
+
