@@ -20,5 +20,5 @@ int addVector(std::vector<double> & b,std::vector<double> v);
 double computeResidual(std::vector<double> bn1,std::vector<double> bn);
 std::vector<double> iterSolver(Graph G,std::vector<double> v, double alpha);
 int reorderVec(std::vector<double> &b, std::vector<int> indMap);
-int saveCSCMatrixToFile(CSC_MATRIX A,std::string filename);
+int saveCSCMatrixToFile(Graph G,std::string filename);
 #endif

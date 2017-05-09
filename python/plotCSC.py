@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 import os
 import subprocess as sp
@@ -20,15 +20,23 @@ irow = [int(x) for x in line1.split()];
 vals = [float(x) for x in line2.split()];
 pcol = [int(x) for x in line3.split()];
 
+offDiagNNZ = 0; 
+n = len(pcol)-1
+for i in xrange(0,n/2-1):
+	for j in xrange(pcol[i],pcol[i+1]):
+		if (irow[j] > (n/2.0-1)):
+			offDiagNNZ += 1; 
+
+print "Off Diag nnz = " + str(2*offDiagNNZ)
 a = sps.csc_matrix( (vals,irow,pcol) )
 
 plt.figure(figsize=(15,15))
-mh=plt.spy(a,markersize=1)
+mh=plt.spy(a,markersize=0.1)
 
 #plt.show()
-plotName = "Facebook_SB_C0.png"
-plt.xlabel('nnz = ' + str((len(vals))))
-plt.title('Facebook Spectral Bisection')
+plotName = "DBLP_SBC4.png"
+plt.xlabel('Total nnz = ' + str((len(vals))) + ',     Off-Diagonal Blocks nnz = ' + str(2*offDiagNNZ))
+plt.title('DBLP Spectral Bisection after 4 levels of Coarsening')
 plt.savefig(plotName,bbox_inches='tight',dpi=100)
         
 
