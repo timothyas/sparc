@@ -36,6 +36,8 @@
 \begin{document}
 
 \maketitle
+\thispagestyle{empty}
+
 \newpage
 \thispagestyle{empty}
 \tableofcontents
@@ -272,10 +274,27 @@ collaboration network dataset and the Facebook social circles data set
 \begin{itemize}
 	\item Test the correctness of spectral bisection with the example given in
 		class. 
+		\begin{itemize}
+			\item Expected the results to match and they did.
+		\end{itemize}
 	\item See how different coarsening levels affect the results of spectral bisection,
 		i.e., the number of non-zeros in the off diagonal. 
+		\begin{itemize}
+			\item Expected to see not much of a different. 
+			\item Observed that the coarsening/uncoarsening process can
+				severly dampen the effective reordering of
+				spectral bisection.
+		\end{itemize}
 	\item Understand the tradeoff between spectral bisection time and
 		coarening levels. 
+		\begin{itemize}
+			\item Expected spectral bisection to take a long time,
+				and for coarsening to be cheap and thus lead to
+				a faster but similar spectral bisection. 
+			\item Observed that while coarsening is faster than
+				spectral bisection, the act of coloring is still
+				to slow for practicle purposes.
+		\end{itemize}
 \end{itemize}
 \noi Similarly, for the DBLP data set, our goals were to: 
 
@@ -283,9 +302,31 @@ collaboration network dataset and the Facebook social circles data set
 	\item See how much of a difference spectral bisection makes when solving
 		a sparse matvec on shared memory (and different memory
 		configurations on Stampede 2). 
+		\begin{itemize}
+			\item Expected spectral bisection to greatly speed up
+				calculation. 
+			\item Observed negligible speed up.
+		\end{itemize}
+	
+	\item Determine strong scaling results of coarsening on Stampede 2. 
+		\begin{itemize}
+			\item Observed linear scaling. 
+		\end{itemize}
 	\item Determine the speedup involved by performing a CSC matvec within a
 		jacobi iterator. 
+		\begin{itemize}
+			\item Expected the majority of the speed up to come from
+				the spectral bisection process. 
+			\item Observed that the true speed up came from using a
+				CSC format, so that all the data could fit
+				easily in main memory. 
+		\end{itemize}
 	\item Compare the times with the results from \cite{xie}.
+		\begin{itemize}
+			\item In the end we sped up their offline calculations
+				from 6 hours to 25 minutes, by using a sparse
+				matvec with CSC format. 
+		\end{itemize}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
