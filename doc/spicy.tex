@@ -257,11 +257,43 @@ algorithm:
 	x_{n+1} = \alpha AD^{-1}x_{n}+(1-\alpha)v \; , 
 \end{equation*}
 
-\noi where $A$ is the adjacency matrix of the graph 
+\noi where $A$ is the adjacency matrix of the graph and $D$ is the diagonal
+matrix of node degrees. The above computation is consumed by the matrix-vector
+multiplication. We make use of CSC format to perform the matvec. This
+significantly reduces the storage cost as well as the required number of
+computations. A CSC matrix is defined by three vectors, \textit{vals,irow,} and
+\textit{pcol}. \textit{Vals} stores the values of the non-zero elements of the
+given matrix; \textit{irow} stoes the row index of the non-zero elements of the
+given matrix, and \textit{pcol} stores pointers to the element that start each
+new column. It's important to note that \textit{pcol} is defined with the
+following relationship in order to deal with all zero columns: 
 
+\begin{equation*}
+	\begin{split}
+		\rm{pcol}[0] &= 0\\
+		\rm{pcol}[i] &=
+		(NNZ\;in\;column\;i-1)
+		+ \rm{pcol}[i-1]
+	\end{split}
+\end{equation*}
 
+The algorithm for a CSC matvec where $x$ is assumed to also be
+sparse and stored in CSC format is given in algorithm \ref{CSC}.
 
-
+\begin{algorithm}[H]
+\caption{CSC Matrix-CSC Vector Multiplication}\label{CSC}
+\begin{algorithmic}[1]
+\Procedure{CSC\_MatVec}{CSC A,CSC x}
+\State{Set $b$ to zero}
+\ParFor{$j=0:x.irow.size()-1$}
+\For{$i=A.pcol[x.irow[j]]:A.pcol[x.irow[j]+1]-1$}
+\State{$b[A.irow[i]] += A.vals[i]*x.vals[j]$}
+\EndFor
+\EndParFor
+\State{\textbf{return} b }
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Experimental setup
