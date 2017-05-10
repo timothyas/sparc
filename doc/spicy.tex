@@ -152,11 +152,11 @@ were assigned to maximize the edgeweight between partners
 \subsection{Implementation Details}
 
 In order to test our methodology, we wrote a C++
-package called {\rm spiC} (Sparse Pagerank Implementation in C). Given a
+package called {\rm SPARC} (Sparse PAge Rank in C). Given a
 graph, our pacakge can solve the page rank problem using a combination of coarsening, spectral
 bisection, and a parallel matvec with CSC formatted data inside a Jacobi
 iterator. The code was built on the ICES machines, as well as on \textit{Stampede 2} at TACC using the gnu
-compilers g++/gcc. Regarding external dependencies, {\rm spiC}, makes use of
+compilers g++/gcc. Regarding external dependencies, {\rm SPAC}, makes use of
 {\rm ARPACK}, {\rm SuperLU}, and {\rm Boost}. {\rm ARPACK} is used in conjuction
 with {\rm SuperLU} to solve for the two least significant eigenvalues and
 eigenvectors of a given
@@ -169,12 +169,29 @@ build the source code and issuing a `make check' command will run the unit test 
 
 \subsection{List of Experiments}
 
-Aside from the unit test suite in the code, which contained small example graphs
-for verification purposes, we tested our codes on two main datasets: The DBLP
+Aside from the test suite in the code, which contains small example graphs
+for verification purposes, we tested our code on two main datasets: The DBLP
 collaboration network dataset and the Facebook social circles data set
-\cite{snapnets,facebook,dblp}.
+\cite{snapnets,facebook,dblp}. For the Facebook data, our goals we as follows: 
 
+\begin{itemize}
+	\item Test the correctness of spectral bisection with the example given in
+		class. 
+	\item See how different coarsening levels affect the results of spectral bisection,
+		i.e., the number of non-zeros in the off diagonal. 
+	\item Understand the tradeoff between spectral bisection time and
+		coarening levels. 
+\end{itemize}
+\noi Similarly, for the DBLP data set, our goals were to: 
 
+\begin{itemize}
+	\item See how much of a difference spectral bisection makes when solving
+		a sparse matvec on shared memory (and different memory
+		configurations on Stampede 2). 
+	\item Determine the speedup involved by performing a CSC matvec within a
+		jacobi iterator. 
+	\item Compare the times with the results from \cite{xie}.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Results
