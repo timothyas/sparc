@@ -1,5 +1,5 @@
 # FILES
-EXEC := spiC
+EXEC := sparc
 SRC  := $(wildcard *.cpp)
 OBJ  := $(patsubst %.cpp,%.o,$(SRC))
 
