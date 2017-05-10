@@ -1,5 +1,5 @@
 \documentclass[11pt]{article}
-\usepackage[utf8]{inputenc}
+%\usepackage[utf8]{inputenc}
 \usepackage{geometry,amsmath,color,graphicx,latexsym,amsfonts}
 %\usepackage{authblk}
 \geometry{margin=1in}
@@ -25,6 +25,11 @@
 \begin{document}
 
 \maketitle
+\newpage
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+\setcounter{page}{1}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. Introduction
@@ -167,7 +172,7 @@ build the source code and issuing a `make check' command will run the unit test 
 Aside from the unit test suite in the code, which contained small example graphs
 for verification purposes, we tested our codes on two main datasets: The DBLP
 collaboration network dataset and the Facebook social circles data set
-\cite{snapnets}.
+\cite{snapnets,facebook,dblp}.
 
 
 
@@ -186,7 +191,7 @@ collaboration network dataset and the Facebook social circles data set
 %\addcontentsline{toc}{subsubsection}{\protect\numberline{\thesubsubsection}
 %  line added to TOC: subsubsection one}
 
-%\addcontentsline{toc}{section}{References} 
+\addcontentsline{toc}{section}{References} 
 
 \bibliographystyle{ieeetr} 
 \bibliography{spicy}

@@ -1,6 +1,6 @@
-# spiC #
+# SPARC #
 
-Sparse Pagerank Implementation in C++
+Sparse PAgeRank in C++
 
 # Work flow #
 
