@@ -190,7 +190,7 @@ is the number of nonzeros in the adjacency matrix (i.e. the number of edges).
 Note the subscript on $NNz_c$ in the spectral bisection denotes that the number
 of edges (nonzeros) here is determined by the final level of coarsening and
 would ideally be much smaller than the original value for $NNz$. Typically
-$n<NNz$.}
+$n<NNz$ by at least an order of magnitude.}
   \label{complexity_table}
   \begin{tabular}{| l | c | c |}
         \hline
@@ -444,7 +444,72 @@ is done automatically.
 %% 4. Results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
-\subsection{Facebook Data}
+\subsection{The Impact of Graph Coarsening on Reordering}
+
+We first explored the impact coarsening would have on the quality of reordering
+for a particular graph, where high quality refers to a small number of nonzeros in the
+off diagonal blocks of the graph's adjacency matrix. In this test we used the
+data set of Facebook users from \cite{facebook,snapnets} since this graph was
+relatively small enough to be executed cheaply ($\sim 4000$ nodes and $\sim
+88000$ edges) but would provide nontrivial results. Here we expected the
+coarsening to greatly reduce the amount of time taken to compute the spectral
+bisection and reordering, but have little impact on the quality of the final
+reordering. Figure \ref{fig:tradeoff} (left) shows that our first expectation was
+proven correct: the compute time in the spectral bisection algorithm drops
+exponentially with each level of coarsening. However, Figure \ref{fig:tradeoff}
+(right) shows that with each level of coarsening significantly reduces the quality of
+the final reordering. 
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{figs/sbTiming.png}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[width=.8\linewidth]{figs/offDiagNNz.png}
+\end{subfigure}
+\caption{(Left) Spectral bisection timing (sec) as a function of coarsening
+levels before the computation, note logarithmic axes. (Right) Number of nonzeros
+in the off diagonal blocks of the final, reordered adjacency matrix after $n$
+levels of coarsening, spectral bisection reordering, and uncoarsening to
+the granularity of the original graph.}
+\label{fig:tradeoff}
+\end{figure}
+
+Here we show the sparse Facebook data set to visualize the impact of coarsening
+on reordering. The original Facebook data set is shown before reordering in Figure
+\ref{fig:FB} (left) and after spectral bisection has been computed without any
+coarsening (right). We note here that this result verified that our spectral
+bisection algorithm was working properly since this matches what was shown in
+class. The original data set has very few nonzeros in the off diagonal block.
+However, the spectral bisection reordering reduces this number by roughly an
+order of magnitude. 
+
+The plots in Figure \ref{fig:coarseFB}: the left shows the Facebook data after 2
+levels of coarsening and reordering, while the right shows this when 9 levels of
+coarsening have been applied. Two levels of coarsening still preserves the
+Facebook data, and shows a good balance between speed in the spectral bisection
+computation with the quality of reordering. Beyond this point however, the
+reordering is much worse than the original datset itself. The plot shown after 9
+levels of coarsening clearly highlights an extreme case, where the graph is made
+up of nearly uniformly distributed clumps.
+
+We show similar a similar visualization for the DBLP data set in Figures
+\ref{fig:DBLPSB} and \ref{fig:DBLP_SB_C4}. The number of off diagonal nonzeros
+is significantly reduced by computing spectral bisection, compare left and right
+plots of Figure \ref{fig:DBLPSB}, but this computation is extremely expensive.
+However, even after coarsening the graph only four times, Figure
+\ref{fig:DBLP_SB_C4}, the reordering is no better off than the original data.
+
+Some of the pitfalls of our coarsening algorithm outlined here can be avoided by
+adding a successive refinement scheme, such as those implemented in
+\cite{multilevel}. These schemes attack the central problem here: the reordering
+associated with a graph coarsened $n$ times is not optimal for the granularity
+of the original graph. We did not seek to implement these, however, and found
+this implementation informative enough for our purposes. 
+
 
 \begin{figure}
 \centering
@@ -466,6 +531,28 @@ Facebook data after spectral bisection. The number of off diagonal blocks
 reduced to 1266. } 
 	\label{fig:FBSB}
 \end{figure}
+
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[width=.9\linewidth]{figs/Facebook_c2.png}
+	\caption{Facebook Data after 2 levels of coarsening}
+	\label{fig:FB2}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{figs/Facebook_c9.png}
+		\caption{Facebook Data after 9 levels of coarsening}
+		\label{fig:FB9}
+	\end{subfigure}
+	\caption{ Same as \ref{fig:FBSB} but where spectral bisection was
+computed after 2 (left) and 9 (right) levels of coarsening. The total off
+diagonal nonzeros is 5774 (left) and 72528 (right). } 
+	\label{fig:coarseFB}
+\end{figure}
+
 \begin{figure}
 \centering
 \begin{subfigure}{.5\textwidth}
@@ -493,6 +580,59 @@ reduced to 350038. }
 	\caption{DBLP data after four coarsens and then spectral bisection. The
 	number of off diagonals reduced slightly to 523194.}
 	\label{fig:DBLP}
+\end{figure}
+
+
+%%%%%%%%%%%% strong scaling
+\subsection{Coarsening Strong Scaling on KNL: DBLP data}
+
+Here we tested the scaling of our coarsening algorithm implementation on a single
+Knights Landing node with the DBLP data set ($\sim 420000$ vertices and $\sim 1$
+million edges). Clearly the most expensive stage of the coarsening algorithm is
+the first one, since each successive step afterward has fewer nodes and edges.
+Thus we simply tested the timing for completing this first stage across varying
+levels of threads. These timing results are shown in Figure
+\ref{fig:color_time}. The coloring took the most time to complete, dwarfing the
+computations associated with maximal matching. The time drops exponentially to
+roughly 32 threads on the node, and increases again at 68 and 272 threads. We
+note that since the KNL nodes have 68 cores, up to this thread count there is
+one thread per physical core. There are up to four logical threads per core,
+allowing for 272 threads. However there is clearly substantial time wasted in
+overhead since this is clearly more expensive than both with 32 and 68 threads.
+
+With only one million elements to work with in compressed storage, the data that
+we are working with only requires on the order of megabytes of storage. It makes
+sense that the algorithm does not scale to a large number of threads since they
+would each be caught up in communication overhead rather than computation. This
+is what we see after 32 threads. The slow down beyond this point is probably due
+to latency from processors across the chip from where data is stored on the four
+MCDRAM channels.
+
+We note also that we tested the coarsening algorithm on both flat and cache
+memory models of the KNL node. The node has about 100GB of DDR4 RAM, at 90 GB/s
+bandwidth, and 16 GB of MCDRAM at up to 475 GB/s. The cache mode is the default
+memory model for KNL which hides the fast MCDRAM to the user such that it acts
+as a high level cache. In flat mode, the user can control data elements which
+live in MCDRAM. Since our application took advantage of sparse storage schemes,
+the memory footprint was well under 1GB, allowing us to flexibly try both modes.
+We found no difference between the flat and cache mode, which is likely because
+the size of our application was so small relative to the node.
+
+Despite decent scaling to 32 cores (threads), the coarsening and reordering
+algorithms are far
+too expensive to even be considered for any practical implementation because
+solving the linear system in Eqn. (\ref{eq:pagerank_linear}) is extremely fast
+with the write data format. We discuss these results in the next subsection.
+
+
+
+\begin{figure}
+\centering
+\includegraphics[width=.5\linewidth]{figs/color_timing.png}
+\caption{Strong scaling of the coarsening algorithm (Coloring and Maximal
+Matching) in shared memory on a single Knights Landing node. Note the
+logarithmic x-axis.}
+\label{fig:color_time}
 \end{figure}
 
 
