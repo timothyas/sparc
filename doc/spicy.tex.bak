@@ -10,7 +10,7 @@
 
 % %opening
 \title{Finding Parallelism in the Edge-Weighted Page Rank Problem}
-\author{Sam Estes, Tim Smith, Siddhant Wahal, Gopal Yalla}
+\author{Tim Smith, Gopal Yalla}
 \date{May 10, 2017}
 %\institute{CSE 392: Parallel Algorithms \\ Final Report}
 
@@ -86,9 +86,8 @@ a given query.
 In general, computing the edge-weighted personalized page rank vector is expensive
 and not feasible for online, interactive situations. \cite{xie} present a
 solution to this problem, where they solve Eqn. (\ref{eq:pagerank_linear}) for many
-sample queries preemptively (i.e. in an ``offline'' computation). They find low
-dimensional subspaces for
-approximating each of these samples and solve a constrained least squares
+sample queries preemptively (i.e. in an ``offline'' computation). They find a low
+dimensional subspace approximating each of these samples and solve a constrained least squares
 problem to estimate the PageRank vector in an ``online'' query. The solution to
 these low dimensional systems can be computed almost immediately, such that
 a user can query a database at interactive speeds.   
@@ -143,7 +142,7 @@ Column (CSC) format. We discuss each of these separate parts in detail here.
 \subsection{Graph Coarsening}
 
 We coarsen our original graph in order to reduce the computation involved in
-the spectral bisection to reorder $M$ to reduce communication and improve data
+the spectral bisection step of reordering $M$ to reduce communication and improve data
 locality.
 The graph coarsening algorithm involves two intermediate phases. First, we
 labeled each node in the graph with a color by repetitively computing Maximal
@@ -159,7 +158,7 @@ by the spectral bisection algorithm. The pseudocode for maximal matching is
 shown in Algorithm \ref{alg:mxm}. 
 
 The time complexity computed from a work depth analysis for the graph coarsening is shown in Table
-\ref{complexity_table}. We note here that in both MIS and Maximal Matching the
+\ref{complexity_table}. We note here that in the Maximal Matching the
 complexity is reduced by an order of $m$ by using linked lists rather than
 a call to a \texttt{select} to get a list of neighbors. 
 
@@ -169,7 +168,7 @@ The goal of spectral bisection is to reorder a matrix in such a way that the
 number of nonzeros in the off diagonal blocks of the adjacency matrix is
 reduced; this can lower the overhead (e.g., communication) during a parallel
 matrix-vector multiplication. To perform a spectral bisection, one must form the
-graph laplacian, compute the eigenvector cooresponding to the second least significant
+graph laplacian, compute the eigenvector corresponding to the second least significant
 eigenvalue, and then reorder the graph according to median value of the
 eigenvector. Clearly this computation is extremely expensive for a large
 graph, thus motivating the coarsening algorithm in the previous section. 
@@ -190,23 +189,23 @@ is the number of nonzeros in the adjacency matrix (i.e. the number of edges).
 Note the subscript on $NNz_c$ in the spectral bisection denotes that the number
 of edges (nonzeros) here is determined by the final level of coarsening and
 would ideally be much smaller than the original value for $NNz$. Typically
-$n<NNz$.}
+$n<NNz$ by at least an order of magnitude.}
   \label{complexity_table}
   \begin{tabular}{| l | c | c |}
         \hline
         Algorithm & Sequential Complexity & Parallel Complexity \\
         \hline \hline
-        Coarsening & $\mathcal{O}(nd(n + 4) + (d+1)log(n))$ &
-$\mathcal{O}\left(\frac{nd}{p}\left(n+4) + (d+1)log(n)\right)\right)$  \\ \hline
+        Coarsening & $\mathcal{O}(d(n + 4) + (d+1)log(n))$ &
+$\mathcal{O}\left(\frac{d}{p}\left(n+4) + (d+1)log(n)\right)\right)$  \\ \hline
 
-        $\,\,$ MIS & $\log(m)$ & $ \log(m)$  \\ \hline
+$\,\,$ MIS & $m+\log(m)$ & $\frac{m}{p} \log(m)$  \\ \hline
 
         $\,\,$ Coloring & $d T_{MIS}(m)$ & $d T_{MIS}(m,p) $  \\ \hline
         
         $\,\,$ Edge Matching & $d(m+3) + \log(m)$ &
 $\frac{d}{p}\left(m+3\right) + \log(m)$  \\ \hline
 
-        Spectral Bisection & $\mathcal{O}(2NNz_{c})$ & $\mathcal{O}(2NNz_{c})$  \\ \hline
+        Spectral Bisection & $\mathcal{O}(4NNz_{c})$ & $\mathcal{O}(4NNz_{c})$  \\ \hline
 
         CSC Linear Solve & $\mathcal{O}(NNz)$ & $\mathcal{O}(NNz)$ \\
         \hline
@@ -302,7 +301,7 @@ $\frac{d}{p}\left(m+3\right) + \log(m)$  \\ \hline
 \subsection{Iterative Linear Solver}
 
 As discussed in the first section, we use a Jacobi method to solve Eqn.
-(\ref{eq:pagerank_linear}). The iterative solver is defined by the recusive
+(\ref{eq:pagerank_linear}). The iterative solver is defined by the recursive
 algorithm:
 
 \begin{equation*}
@@ -313,9 +312,9 @@ algorithm:
 matrix of node degrees. The above computation is consumed by the matrix-vector
 multiplication. We make use of CSC format to perform the matvec. This
 significantly reduces the storage cost as well as the required number of
-computations. A CSC matrix is defined by three vectors, \textit{vals,irow,} and
+computations. A CSC matrix is defined by three vectors, \textit{vals, irow,} and
 \textit{pcol}. \textit{Vals} stores the values of the non-zero elements of the
-given matrix; \textit{irow} stoes the row index of the non-zero elements of the
+given matrix; \textit{irow} stores the row index of the non-zero elements of the
 given matrix, and \textit{pcol} stores pointers to the element that start each
 new column. It's important to note that \textit{pcol} is defined with the
 following relationship in order to deal with all zero columns: 
@@ -355,11 +354,11 @@ sparse and stored in CSC format is given in algorithm \ref{CSC}.
 
 In order to test our methodology, we wrote a C++
 package called {\rm SPARC} (Sparse PAge Rank in C). Given a
-graph, our pacakge can solve the page rank problem using a combination of coarsening, spectral
+graph, our package can solve the page rank problem using a combination of coarsening, spectral
 bisection, and a parallel matvec with CSC formatted data inside a Jacobi
 iterator. The code was built on the ICES machines, as well as on \textit{Stampede 2} at TACC using the gnu
 compilers g++/gcc. Regarding external dependencies, {\rm SPARC}, makes use of
-{\rm ARPACK}, {\rm SuperLU}, and {\rm Boost}. {\rm ARPACK} is used in conjuction
+{\rm ARPACK}, {\rm SuperLU}, and {\rm Boost}. {\rm ARPACK} is used in conjunction
 with {\rm SuperLU} to solve for the two least significant eigenvalues and
 eigenvectors of a given
 matrix; this is the same package used by the Matlab function ``eigs()''.
@@ -375,7 +374,7 @@ build the source code and issuing a `make check' command will run the unit test 
 
 Aside from the test suite in the code, which contains small example graphs
 for verification purposes, we tested our code on two main datasets: The DBLP
-collaboration network dataset and the Facebook social circles data set
+collaboration network data set and the Facebook social circles data set
 \cite{snapnets,facebook,dblp}. For the Facebook data, our goals were as follows: 
 
 \begin{itemize}
@@ -390,11 +389,11 @@ diagonal blocks.
 		\begin{itemize}
 			\item Expected to see not much of a different. 
 			\item Observed that the coarsening/uncoarsening process can
-				severly dampen the effective reordering of
+				severely dampen the effective reordering of
 				spectral bisection, and even make it worse.
 		\end{itemize}
-	\item Understand the tradeoff between spectral bisection time and
-		coarening levels. 
+	\item Understand the trade off between spectral bisection time and
+		coarsening levels. 
 		\begin{itemize}
 			\item Expected spectral bisection to take a long time,
 				and for coarsening to be cheap and thus lead to
@@ -424,7 +423,7 @@ is done automatically.
 			\item Observed log-linear scaling. 
 		\end{itemize}
 	\item Determine the speedup involved by performing a CSC matvec within a
-		jacobi iterator. 
+		Jacobi iterator. 
 		\begin{itemize}
 			\item Expected the majority of the speed up to come from
 				the spectral bisection process. 
@@ -444,7 +443,79 @@ is done automatically.
 %% 4. Results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
-\subsection{Facebook Data}
+\subsection{The Impact of Graph Coarsening on Reordering}
+
+We first explored the impact coarsening would have on the quality of reordering
+for a particular graph, where high quality refers to a small number of nonzeros in the
+off diagonal blocks of the graph's adjacency matrix. In this test we used the
+data set of Facebook users from \cite{facebook,snapnets} since this graph was
+relatively small enough to be executed cheaply ($\sim 4000$ nodes and $\sim
+88000$ edges) but would provide nontrivial results. Here we expected the
+coarsening to greatly reduce the amount of time taken to compute the spectral
+bisection and reordering, but have little impact on the quality of the final
+reordering. Figure \ref{fig:tradeoff} (left) shows that our first expectation was
+proven correct: the compute time in the spectral bisection algorithm drops
+exponentially with each level of coarsening. However, Figure \ref{fig:tradeoff}
+(right) shows that with each level of coarsening significantly reduces the quality of
+the final reordering. 
+
+\begin{figure}
+\centering
+\begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/sbTiming.png}
+\end{subfigure}
+\begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/offDiagNNz.png}
+\end{subfigure}
+\caption{(Left) Spectral bisection timing (sec) as a function of coarsening
+levels before the computation, note logarithmic axes. (Right) Number of nonzeros
+in the off diagonal blocks of the final, reordered adjacency matrix after $n$
+levels of coarsening, spectral bisection reordering, and uncoarsening to
+the granularity of the original graph.}
+\label{fig:tradeoff}
+\end{figure}
+
+Here we show the sparse Facebook data set to visualize the impact of coarsening
+on reordering. The original Facebook data set is shown before reordering in Figure
+\ref{fig:FB} (left) and after spectral bisection has been computed without any
+coarsening (right). We note here that this result verified that our spectral
+bisection algorithm was working properly since this matches what was shown in
+class. The original data set has very few nonzeros in the off diagonal block.
+However, the spectral bisection reordering reduces this number by roughly an
+order of magnitude. 
+
+The plots in Figure \ref{fig:coarseFB}: the left shows the Facebook data after 2
+levels of coarsening and reordering, while the right shows this when 9 levels of
+coarsening have been applied. Two levels of coarsening still preserves the
+Facebook data, and shows a good balance between speed in the spectral bisection
+computation with the quality of reordering. Beyond this point however, the
+reordering is much worse than the original datset itself. The plot shown after 9
+levels of coarsening clearly highlights an extreme case, where the graph is made
+up of nearly uniformly distributed clumps.
+
+We show similar a similar visualization for the much larger DBLP data set ($\sim
+4.2 \times 10^5$ vertices and $\sim 1$ million edges) in Figures
+\ref{fig:DBLPSB} and \ref{fig:DBLP_SB_C4}. Here the number of nonzeros in off
+diagonal blocks
+is significantly reduced by computing spectral bisection, which is seen by
+comparing the left and right
+plots of Figure \ref{fig:DBLPSB}. This computation is extremely expensive and
+entirely impractical. It is much faster to compute the bisection reordering on a
+coarsened graph, but this reduces the quality of the reordering rapidly.
+Figure \ref{fig:DBLP_SB_C4} shows the reordering after coarsening the graph only
+four times and here the number of nonzeros in the off diagonal blocks is 523194.
+This is only slightly reduced from the original data, which had 628800 nonzeros,
+thus the reordering is entirely impractical here for reducing communication.
+
+Some of the pitfalls of our coarsening algorithm outlined here can be avoided by
+adding a successive refinement scheme, such as those implemented in
+\cite{multilevel}. These schemes attack the central problem here: the reordering
+associated with a graph coarsened $n$ times is not optimal for the granularity
+of the original graph. We did not seek to implement these, however, and found
+this implementation informative enough for our purposes. 
+
 
 \begin{figure}
 \centering
@@ -466,17 +537,93 @@ Facebook data after spectral bisection. The number of off diagonal blocks
 reduced to 1266. } 
 	\label{fig:FBSB}
 \end{figure}
-\subsection{DBLP Data}
+
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[width=.9\linewidth]{figs/Facebook_c2.png}
+	\caption{Facebook Data after 2 levels of coarsening}
+	\label{fig:FB2}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{figs/Facebook_c9.png}
+		\caption{Facebook Data after 9 levels of coarsening}
+		\label{fig:FB9}
+	\end{subfigure}
+	\caption{ Same as \ref{fig:FBSB} but where spectral bisection was
+computed after 2 (left) and 9 (right) levels of coarsening. The total off
+diagonal nonzeros is 5774 (left) and 72528 (right). } 
+	\label{fig:coarseFB}
+\end{figure}
+
+
+
+%%%%%%%%%%%% strong scaling
+\subsection{Coarsening Strong Scaling on KNL: DBLP data}
+
+Here we tested the scaling of our coarsening algorithm implementation on a single
+Knights Landing node with the DBLP data set ($\sim 420000$ vertices and $\sim 1$
+million edges). Clearly the most expensive stage of the coarsening algorithm is
+the first one, since each successive step afterward has fewer nodes and edges.
+Thus we simply tested the timing for completing this first stage across varying
+levels of threads. These timing results are shown in Figure
+\ref{fig:color_time}. The coloring took the most time to complete, dwarfing the
+computations associated with maximal matching. The time drops exponentially to
+roughly 32 threads on the node, and increases again at 68 and 272 threads. We
+note that since the KNL nodes have 68 cores, up to this thread count there is
+one thread per physical core. There are up to four logical threads per core,
+allowing for 272 threads. However there is clearly substantial time wasted in
+overhead since this is clearly more expensive than both with 32 and 68 threads.
+
+With only one million elements to work with in compressed storage, the data that
+we are working with only requires on the order of megabytes of storage. It makes
+sense that the algorithm does not scale to a large number of threads since they
+would each be caught up in communication overhead rather than computation. This
+is what we see after 32 threads. The slow down beyond this point is probably due
+to latency from processors communicating across more than half of the socket.
+
+We note also that we tested the coarsening algorithm on both flat and cache
+memory models of the KNL node. The node has about 100GB of DDR4 RAM, at 90 GB/s
+bandwidth, and 16 GB of MCDRAM at up to 475 GB/s. The cache mode is the default
+memory model for KNL which hides the fast MCDRAM to the user such that it acts
+as a high level cache. In flat mode, the user can control data elements which
+live in MCDRAM. Since our application took advantage of sparse storage schemes,
+the memory footprint was well under 1GB, allowing us to flexibly try both modes.
+We found no difference between the flat and cache mode, which is likely because
+the size of our application was so small that it could fit in MCDRAM regardless
+of the memory configuration.
+
+Despite decent scaling to 32 cores (threads), the coarsening and reordering
+algorithms are far
+too expensive to even be considered for any practical implementation because
+solving the linear system in Eqn. (\ref{eq:pagerank_linear}) is extremely fast
+with the write data format. We discuss these results in the next subsection.
+
+\begin{figure}
+\centering
+\includegraphics[width=.5\linewidth]{figs/color_timing.png}
+\caption{Strong scaling of the coarsening algorithm (Coloring and Maximal
+Matching) in shared memory on a single Knights Landing node. Note the
+logarithmic x-axis.}
+\label{fig:color_time}
+\end{figure}
+
+
+\subsection{Solving the PageRank problem with the DBLP Dataset}
+
 To test our methodology on a larger data set, we make use of the DBLP
 collaboration network data set \cite{snapnets,dblp}. This is the same data used
 in \cite{xie} to test their low-rank approximation algorithm; they compute 1000
-samples offine (i.e., solve the page rank problem 1000 times) in order to find a
+samples offline (i.e., solve the page rank problem 1000 times) in order to find a
 low dimensional subspace for the least squares problems described in section 1.
 The times given in \cite{xie} for
 computing these samples and finding a basis for the low dimensional subspace 
 is given in table \ref{tab:time}.
 
-\begin{table}[h]
+\begin{table}[h!]
 	\centering 
 \captionof{table}{Time estimates given in \cite{xie}}
    \begin{tabular}[h]{|l|c|c|c|}
@@ -491,29 +638,9 @@ is given in table \ref{tab:time}.
 \label{tab:time}
 \end{table}
 
-The original DBLP data set is shown in Fig. \ref{fig:DBLP}. This dataset
-has 425957 nodes and only 1049866 non-zeros. Moreover, the number of non-zeros
-in the off diagonal is 628800. Figures \ref{fig:DBLP_SB_C0} and
-\ref{fig:DBLP_SB_C4} show the results of spectral bisection, and spectral
-bisection after four levels of coarsening, respectively. The spectral bisection
-results shown in \ref{fig:DBLP_SB_C0} significantly reduce the number of off
-diagonal elements---down to 350038; however, not much improvement is seen after
-four levels of coarsening. Each quadrant in \ref{fig:DBLP_SB_C4} looks very
-similar as opposed to \ref{fig:DBLP_SB_C0}.
-
-Even though computing the spectral bisection of the DBLP data with or without
-coarsening is infeasible, these results provide an oppertunity to test how
-effective spectral bisection is at speeding up the matvec. Using algorithm
-\ref{CSC} we solve the page rank problem using the original DBLP data, and the
-reordered DBLP data shown in figures \ref{fig:DBLP} and \ref{fig:DBLP_SB_C0},
-respectively. We test the solvers on Intel's KNL nodes on Stampede 2, and on the
-ICES machines. The timing results for the page rank problem on the different
-machines and on multiple cores are shwon in table \ref{tab:KNLTIME} and
-\ref{tab:ICESTIME}.
-
-\begin{table}
+\begin{table}[h!]
 	\centering
-	\captionof{table}{Iterative Solve TIme on KNL in sec}
+	\captionof{table}{Iterative Solve Time on KNL in sec}
 	\begin{tabular}[h]{|c||c|c|c|c|}
 		\hline
 		Cores/Threads& 1 & 16 & 64 & 272 \\
@@ -521,11 +648,13 @@ machines and on multiple cores are shwon in table \ref{tab:KNLTIME} and
 		Original Data & 7.36 & 7.63 & 7.64 & 7.71\\
 		Spectral Bisection & 7.24 & 7.74 & 7.76 & 7.57 \\
 		\hline
+		Parallel Matvec & \multicolumn{4}{|c|}{$\approx$ 0.09}\\
+		\hline
 	\end{tabular}
 \label{tab:KNLTIME}
 \end{table}
 
-\begin{table}
+\begin{table}[h!]
 	\centering
 	\captionof{table}{Iterative Solve Time on ICES in sec}
 	\begin{tabular}[h]{|l||c|c|c|c|}
@@ -535,19 +664,37 @@ machines and on multiple cores are shwon in table \ref{tab:KNLTIME} and
 		Original Data & 1.55 & 1.56 & 1.56 & 1.57\\
 		Spectral Bisection & 1.45 & 1.55 & 7.53 & 1.54 \\
 		\hline
+		Parallel Matvec & \multicolumn{4}{|c|}{$\approx$ 0.02}\\
+		\hline
 	\end{tabular}
 \label{tab:ICESTIME}
 \end{table}
 
-In both cases, solving the matrix-vector multiplication with the original data
-or the spectral bisection reordered data produces the same result. The true
+Even though computing the spectral bisection of the DBLP data with or without
+coarsening is infeasible, these results provide an opportunity to test how
+effective spectral bisection is at speeding up the matvec in the iterative
+solver. Using algorithm
+\ref{CSC} we solve the page rank problem using the original DBLP data, and the
+reordered DBLP data shown in figures \ref{fig:DBLP} and \ref{fig:DBLP_SB_C0},
+respectively. We test the solvers on Intel's KNL nodes on Stampede 2, and on one
+of our desktops (4 cores at 3.3GHz). The timing results for the page rank
+problem on the different
+machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
+\ref{tab:ICESTIME}.
+
+In both cases, solving the linear system with the original data
+or wth the spectral bisection reordered data produces the same result. The true
 speed up comes from using CSC format. As mentioned early, this significantly
 reduces the storage cost as well as the number of computations needed. The
 spectral bisection results would probably make a difference with distributed
 memory, or perhaps if we performed recursive spectral bisection; however, the
-speed up appears to be minimal on shared memory. 
+speed up appears to be minimal on shared memory. We note here that our
+implementation produced the same times on both flat and cache mode on the KNL
+processors. We suspect this is because the vectors being applied are so small
+that they can fit in the MCDRAM no matter how the memory is configured.
 
-Our sparse matvec calculations significantly beat the times given in \cite{xie}. We could solve 1000 page rank
+Our sparse matvec calculations significantly beat the times given in \cite{xie}.
+We could solve 1000 page rank
 problems in about 25 minutes for the DBLP data as opposed to the 6 hours taken
 in \cite{xie}. 
 
@@ -580,6 +727,9 @@ reduced to 350038. }
 	number of off diagonals reduced slightly to 523194.}
 	\label{fig:DBLP_SB_C4}
 \end{figure}
+
+
+
 
 
 

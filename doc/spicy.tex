@@ -110,7 +110,7 @@ by the Markov process given by Eqn. (\ref{eq:pagerank_markov}). Here all
 matrices and vectors are stored using Compressed Sparse Column (CSC) format. We
 implemented our method using a shared memory approach in C++ using OpenMP on the Knights Landing (KNL) processors on
 Stampede. We tested our methods on the DBLP computer science citation database
-\cite{dblp} and a network of facebook users \cite{facebook}, where these
+\cite{dblp} and a network of Facebook users \cite{facebook}, where these
 datasets were found from the SNAP website \cite{snapnets}. Herein we refer to
 our implementation of this procedure as {\rm SPARC} (Sparse PAgeRank in C).
 
@@ -129,9 +129,9 @@ we did not find them useful for this particular application.
 
 \section{Methodology}
 
-Our problem takes the view of a network of users in the facebook data or
+Our problem takes the view of a network of users in the Facebook data or
 citations in the DBLP database. Two vertices are connected by an edge when e.g. two
-users are friends on facebook or when one paper cites another in the DBLP graph.
+users are friends on Facebook or when one paper cites another in the DBLP graph.
 These graphs are highly sparse, and randomly ordered.
 The algorithm we implemented follows three basic steps: (1) successively coarsen
 the graph to reduce the number of effective nodes, (2) reorder the graph via
@@ -683,7 +683,7 @@ machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
 \ref{tab:ICESTIME}.
 
 In both cases, solving the linear system with the original data
-or wth the spectral bisection reordered data produces the same result. The true
+or with the spectral bisection reordered data produces the same result. The true
 speed up comes from using CSC format. As mentioned early, this significantly
 reduces the storage cost as well as the number of computations needed. The
 spectral bisection results would probably make a difference with distributed
