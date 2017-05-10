@@ -237,8 +237,28 @@ shown in Algorithm \ref{alg:mxm}.
 
 
 \subsection{Spectral Bisection}
+The goal of spectral bisection is to reorder a matrix in such a way that the number of off diagonal non-zero
+elements is reduced; this can lower the overhead (e.g., communication) during a parallel
+matrix-vector multiplication. To perform a spectral bisection, one must form the
+graph laplacian, compute the eigenvector cooresponding to the least significant
+eigenvalue, and then reorder the graph according to median value of the
+eigenvector. Performing a spectral bisection is expensive due to the eigenvalue
+computation and is not feasible on most data sets. This generates the need for
+the coarsening methods discusses earlier. 
+
 
 \subsection{Iterative Linear Solver}
+
+As discussed in the first section, we use a Jacobi method to solve Eqn.
+(\ref{eq:pagerank_linear}). The iterative solver is defined by the recusive
+algorithm:
+
+\begin{equation*}
+	x_{n+1} = \alpha AD^{-1}x_{n}+(1-\alpha)v \; , 
+\end{equation*}
+
+\noi where $A$ is the adjacency matrix of the graph 
+
 
 
 
