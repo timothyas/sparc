@@ -158,7 +158,7 @@ by the spectral bisection algorithm. The pseudocode for maximal matching is
 shown in Algorithm \ref{alg:mxm}. 
 
 The time complexity computed from a work depth analysis for the graph coarsening is shown in Table
-\ref{complexity_table}. We note here that in both MIS and Maximal Matching the
+\ref{complexity_table}. We note here that in the Maximal Matching the
 complexity is reduced by an order of $m$ by using linked lists rather than
 a call to a \texttt{select} to get a list of neighbors. 
 
@@ -195,10 +195,10 @@ $n<NNz$ by at least an order of magnitude.}
         \hline
         Algorithm & Sequential Complexity & Parallel Complexity \\
         \hline \hline
-        Coarsening & $\mathcal{O}(nd(n + 4) + (d+1)log(n))$ &
-$\mathcal{O}\left(\frac{nd}{p}\left(n+4) + (d+1)log(n)\right)\right)$  \\ \hline
+        Coarsening & $\mathcal{O}(d(n + 4) + (d+1)log(n))$ &
+$\mathcal{O}\left(\frac{d}{p}\left(n+4) + (d+1)log(n)\right)\right)$  \\ \hline
 
-        $\,\,$ MIS & $\log(m)$ & $ \log(m)$  \\ \hline
+$\,\,$ MIS & $m+\log(m)$ & $\frac{m}{p} \log(m)$  \\ \hline
 
         $\,\,$ Coloring & $d T_{MIS}(m)$ & $d T_{MIS}(m,p) $  \\ \hline
         
