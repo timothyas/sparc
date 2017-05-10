@@ -86,9 +86,8 @@ a given query.
 In general, computing the edge-weighted personalized page rank vector is expensive
 and not feasible for online, interactive situations. \cite{xie} present a
 solution to this problem, where they solve Eqn. (\ref{eq:pagerank_linear}) for many
-sample queries preemptively (i.e. in an ``offline'' computation). They find low
-dimensional subspaces for
-approximating each of these samples and solve a constrained least squares
+sample queries preemptively (i.e. in an ``offline'' computation). They find a low
+dimensional subspace approximating each of these samples and solve a constrained least squares
 problem to estimate the PageRank vector in an ``online'' query. The solution to
 these low dimensional systems can be computed almost immediately, such that
 a user can query a database at interactive speeds.   
@@ -143,7 +142,7 @@ Column (CSC) format. We discuss each of these separate parts in detail here.
 \subsection{Graph Coarsening}
 
 We coarsen our original graph in order to reduce the computation involved in
-the spectral bisection to reorder $M$ to reduce communication and improve data
+the spectral bisection step of reordering $M$ to reduce communication and improve data
 locality.
 The graph coarsening algorithm involves two intermediate phases. First, we
 labeled each node in the graph with a color by repetitively computing Maximal
@@ -206,7 +205,7 @@ $\mathcal{O}\left(\frac{nd}{p}\left(n+4) + (d+1)log(n)\right)\right)$  \\ \hline
         $\,\,$ Edge Matching & $d(m+3) + \log(m)$ &
 $\frac{d}{p}\left(m+3\right) + \log(m)$  \\ \hline
 
-        Spectral Bisection & $\mathcal{O}(2NNz_{c})$ & $\mathcal{O}(2NNz_{c})$  \\ \hline
+        Spectral Bisection & $\mathcal{O}(4NNz_{c})$ & $\mathcal{O}(4NNz_{c})$  \\ \hline
 
         CSC Linear Solve & $\mathcal{O}(NNz)$ & $\mathcal{O}(NNz)$ \\
         \hline
@@ -313,7 +312,7 @@ algorithm:
 matrix of node degrees. The above computation is consumed by the matrix-vector
 multiplication. We make use of CSC format to perform the matvec. This
 significantly reduces the storage cost as well as the required number of
-computations. A CSC matrix is defined by three vectors, \textit{vals,irow,} and
+computations. A CSC matrix is defined by three vectors, \textit{vals, irow,} and
 \textit{pcol}. \textit{Vals} stores the values of the non-zero elements of the
 given matrix; \textit{irow} stores the row index of the non-zero elements of the
 given matrix, and \textit{pcol} stores pointers to the element that start each
