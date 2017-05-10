@@ -150,9 +150,48 @@ it merely involves iteratively computing the MIS of a graph, assigning a
 different color each time. Next, we used the
 graph colors to match the nodes into pairs in a maximal matching algorithm. Here
 it was important to assign partners such that the edgeweight between them is
-maximized in order to minimize the edges between the two groups of nodes formed
+maximized. This minimizes the edges between the two groups of nodes formed
 by the spectral bisection algorithm. The pseudocode for maximal matching is
 shown in Algorithm \ref{alg:mxm}. 
+
+The time complexity computed from a work depth analysis for the graph coarsening is shown in Table
+\ref{complexity_table}. We note here that in both MIS and Maximal Matching the
+complexity is reduced by an order of $m$ by using linked lists rather than
+a call to a \texttt{select} to get a list of neighbors. 
+
+\subsection{Spectral Bisection}
+
+The spectral bisection is the most expensive portion of computation for the 
+
+  \begin{table}[h]
+  \centering
+  \caption{Complexity estimates for the SPARC implementation. Here $n$ is the
+number of vertices in the original graph, $m$ is the
+number of vertices in a given coarsening stage, $d$ is the maximum out degree of a
+node in the graph, $k$ is the number of vertices in the final graph, and $NNz$
+is the number of nonzeros in the adjacency matrix (i.e. the number of edges). }
+  \label{complexity_table}
+  \begin{tabular}{| l | c | c |}
+        \hline
+        Algorithm & Sequential Complexity & Parallel Complexity \\
+        \hline \hline
+        Coarsening & $\mathcal{O}(nd(n + 4) + (d+1)log(n))$ &
+$\mathcal{O}\left(\frac{nd}{p}\left(n+4) + (d+1)log(n)\right)\right)$  \\ \hline
+
+        $\,\,$ MIS & $\log(m)$ & $ \log(m)$  \\ \hline
+
+        $\,\,$ Coloring & $d T_{MIS}(m)$ & $d T_{MIS}(m,p) $  \\ \hline
+        
+        $\,\,$ Edge Matching & $d(m+3) + \log(m)$ &
+$\frac{d}{p}\left(m+3\right) + \log(m)$  \\ \hline
+
+        Spectral Bisection & $\mathcal{O}(2k)$ & $\mathcal{O}(2k)$  \\ \hline
+
+        CSC Linear Solve & $\mathcal{O}(NNz)$ & $\mathcal{O}(NNz)$ \\
+        \hline
+  \end{tabular}
+  \end{table}
+
 
 %%% MIS Algorithm
 	\begin{algorithm}[H]
@@ -236,7 +275,7 @@ shown in Algorithm \ref{alg:mxm}.
         \end{algorithm} 
 
 
-\subsection{Spectral Bisection}
+
 
 \subsection{Iterative Linear Solver}
 
@@ -336,54 +375,54 @@ collaboration network dataset and the Facebook social circles data set
 \section{Results}
 \subsection{Facebook Data}
 
-\begin{figure}
-\centering
-\begin{subfigure}{.5\textwidth}
-	\centering
-	\includegraphics[width=.9\linewidth]{figs/Facebook_Original.png}
-	\caption{Original Facebook Data}
-	\label{fig:FB}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-		\centering
-		\includegraphics[width=.9\linewidth]{figs/Facebook_SB_C0.png}
-		\caption{Facebook Data after Spectral Bisection}
-		\label{fig:sub2}
-	\end{subfigure}
-	\caption{ (a) The original facebook data. Total number of
-non-zeros is 88234 and and number of off diagonal non-zeros is 16466. (b)
-Facebook data after spectral bisection. The number of off diagonal blocks
-reduced to 1266. } 
-	\label{fig:FBSB}
-\end{figure}
-\begin{figure}
-\centering
-\begin{subfigure}{.5\textwidth}
-	\centering
-	\includegraphics[width=.9\linewidth]{figs/DBLP_Original.png}
-	\caption{DBLP Original Data}
-	\label{fig:DBLP_SB_C0}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-		\centering
-		\includegraphics[width=.9\linewidth]{figs/DBLP_SBC0.png}
-		\caption{DBLP after Spectral Bisection}
-		\label{fig:DBLP_SB_C4}
-	\end{subfigure}
-	\caption{ (a) The original DBLP data. Total number of
-non-zeros is 1049866 and and number of off diagonal non-zeros is 628800. (b)
-DBLP data after spectral bisection. The number of off diagonal blocks
-reduced to 350038. } 
-	\label{fig:DBLPSB}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.5\linewidth]{figs/DBLP_SBC4.png}
-	\caption{DBLP data after four coarsens and then spectral bisection. The
-	number of off diagonals reduced slightly to 523194.}
-	\label{fig:DBLP}
-\end{figure}
+%\begin{figure}
+%\centering
+%\begin{subfigure}{.5\textwidth}
+%	\centering
+%	\includegraphics[width=.9\linewidth]{figs/Facebook_Original.png}
+%	\caption{Original Facebook Data}
+%	\label{fig:FB}
+%\end{subfigure}%
+%\begin{subfigure}{.5\textwidth}
+%		\centering
+%		\includegraphics[width=.9\linewidth]{figs/Facebook_SB_C0.png}
+%		\caption{Facebook Data after Spectral Bisection}
+%		\label{fig:sub2}
+%	\end{subfigure}
+%	\caption{ (a) The original facebook data. Total number of
+%non-zeros is 88234 and and number of off diagonal non-zeros is 16466. (b)
+%Facebook data after spectral bisection. The number of off diagonal blocks
+%reduced to 1266. } 
+%	\label{fig:FBSB}
+%\end{figure}
+%\begin{figure}
+%\centering
+%\begin{subfigure}{.5\textwidth}
+%	\centering
+%	\includegraphics[width=.9\linewidth]{figs/DBLP_Original.png}
+%	\caption{DBLP Original Data}
+%	\label{fig:DBLP_SB_C0}
+%\end{subfigure}%
+%\begin{subfigure}{.5\textwidth}
+%		\centering
+%		\includegraphics[width=.9\linewidth]{figs/DBLP_SBC0.png}
+%		\caption{DBLP after Spectral Bisection}
+%		\label{fig:DBLP_SB_C4}
+%	\end{subfigure}
+%	\caption{ (a) The original DBLP data. Total number of
+%non-zeros is 1049866 and and number of off diagonal non-zeros is 628800. (b)
+%DBLP data after spectral bisection. The number of off diagonal blocks
+%reduced to 350038. } 
+%	\label{fig:DBLPSB}
+%\end{figure}
+%
+%\begin{figure}
+%	\centering
+%	\includegraphics[width=0.5\linewidth]{figs/DBLP_SBC4.png}
+%	\caption{DBLP data after four coarsens and then spectral bisection. The
+%	number of off diagonals reduced slightly to 523194.}
+%	\label{fig:DBLP}
+%\end{figure}
 
 
 
