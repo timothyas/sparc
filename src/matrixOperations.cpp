@@ -1,4 +1,5 @@
 #include<iostream>
+#include<sys/time.h>
 #include<fstream>
 #include<iomanip>
 #include<math.h>
@@ -19,6 +20,7 @@ std::vector<double> iterSolver(Graph G,std::vector<double> v, double alpha)
 	double tol = 1e-14;
 	int iterations = 0; 
 
+        struct timeval start, end;
 	std::vector<CSC_MATRIX> Mats = getSubMatrices(G);
 	std::vector<CSC_MATRIX> X; 
 	CSC_MATRIX D = getDegreeMatrix(G);
@@ -34,7 +36,13 @@ std::vector<double> iterSolver(Graph G,std::vector<double> v, double alpha)
 		x = convertVecToCSC(bn);
 		applyDinv(D,x);
 		X = divideVec(x);
+        	gettimeofday(&start,NULL);
 		bn1 = CSC_globalMatVec(Mats,X);
+        	gettimeofday(&end,NULL);
+		if (iterations==3)
+		{
+        	cout << setprecision(5) << "--->Approximate Matvec Time: " << (((end.tv_sec - start.tv_sec)*1000000u + end.tv_usec - start.tv_usec) / 1.e6) << endl;
+		}
 		applyScalar(bn1,alpha);
 		addVector(bn1,v);
 		residual = computeResidual(bn1,bn);
