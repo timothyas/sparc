@@ -112,12 +112,13 @@ matrices and vectors are stored using Compressed Sparse Column (CSC) format. We
 implemented our method using a shared memory approach in C++ using OpenMP on the Knights Landing (KNL) processors on
 Stampede. We tested our methods on the DBLP computer science citation database
 \cite{dblp} and a network of facebook users \cite{facebook}, where these
-datasets were found from the SNAP website \cite{snapnets}. 
+datasets were found from the SNAP website \cite{snapnets}. Herein we refer to
+our implementation of this procedure as {\rm SPARC} (Sparse PAgeRank in C).
 
 We found that the computations involved with reordering the matrix $M$ (i.e.
-coarsening and spectral bisection) were much more complex than simply solving
+coarsening and spectral bisection) were much more expensive than simply solving
 the linear system. The key here was rewriting the linear solver to handle the
-CSC format, and only perform computations for nonzero entries of the right hand
+CSC format, and only perform computations for nonzero entries of $M$ and the right hand
 side, $b$. Thus while the coarsening and reordering strategies are theoretically
 very interesting and scaled well up to 32 cores on the KNL nodes, 
 we did not find them useful for this particular application. 
@@ -141,6 +142,9 @@ Column (CSC) format. We discuss each of these separate parts in detail here.
 
 \subsection{Graph Coarsening}
 
+We coarsen our original graph in order to reduce the computation involved in
+the spectral bisection to reorder $M$ to reduce communication and improve data
+locality.
 The graph coarsening algorithm involves two intermediate phases. First, we
 labeled each node in the graph with a color by repetitively computing Maximal
 Independent Sets (MIS), where each color makes a maximal independent set for the
@@ -161,15 +165,32 @@ a call to a \texttt{select} to get a list of neighbors.
 
 \subsection{Spectral Bisection}
 
-The spectral bisection is the most expensive portion of computation for the 
+The goal of spectral bisection is to reorder a matrix in such a way that the
+number of nonzeros in the off diagonal blocks of the adjacency matrix is
+reduced; this can lower the overhead (e.g., communication) during a parallel
+matrix-vector multiplication. To perform a spectral bisection, one must form the
+graph laplacian, compute the eigenvector cooresponding to the second least significant
+eigenvalue, and then reorder the graph according to median value of the
+eigenvector. Clearly this computation is extremely expensive for a large
+graph, thus motivating the coarsening algorithm in the previous section. 
+
+A complexity estimate for the spectral bisection is given in Table
+\ref{complexity_table}. We note here that only the nonzero elements of the graph
+are stored and used in computing the graph laplacian and its eigenvectors, thereby significantly
+reducing the compute time. Also, we only compute 2 of the eigenvectors, hence
+the factor of $2$ in the table. 
 
   \begin{table}[h]
   \centering
   \caption{Complexity estimates for the SPARC implementation. Here $n$ is the
 number of vertices in the original graph, $m$ is the
 number of vertices in a given coarsening stage, $d$ is the maximum out degree of a
-node in the graph, $k$ is the number of vertices in the final graph, and $NNz$
-is the number of nonzeros in the adjacency matrix (i.e. the number of edges). }
+node in the graph, and $NNz$
+is the number of nonzeros in the adjacency matrix (i.e. the number of edges).
+Note the subscript on $NNz_c$ in the spectral bisection denotes that the number
+of edges (nonzeros) here is determined by the final level of coarsening and
+would ideally be much smaller than the original value for $NNz$. Typically
+$n<NNz$.}
   \label{complexity_table}
   \begin{tabular}{| l | c | c |}
         \hline
@@ -185,7 +206,7 @@ $\mathcal{O}\left(\frac{nd}{p}\left(n+4) + (d+1)log(n)\right)\right)$  \\ \hline
         $\,\,$ Edge Matching & $d(m+3) + \log(m)$ &
 $\frac{d}{p}\left(m+3\right) + \log(m)$  \\ \hline
 
-        Spectral Bisection & $\mathcal{O}(2k)$ & $\mathcal{O}(2k)$  \\ \hline
+        Spectral Bisection & $\mathcal{O}(2NNz_{c})$ & $\mathcal{O}(2NNz_{c})$  \\ \hline
 
         CSC Linear Solve & $\mathcal{O}(NNz)$ & $\mathcal{O}(NNz)$ \\
         \hline
@@ -277,7 +298,19 @@ $\frac{d}{p}\left(m+3\right) + \log(m)$  \\ \hline
 
 
 
+
 \subsection{Iterative Linear Solver}
+
+As discussed in the first section, we use a Jacobi method to solve Eqn.
+(\ref{eq:pagerank_linear}). The iterative solver is defined by the recusive
+algorithm:
+
+\begin{equation*}
+	x_{n+1} = \alpha AD^{-1}x_{n}+(1-\alpha)v \; , 
+\end{equation*}
+
+\noi where $A$ is the adjacency matrix of the graph 
+
 
 
 
@@ -293,11 +326,13 @@ package called {\rm SPARC} (Sparse PAge Rank in C). Given a
 graph, our pacakge can solve the page rank problem using a combination of coarsening, spectral
 bisection, and a parallel matvec with CSC formatted data inside a Jacobi
 iterator. The code was built on the ICES machines, as well as on \textit{Stampede 2} at TACC using the gnu
-compilers g++/gcc. Regarding external dependencies, {\rm SPAC}, makes use of
+compilers g++/gcc. Regarding external dependencies, {\rm SPARC}, makes use of
 {\rm ARPACK}, {\rm SuperLU}, and {\rm Boost}. {\rm ARPACK} is used in conjuction
 with {\rm SuperLU} to solve for the two least significant eigenvalues and
 eigenvectors of a given
-matrix; this is the same package used by the Matlab function ``eigs()''. {\rm
+matrix; this is the same package used by the Matlab function ``eigs()''.
+Importantly, these packages allow for the CSC storage format, making our
+computations tractable. {\rm
 Boost} program options is used for the API. Our package comes with two
 makefiles: one for KNL, which requires the use of Intel's MKL package for BLAS
 and LAPACK, and one for the ICES desktops and similar machines. Issuing a `make
@@ -309,21 +344,22 @@ build the source code and issuing a `make check' command will run the unit test 
 Aside from the test suite in the code, which contains small example graphs
 for verification purposes, we tested our code on two main datasets: The DBLP
 collaboration network dataset and the Facebook social circles data set
-\cite{snapnets,facebook,dblp}. For the Facebook data, our goals we as follows: 
+\cite{snapnets,facebook,dblp}. For the Facebook data, our goals were as follows: 
 
 \begin{itemize}
-	\item Test the correctness of spectral bisection with the example given in
+	\item Verify the spectral bisection algorithm with the example given in
 		class. 
 		\begin{itemize}
-			\item Expected the results to match and they did.
+			\item We confirmed the correct result.
 		\end{itemize}
-	\item See how different coarsening levels affect the results of spectral bisection,
-		i.e., the number of non-zeros in the off diagonal. 
+	\item Compare quality of reordering as a function of the number of
+stages in the coarsening algorithm, i.e., the number of non-zeros in the off
+diagonal blocks. 
 		\begin{itemize}
 			\item Expected to see not much of a different. 
 			\item Observed that the coarsening/uncoarsening process can
 				severly dampen the effective reordering of
-				spectral bisection.
+				spectral bisection, and even make it worse.
 		\end{itemize}
 	\item Understand the tradeoff between spectral bisection time and
 		coarening levels. 
@@ -333,24 +369,27 @@ collaboration network dataset and the Facebook social circles data set
 				a faster but similar spectral bisection. 
 			\item Observed that while coarsening is faster than
 				spectral bisection, the act of coloring is still
-				to slow for practicle purposes.
+				to slow for practical purposes.
 		\end{itemize}
 \end{itemize}
 \noi Similarly, for the DBLP data set, our goals were to: 
 
 \begin{itemize}
-	\item See how much of a difference spectral bisection makes when solving
-		a sparse matvec on shared memory (and different memory
+	\item Compare linear solve time with and without reordering from
+spectral bisection on shared memory (and different memory
 		configurations on Stampede 2). 
 		\begin{itemize}
 			\item Expected spectral bisection to greatly speed up
 				calculation. 
+                        \item Expected flat mode (i.e. specifying data to the
+fast MCDRAM in the KNL processors) to perform better than cache mode, where this
+is done automatically.
 			\item Observed negligible speed up.
 		\end{itemize}
 	
 	\item Determine strong scaling results of coarsening on Stampede 2. 
 		\begin{itemize}
-			\item Observed linear scaling. 
+			\item Observed log-linear scaling. 
 		\end{itemize}
 	\item Determine the speedup involved by performing a CSC matvec within a
 		jacobi iterator. 
@@ -375,54 +414,54 @@ collaboration network dataset and the Facebook social circles data set
 \section{Results}
 \subsection{Facebook Data}
 
-%\begin{figure}
-%\centering
-%\begin{subfigure}{.5\textwidth}
-%	\centering
-%	\includegraphics[width=.9\linewidth]{figs/Facebook_Original.png}
-%	\caption{Original Facebook Data}
-%	\label{fig:FB}
-%\end{subfigure}%
-%\begin{subfigure}{.5\textwidth}
-%		\centering
-%		\includegraphics[width=.9\linewidth]{figs/Facebook_SB_C0.png}
-%		\caption{Facebook Data after Spectral Bisection}
-%		\label{fig:sub2}
-%	\end{subfigure}
-%	\caption{ (a) The original facebook data. Total number of
-%non-zeros is 88234 and and number of off diagonal non-zeros is 16466. (b)
-%Facebook data after spectral bisection. The number of off diagonal blocks
-%reduced to 1266. } 
-%	\label{fig:FBSB}
-%\end{figure}
-%\begin{figure}
-%\centering
-%\begin{subfigure}{.5\textwidth}
-%	\centering
-%	\includegraphics[width=.9\linewidth]{figs/DBLP_Original.png}
-%	\caption{DBLP Original Data}
-%	\label{fig:DBLP_SB_C0}
-%\end{subfigure}%
-%\begin{subfigure}{.5\textwidth}
-%		\centering
-%		\includegraphics[width=.9\linewidth]{figs/DBLP_SBC0.png}
-%		\caption{DBLP after Spectral Bisection}
-%		\label{fig:DBLP_SB_C4}
-%	\end{subfigure}
-%	\caption{ (a) The original DBLP data. Total number of
-%non-zeros is 1049866 and and number of off diagonal non-zeros is 628800. (b)
-%DBLP data after spectral bisection. The number of off diagonal blocks
-%reduced to 350038. } 
-%	\label{fig:DBLPSB}
-%\end{figure}
-%
-%\begin{figure}
-%	\centering
-%	\includegraphics[width=0.5\linewidth]{figs/DBLP_SBC4.png}
-%	\caption{DBLP data after four coarsens and then spectral bisection. The
-%	number of off diagonals reduced slightly to 523194.}
-%	\label{fig:DBLP}
-%\end{figure}
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[width=.9\linewidth]{figs/Facebook_Original.png}
+	\caption{Original Facebook Data}
+	\label{fig:FB}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{figs/Facebook_SB_C0.png}
+		\caption{Facebook Data after Spectral Bisection}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{ (a) The original facebook data. Total number of
+non-zeros is 88234 and and number of off diagonal non-zeros is 16466. (b)
+Facebook data after spectral bisection. The number of off diagonal blocks
+reduced to 1266. } 
+	\label{fig:FBSB}
+\end{figure}
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[width=.9\linewidth]{figs/DBLP_Original.png}
+	\caption{DBLP Original Data}
+	\label{fig:DBLP_SB_C0}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{figs/DBLP_SBC0.png}
+		\caption{DBLP after Spectral Bisection}
+		\label{fig:DBLP_SB_C4}
+	\end{subfigure}
+	\caption{ (a) The original DBLP data. Total number of
+non-zeros is 1049866 and and number of off diagonal non-zeros is 628800. (b)
+DBLP data after spectral bisection. The number of off diagonal blocks
+reduced to 350038. } 
+	\label{fig:DBLPSB}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{figs/DBLP_SBC4.png}
+	\caption{DBLP data after four coarsens and then spectral bisection. The
+	number of off diagonals reduced slightly to 523194.}
+	\label{fig:DBLP}
+\end{figure}
 
 
 
