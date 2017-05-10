@@ -649,6 +649,8 @@ is given in table \ref{tab:time}.
 		Original Data & 7.36 & 7.63 & 7.64 & 7.71\\
 		Spectral Bisection & 7.24 & 7.74 & 7.76 & 7.57 \\
 		\hline
+		Parallel Matvec & \multicolumn{4}{|c|}{$\approx$ 0.09}\\
+		\hline
 	\end{tabular}
 \label{tab:KNLTIME}
 \end{table}
@@ -662,6 +664,8 @@ is given in table \ref{tab:time}.
 		\hline
 		Original Data & 1.55 & 1.56 & 1.56 & 1.57\\
 		Spectral Bisection & 1.45 & 1.55 & 7.53 & 1.54 \\
+		\hline
+		Parallel Matvec & \multicolumn{4}{|c|}{$\approx$ 0.02}\\
 		\hline
 	\end{tabular}
 \label{tab:ICESTIME}
@@ -680,7 +684,7 @@ machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
 \ref{tab:ICESTIME}.
 
 In both cases, solving the linear system with the original data
-or the spectral bisection reordered data produces the same result. The true
+or wth the spectral bisection reordered data produces the same result. The true
 speed up comes from using CSC format. As mentioned early, this significantly
 reduces the storage cost as well as the number of computations needed. The
 spectral bisection results would probably make a difference with distributed
