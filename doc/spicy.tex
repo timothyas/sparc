@@ -169,7 +169,7 @@ The goal of spectral bisection is to reorder a matrix in such a way that the
 number of nonzeros in the off diagonal blocks of the adjacency matrix is
 reduced; this can lower the overhead (e.g., communication) during a parallel
 matrix-vector multiplication. To perform a spectral bisection, one must form the
-graph laplacian, compute the eigenvector cooresponding to the second least significant
+graph laplacian, compute the eigenvector corresponding to the second least significant
 eigenvalue, and then reorder the graph according to median value of the
 eigenvector. Clearly this computation is extremely expensive for a large
 graph, thus motivating the coarsening algorithm in the previous section. 
@@ -302,7 +302,7 @@ $\frac{d}{p}\left(m+3\right) + \log(m)$  \\ \hline
 \subsection{Iterative Linear Solver}
 
 As discussed in the first section, we use a Jacobi method to solve Eqn.
-(\ref{eq:pagerank_linear}). The iterative solver is defined by the recusive
+(\ref{eq:pagerank_linear}). The iterative solver is defined by the recursive
 algorithm:
 
 \begin{equation*}
@@ -315,7 +315,7 @@ multiplication. We make use of CSC format to perform the matvec. This
 significantly reduces the storage cost as well as the required number of
 computations. A CSC matrix is defined by three vectors, \textit{vals,irow,} and
 \textit{pcol}. \textit{Vals} stores the values of the non-zero elements of the
-given matrix; \textit{irow} stoes the row index of the non-zero elements of the
+given matrix; \textit{irow} stores the row index of the non-zero elements of the
 given matrix, and \textit{pcol} stores pointers to the element that start each
 new column. It's important to note that \textit{pcol} is defined with the
 following relationship in order to deal with all zero columns: 
@@ -355,11 +355,11 @@ sparse and stored in CSC format is given in algorithm \ref{CSC}.
 
 In order to test our methodology, we wrote a C++
 package called {\rm SPARC} (Sparse PAge Rank in C). Given a
-graph, our pacakge can solve the page rank problem using a combination of coarsening, spectral
+graph, our package can solve the page rank problem using a combination of coarsening, spectral
 bisection, and a parallel matvec with CSC formatted data inside a Jacobi
 iterator. The code was built on the ICES machines, as well as on \textit{Stampede 2} at TACC using the gnu
 compilers g++/gcc. Regarding external dependencies, {\rm SPARC}, makes use of
-{\rm ARPACK}, {\rm SuperLU}, and {\rm Boost}. {\rm ARPACK} is used in conjuction
+{\rm ARPACK}, {\rm SuperLU}, and {\rm Boost}. {\rm ARPACK} is used in conjunction
 with {\rm SuperLU} to solve for the two least significant eigenvalues and
 eigenvectors of a given
 matrix; this is the same package used by the Matlab function ``eigs()''.
@@ -375,7 +375,7 @@ build the source code and issuing a `make check' command will run the unit test 
 
 Aside from the test suite in the code, which contains small example graphs
 for verification purposes, we tested our code on two main datasets: The DBLP
-collaboration network dataset and the Facebook social circles data set
+collaboration network data set and the Facebook social circles data set
 \cite{snapnets,facebook,dblp}. For the Facebook data, our goals were as follows: 
 
 \begin{itemize}
@@ -390,11 +390,11 @@ diagonal blocks.
 		\begin{itemize}
 			\item Expected to see not much of a different. 
 			\item Observed that the coarsening/uncoarsening process can
-				severly dampen the effective reordering of
+				severely dampen the effective reordering of
 				spectral bisection, and even make it worse.
 		\end{itemize}
-	\item Understand the tradeoff between spectral bisection time and
-		coarening levels. 
+	\item Understand the trade off between spectral bisection time and
+		coarsening levels. 
 		\begin{itemize}
 			\item Expected spectral bisection to take a long time,
 				and for coarsening to be cheap and thus lead to
@@ -424,7 +424,7 @@ is done automatically.
 			\item Observed log-linear scaling. 
 		\end{itemize}
 	\item Determine the speedup involved by performing a CSC matvec within a
-		jacobi iterator. 
+		Jacobi iterator. 
 		\begin{itemize}
 			\item Expected the majority of the speed up to come from
 				the spectral bisection process. 
@@ -466,19 +466,105 @@ Facebook data after spectral bisection. The number of off diagonal blocks
 reduced to 1266. } 
 	\label{fig:FBSB}
 \end{figure}
+\subsection{DBLP Data}
+To test our methodology on a larger data set, we make use of the DBLP
+collaboration network data set \cite{snapnets,dblp}. This is the same data used
+in \cite{xie} to test their low-rank approximation algorithm; they compute 1000
+samples offline (i.e., solve the page rank problem 1000 times) in order to find a
+low dimensional subspace for the least squares problems described in section 1.
+The times given in \cite{xie} for
+computing these samples and finding a basis for the low dimensional subspace 
+is given in table \ref{tab:time}.
+
+\begin{table}[h]
+	\centering 
+\captionof{table}{Time estimates given in \cite{xie}}
+   \begin{tabular}[h]{|l|c|c|c|}
+	   \hline 
+	   \textbf{Procedure} & \textbf{DBLP} & \textbf{Weibo-G} &
+	   \textbf{Weibo-L} \\
+	   \hline
+	   Prepare Samples & 6 hours & 17 hours & 3-7 min \\ 
+	   Get Basis $U^*$ & 0.8 hours & 0.4 hours & 1-2 min \\
+	   \hline
+   \end{tabular}
+\label{tab:time}
+\end{table}
+
+The original DBLP data set is shown in Fig. \ref{fig:DBLP}. This data set
+has 425957 nodes and only 1049866 non-zeros. Moreover, the number of non-zeros
+in the off diagonal is 628800. Figures \ref{fig:DBLP_SB_C0} and
+\ref{fig:DBLP_SB_C4} show the results of spectral bisection, and spectral
+bisection after four levels of coarsening, respectively. The spectral bisection
+results shown in \ref{fig:DBLP_SB_C0} significantly reduce the number of off
+diagonal elements---down to 350038; however, not much improvement is seen after
+four levels of coarsening. Each quadrant in \ref{fig:DBLP_SB_C4} looks very
+similar as opposed to \ref{fig:DBLP_SB_C0}.
+
+Even though computing the spectral bisection of the DBLP data with or without
+coarsening is infeasible, these results provide an opportunity to test how
+effective spectral bisection is at speeding up the matvec. Using algorithm
+\ref{CSC} we solve the page rank problem using the original DBLP data, and the
+reordered DBLP data shown in figures \ref{fig:DBLP} and \ref{fig:DBLP_SB_C0},
+respectively. We test the solvers on Intel's KNL nodes on Stampede 2, and on the
+ICES machines. The timing results for the page rank problem on the different
+machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
+\ref{tab:ICESTIME}.
+
+\begin{table}
+	\centering
+	\captionof{table}{Iterative Solve Time on KNL in sec}
+	\begin{tabular}[h]{|c||c|c|c|c|}
+		\hline
+		Cores/Threads& 1 & 16 & 64 & 272 \\
+		\hline
+		Original Data & 7.36 & 7.63 & 7.64 & 7.71\\
+		Spectral Bisection & 7.24 & 7.74 & 7.76 & 7.57 \\
+		\hline
+	\end{tabular}
+\label{tab:KNLTIME}
+\end{table}
+
+\begin{table}
+	\centering
+	\captionof{table}{Iterative Solve Time on ICES in sec}
+	\begin{tabular}[h]{|l||c|c|c|c|}
+		\hline
+		Cores & 1 & 2& 3 & 4 \\
+		\hline
+		Original Data & 1.55 & 1.56 & 1.56 & 1.57\\
+		Spectral Bisection & 1.45 & 1.55 & 7.53 & 1.54 \\
+		\hline
+	\end{tabular}
+\label{tab:ICESTIME}
+\end{table}
+
+In both cases, solving the matrix-vector multiplication with the original data
+or the spectral bisection reordered data produces the same result. The true
+speed up comes from using CSC format. As mentioned early, this significantly
+reduces the storage cost as well as the number of computations needed. The
+spectral bisection results would probably make a difference with distributed
+memory, or perhaps if we performed recursive spectral bisection; however, the
+speed up appears to be minimal on shared memory. 
+
+Our sparse matvec calculations significantly beat the times given in \cite{xie}. We could solve 1000 page rank
+problems in about 25 minutes for the DBLP data as opposed to the 6 hours taken
+in \cite{xie}. 
+
+
 \begin{figure}
 \centering
 \begin{subfigure}{.5\textwidth}
 	\centering
 	\includegraphics[width=.9\linewidth]{figs/DBLP_Original.png}
 	\caption{DBLP Original Data}
-	\label{fig:DBLP_SB_C0}
+	\label{fig:DBLP}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
 		\centering
 		\includegraphics[width=.9\linewidth]{figs/DBLP_SBC0.png}
 		\caption{DBLP after Spectral Bisection}
-		\label{fig:DBLP_SB_C4}
+		\label{fig:DBLP_SB_C0}
 	\end{subfigure}
 	\caption{ (a) The original DBLP data. Total number of
 non-zeros is 1049866 and and number of off diagonal non-zeros is 628800. (b)
@@ -492,7 +578,7 @@ reduced to 350038. }
 	\includegraphics[width=0.5\linewidth]{figs/DBLP_SBC4.png}
 	\caption{DBLP data after four coarsens and then spectral bisection. The
 	number of off diagonals reduced slightly to 523194.}
-	\label{fig:DBLP}
+	\label{fig:DBLP_SB_C4}
 \end{figure}
 
 
