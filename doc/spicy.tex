@@ -4,6 +4,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{verbatim}
+\usepackage{subcaption}
 %\usepackage{authblk}
 \geometry{margin=1in}
 
@@ -332,7 +333,57 @@ collaboration network dataset and the Facebook social circles data set
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+\subsection{Facebook Data}
 
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[width=.9\linewidth]{figs/Facebook_Original.png}
+	\caption{Original Facebook Data}
+	\label{fig:FB}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{figs/Facebook_SB_C0.png}
+		\caption{Facebook Data after Spectral Bisection}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{ (a) The original facebook data. Total number of
+non-zeros is 88234 and and number of off diagonal non-zeros is 16466. (b)
+Facebook data after spectral bisection. The number of off diagonal blocks
+reduced to 1266. } 
+	\label{fig:FBSB}
+\end{figure}
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+	\centering
+	\includegraphics[width=.9\linewidth]{figs/DBLP_Original.png}
+	\caption{DBLP Original Data}
+	\label{fig:DBLP_SB_C0}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.9\linewidth]{figs/DBLP_SBC0.png}
+		\caption{DBLP after Spectral Bisection}
+		\label{fig:DBLP_SB_C4}
+	\end{subfigure}
+	\caption{ (a) The original DBLP data. Total number of
+non-zeros is 1049866 and and number of off diagonal non-zeros is 628800. (b)
+DBLP data after spectral bisection. The number of off diagonal blocks
+reduced to 350038. } 
+	\label{fig:DBLPSB}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{figs/DBLP_SBC4.png}
+	\caption{DBLP data after four coarsens and then spectral bisection. The
+	number of off diagonals reduced slightly to 523194.}
+	\label{fig:DBLP}
+\end{figure}
 
 
 
@@ -348,6 +399,7 @@ collaboration network dataset and the Facebook social circles data set
 
 \bibliographystyle{ieeetr} 
 \bibliography{spicy}
+
 
 
 \end{document}
