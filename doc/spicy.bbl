@@ -16,4 +16,9 @@ J.~McAuley and J.~Leskovec, ``Learning to discover social circles in ego
 J.~Leskovec and A.~Krevl, ``{SNAP Datasets}: {Stanford} large network dataset
   collection.'' {http://snap.stanford.edu/data}, June 2014.
 
+\bibitem{multilevel}
+B.~Hendrickson and R.~Leland, ``A multilevel algorithm for partitioning
+  graphs,'' in {\em Proceedings of the 1995 ACM/IEEE Conference on
+  Supercomputing}, Supercomputing '95, (New York, NY, USA), ACM, 1995.
+
 \end{thebibliography}

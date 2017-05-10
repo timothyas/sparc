@@ -8,8 +8,6 @@ include/arpackpp
 *.fls
 *.synctex.gz
 *.blg
-*.bbl
-*.toc
 
 # Vim #
 #######
