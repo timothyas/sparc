@@ -1,6 +1,9 @@
 \documentclass[11pt]{article}
 %\usepackage[utf8]{inputenc}
 \usepackage{geometry,amsmath,color,graphicx,latexsym,amsfonts}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{verbatim}
 %\usepackage{authblk}
 \geometry{margin=1in}
 
@@ -19,6 +22,14 @@
 \newcommand{\degSym}{$^{\circ}$}
 \newcommand{\noi}{\noindent}
 \newcommand{\bigo}[1]{\mathcal{O}\left( #1 \right)}
+
+% --- Parallel algorithm commands
+\algblock{ParFor}{EndParFor}
+\algnewcommand\algorithmicparfor{\textbf{parfor}}
+\algnewcommand\algorithmicpardo{\textbf{do}}
+\algnewcommand\algorithmicendparfor{\textbf{end\ parfor}}
+\algrenewtext{ParFor}[1]{\algorithmicparfor\ #1\ \algorithmicpardo}
+\algrenewtext{EndParFor}{\algorithmicendparfor}
 
 %\renewcommand\Authfont{\small}
 %\renewcommand\Affilfont{\itshape\footnotesize}
@@ -130,12 +141,96 @@ Column (CSC) format. We discuss each of these separate parts in detail here.
 The graph coarsening algorithm involves two intermediate phases. First, we
 labeled each node in the graph with a color by repetitively computing Maximal
 Independent Sets (MIS), where each color makes a maximal independent set for the
-graph. The pseudocode for these algorithms is shown in
-Algorithms \ref{alg:mis} and \ref{alg:coloring}, respectively. Next, we used the
+graph. The pseudocode for the MIS algorithm is shown in
+Algorithm \ref{alg:mis}. The coloring algorithm is neglected for brevity since
+it merely involves iteratively computing the MIS of a graph, assigning a
+different color each time. Next, we used the
 graph colors to match the nodes into pairs in a maximal matching algorithm. Here
 it was important to assign partners such that the edgeweight between them is
-maximized so that when the graph is reordered, it minimizes the edgecut partners
-were assigned to maximize the edgeweight between partners 
+maximized in order to minimize the edges between the two groups of nodes formed
+by the spectral bisection algorithm. The pseudocode for maximal matching is
+shown in Algorithm \ref{alg:mxm}. 
+
+%%% MIS Algorithm
+	\begin{algorithm}[H]
+        \small
+	\caption{Maximal Independent Sets}\label{alg:mis}
+	\begin{algorithmic}[1]
+	\Procedure{mis\_shared}{Graph g, vector colored, vector I}
+        \State{\textit{g: graph containing node and edge information}}
+        \State{\textit{colored: vector of nodes already assigned a color}}
+        \State{\textit{I: vector to fill of independent nodes}} \\
+
+        \State{$C=g.nodeList\,\, s.t.\,\, (g.nodeList\cap colored==\emptyset)$} 
+	\ParFor{$i=0:C.size$}
+        \State{$r[i] = rand(0,(C.size)^4)$}
+        \EndParFor
+
+        \While{$!isEmpty(C)$}
+        \State{$removeFlag[i\in C]=false$}
+        \State{$keepFlag[i\in C]=false$}
+
+        \ParFor{$i \in C$}
+        \For{$j \in g.neighborsOf[i]$}
+        \If{$r[i]>r[j]$}
+        \State{keepFlag[i]=true}
+        \Else
+        \State{removeFlag[i]=true}
+        \EndIf
+        \EndFor
+        \EndParFor
+
+        \ParFor{$i \in C$}
+        \If{$ (!(keepFlag[i])\, \&\&\, (removeFlag[i])) \,||\, isEmpty(g.neighborsOf[i])$}
+        \State{C.pop(i)}
+        \State{I.push(i)}
+        \EndIf
+        \EndParFor
+
+        \ParFor{$u\in I$}
+        \For{$j \in g.neighborsOf[u]$}
+        \State{C.pop(j)}
+        \EndFor
+        \EndParFor
+
+        \EndWhile
+
+	\State{\textbf{return} I }
+	\EndProcedure
+	\end{algorithmic}
+	\end{algorithm}
+
+%%% MXM algorithm        
+
+	\begin{algorithm}[H]
+        \small
+	\caption{Maximal Matching}\label{alg:mxm}
+	\begin{algorithmic}[1]
+	\Procedure{mxm\_shared}{Graph g, vector colors, vector matchList}
+        \State{\textit{g: graph containing node and edge information}}
+        \State{\textit{colors: vector of colors for each node}}
+        \State{\textit{matchList: vector containing node pairs}}\\
+        \For{$k=0:max(colors)-1$}
+        \State{nodeList = parallel\_select\_shared(unmatched nodes, color==k)}
+        
+        \ParFor{$u \in nodeList$}
+        \State{v = find\_unmatched\_max\_edgeweight(g.neighborsOf[u])}
+        \State{matchList[u] = v; matchList[v]=u}
+        \State{raceList.push(u)}
+        \EndParFor
+
+        \ParFor{$u \in raceList$}
+        \If{$matchList[matchList[u]] \,!=\, raceList[u]$}
+        \State{matchList[u] = unmatched}
+        \EndIf
+        \EndParFor
+
+        \EndFor
+        
+        \State{\textbf{return} matchList}
+        \EndProcedure
+        \end{algorithmic}
+        \end{algorithm} 
 
 
 \subsection{Spectral Bisection}
