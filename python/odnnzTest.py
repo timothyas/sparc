@@ -110,16 +110,16 @@ for n in range(0,nCoarse):
 # Plot off diagonal nnz
 odnnzFig="%s/offDiagNNz.png" % expFigs
 plt.figure(figsize=(15,10))
-plt.plot(odNNz,label='Off Diagonal Block nnz')
-plt.xlabel('Levels Coarsened',fontsize=24)
-plt.ylabel('Off Diagonal Block NNz',fontsize=24)
+plt.plot(odNNz,label='Off Diagonal Block nnz',linewidth=2.5)
+plt.xlabel('Levels Coarsened',fontsize=32)
+plt.ylabel('Off Diagonal Block NNz',fontsize=32)
 plt.savefig(odnnzFig,bbox_inches='tight',dpi=100)
 
 # Plot Spectral Bisection timing
 sbFig = "%s/sbTiming.png" % expFigs
 plt.figure(figsize=(15,10))
-plt.loglog(sbTiming,label='Spectral Bisection Timing')
-plt.xlabel('Levels Coarsened',fontsize=24)
-plt.ylabel('Spectral Bisection Timing (s)',fontsize=24)
+plt.loglog(sbTiming,label='Spectral Bisection Timing',linewidth=2.5)
+plt.xlabel('Levels Coarsened',fontsize=32)
+plt.ylabel('Spectral Bisection Timing (s)',fontsize=32)
 plt.savefig(sbFig,bbox_inches='tight',dpi=100)
 
