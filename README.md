@@ -10,7 +10,7 @@ Sparse PAgeRank in C++
 
 # Installation and Usage #
 
-SPARC can be build on either Stampede 2 (KNL) or on the ICES machines. To build on the ICES Machines 
+SPARC can be built on either Stampede 2 (KNL) or on the ICES machines. To build on the ICES Machines 
 first load gcc and boost module, 
 
 >> module load gcc boost
@@ -19,7 +19,7 @@ Then issue a `make dep` to build all external dependencies:
 
 >> make dep
 
-Run the test suit by issuing a `make check` command. 
+Run the test suite by issuing a `make check` command. 
 
 >> make check 
 
@@ -32,7 +32,9 @@ To run the code, cd into the src/ directory and run `./sparc` to display the hel
 
 >> ./sparc -f ../data/facebook_combined.txt -c 4 -p 2 
 
-This will run the facebook data with 4 levels of coarsening on 2 threads. The data directory contains more test cases. 
+This will run the facebook data with 4 levels of coarsening on 2 threads. The data directory contains more test cases.
+Note that VinFile.dat in src/ directory should contain information for the teleportation vector for each dataset. The default is
+for the facebook data; to change it do the DBLP data, simply run `cp VinFileUniformDBLP.dat VinFile.dat` for example. 
 
 To build the code on Stampede 2, first load the gcc, mkl, and boost modules. 
 
