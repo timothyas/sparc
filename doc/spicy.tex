@@ -10,7 +10,7 @@
 
 % %opening
 \title{Finding Parallelism in the Edge-Weighted Page Rank Problem}
-\author{Sam Estes, Tim Smith, Siddhant Wahal, Gopal Yalla}
+\author{Tim Smith, Gopal Yalla}
 \date{May 10, 2017}
 %\institute{CSE 392: Parallel Algorithms \\ Final Report}
 
@@ -462,13 +462,13 @@ the final reordering.
 
 \begin{figure}
 \centering
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.45\textwidth}
         \centering
-        \includegraphics[width=.8\linewidth]{figs/sbTiming.png}
+        \includegraphics[width=\linewidth]{figs/sbTiming.png}
 \end{subfigure}
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.45\textwidth}
         \centering
-        \includegraphics[width=.8\linewidth]{figs/offDiagNNz.png}
+        \includegraphics[width=\linewidth]{figs/offDiagNNz.png}
 \end{subfigure}
 \caption{(Left) Spectral bisection timing (sec) as a function of coarsening
 levels before the computation, note logarithmic axes. (Right) Number of nonzeros
@@ -496,12 +496,19 @@ reordering is much worse than the original datset itself. The plot shown after 9
 levels of coarsening clearly highlights an extreme case, where the graph is made
 up of nearly uniformly distributed clumps.
 
-We show similar a similar visualization for the DBLP data set in Figures
-\ref{fig:DBLPSB} and \ref{fig:DBLP_SB_C4}. The number of off diagonal nonzeros
-is significantly reduced by computing spectral bisection, compare left and right
-plots of Figure \ref{fig:DBLPSB}, but this computation is extremely expensive.
-However, even after coarsening the graph only four times, Figure
-\ref{fig:DBLP_SB_C4}, the reordering is no better off than the original data.
+We show similar a similar visualization for the much larger DBLP data set ($\sim
+4.2 \times 10^5$ vertices and $\sim 1$ million edges) in Figures
+\ref{fig:DBLPSB} and \ref{fig:DBLP_SB_C4}. Here the number of nonzeros in off
+diagonal blocks
+is significantly reduced by computing spectral bisection, which is seen by
+comparing the left and right
+plots of Figure \ref{fig:DBLPSB}. This computation is extremely expensive and
+entirely impractical. It is much faster to compute the bisection reordering on a
+coarsened graph, but this reduces the quality of the reordering rapidly.
+Figure \ref{fig:DBLP_SB_C4} shows the reordering after coarsening the graph only
+four times and here the number of nonzeros in the off diagonal blocks is 523194.
+This is only slightly reduced from the original data, which had 628800 nonzeros,
+thus the reordering is entirely impractical here for reducing communication.
 
 Some of the pitfalls of our coarsening algorithm outlined here can be avoided by
 adding a successive refinement scheme, such as those implemented in
@@ -553,45 +560,10 @@ diagonal nonzeros is 5774 (left) and 72528 (right). }
 	\label{fig:coarseFB}
 \end{figure}
 
-\subsection{DBLP Data}
-
-To test our methodology on a larger data set, we make use of the DBLP
-collaboration network data set \cite{snapnets,dblp}. This is the same data used
-in \cite{xie} to test their low-rank approximation algorithm; they compute 1000
-samples offline (i.e., solve the page rank problem 1000 times) in order to find a
-low dimensional subspace for the least squares problems described in section 1.
-The times given in \cite{xie} for
-computing these samples and finding a basis for the low dimensional subspace 
-is given in table \ref{tab:time}.
-
-\begin{table}[h]
-	\centering 
-\captionof{table}{Time estimates given in \cite{xie}}
-   \begin{tabular}[h]{|l|c|c|c|}
-	   \hline 
-	   \textbf{Procedure} & \textbf{DBLP} & \textbf{Weibo-G} &
-	   \textbf{Weibo-L} \\
-	   \hline
-	   Prepare Samples & 6 hours & 17 hours & 3-7 min \\ 
-	   Get Basis $U^*$ & 0.8 hours & 0.4 hours & 1-2 min \\
-	   \hline
-   \end{tabular}
-\label{tab:time}
-\end{table}
-
-The original DBLP data set is shown in Fig. \ref{fig:DBLP}. This data set
-has 425957 nodes and only 1049866 non-zeros. Moreover, the number of non-zeros
-in the off diagonal is 628800. Figures \ref{fig:DBLP_SB_C0} and
-\ref{fig:DBLP_SB_C4} show the results of spectral bisection, and spectral
-bisection after four levels of coarsening, respectively. The spectral bisection
-results shown in \ref{fig:DBLP_SB_C0} significantly reduce the number of off
-diagonal elements---down to 350038; however, not much improvement is seen after
-four levels of coarsening. Each quadrant in \ref{fig:DBLP_SB_C4} looks very
-similar as opposed to \ref{fig:DBLP_SB_C0}.
 
 
 %%%%%%%%%%%% strong scaling
-\subsubsection{Coarsening Strong Scaling on KNL: DBLP data}
+\subsection{Coarsening Strong Scaling on KNL: DBLP data}
 
 Here we tested the scaling of our coarsening algorithm implementation on a single
 Knights Landing node with the DBLP data set ($\sim 420000$ vertices and $\sim 1$
@@ -612,8 +584,7 @@ we are working with only requires on the order of megabytes of storage. It makes
 sense that the algorithm does not scale to a large number of threads since they
 would each be caught up in communication overhead rather than computation. This
 is what we see after 32 threads. The slow down beyond this point is probably due
-to latency from processors across the chip from where data is stored on the four
-MCDRAM channels.
+to latency from processors communicating across more than half of the socket.
 
 We note also that we tested the coarsening algorithm on both flat and cache
 memory models of the KNL node. The node has about 100GB of DDR4 RAM, at 90 GB/s
@@ -623,7 +594,8 @@ as a high level cache. In flat mode, the user can control data elements which
 live in MCDRAM. Since our application took advantage of sparse storage schemes,
 the memory footprint was well under 1GB, allowing us to flexibly try both modes.
 We found no difference between the flat and cache mode, which is likely because
-the size of our application was so small relative to the node.
+the size of our application was so small that it could fit in MCDRAM regardless
+of the memory configuration.
 
 Despite decent scaling to 32 cores (threads), the coarsening and reordering
 algorithms are far
@@ -641,20 +613,33 @@ logarithmic x-axis.}
 \end{figure}
 
 
-\subsubsection{Solving the Linear System}
+\subsection{Solving the PageRank problem with the DBLP Dataset}
 
+To test our methodology on a larger data set, we make use of the DBLP
+collaboration network data set \cite{snapnets,dblp}. This is the same data used
+in \cite{xie} to test their low-rank approximation algorithm; they compute 1000
+samples offline (i.e., solve the page rank problem 1000 times) in order to find a
+low dimensional subspace for the least squares problems described in section 1.
+The times given in \cite{xie} for
+computing these samples and finding a basis for the low dimensional subspace 
+is given in table \ref{tab:time}.
 
-Even though computing the spectral bisection of the DBLP data with or without
-coarsening is infeasible, these results provide an opportunity to test how
-effective spectral bisection is at speeding up the matvec. Using algorithm
-\ref{CSC} we solve the page rank problem using the original DBLP data, and the
-reordered DBLP data shown in figures \ref{fig:DBLP} and \ref{fig:DBLP_SB_C0},
-respectively. We test the solvers on Intel's KNL nodes on Stampede 2, and on the
-ICES machines. The timing results for the page rank problem on the different
-machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
-\ref{tab:ICESTIME}.
+\begin{table}[h!]
+	\centering 
+\captionof{table}{Time estimates given in \cite{xie}}
+   \begin{tabular}[h]{|l|c|c|c|}
+	   \hline 
+	   \textbf{Procedure} & \textbf{DBLP} & \textbf{Weibo-G} &
+	   \textbf{Weibo-L} \\
+	   \hline
+	   Prepare Samples & 6 hours & 17 hours & 3-7 min \\ 
+	   Get Basis $U^*$ & 0.8 hours & 0.4 hours & 1-2 min \\
+	   \hline
+   \end{tabular}
+\label{tab:time}
+\end{table}
 
-\begin{table}
+\begin{table}[h!]
 	\centering
 	\captionof{table}{Iterative Solve Time on KNL in sec}
 	\begin{tabular}[h]{|c||c|c|c|c|}
@@ -668,7 +653,7 @@ machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
 \label{tab:KNLTIME}
 \end{table}
 
-\begin{table}
+\begin{table}[h!]
 	\centering
 	\captionof{table}{Iterative Solve Time on ICES in sec}
 	\begin{tabular}[h]{|l||c|c|c|c|}
@@ -682,15 +667,31 @@ machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
 \label{tab:ICESTIME}
 \end{table}
 
+Even though computing the spectral bisection of the DBLP data with or without
+coarsening is infeasible, these results provide an opportunity to test how
+effective spectral bisection is at speeding up the matvec in the iterative
+solver. Using algorithm
+\ref{CSC} we solve the page rank problem using the original DBLP data, and the
+reordered DBLP data shown in figures \ref{fig:DBLP} and \ref{fig:DBLP_SB_C0},
+respectively. We test the solvers on Intel's KNL nodes on Stampede 2, and on one
+of our desktops (4 cores at 3.3GHz). The timing results for the page rank
+problem on the different
+machines and on multiple cores are shown in table \ref{tab:KNLTIME} and
+\ref{tab:ICESTIME}.
+
 In both cases, solving the linear system with the original data
 or the spectral bisection reordered data produces the same result. The true
 speed up comes from using CSC format. As mentioned early, this significantly
 reduces the storage cost as well as the number of computations needed. The
 spectral bisection results would probably make a difference with distributed
 memory, or perhaps if we performed recursive spectral bisection; however, the
-speed up appears to be minimal on shared memory. 
+speed up appears to be minimal on shared memory. We note here that our
+implementation produced the same times on both flat and cache mode on the KNL
+processors. We suspect this is because the vectors being applied are so small
+that they can fit in the MCDRAM no matter how the memory is configured.
 
-Our sparse matvec calculations significantly beat the times given in \cite{xie}. We could solve 1000 page rank
+Our sparse matvec calculations significantly beat the times given in \cite{xie}.
+We could solve 1000 page rank
 problems in about 25 minutes for the DBLP data as opposed to the 6 hours taken
 in \cite{xie}. 
 
