@@ -74,7 +74,7 @@ problem to estimate the PageRank vector in an ``online'' query. The solution to
 these low dimensional systems can be computed almost immediately, such that
 a user can query a database at interactive speeds.   
 
-Since the algorithm presented in \cite{xie} was already so fast, it seemed
+Since the algorithm presented in \cite{xie} already achieved interactive speeds, it seemed
 unnecessary to try to formulate a parallel implementation. Therefore we looked
 to improving the more expensive offline computation, which solves Eqn.
 (\ref{eq:pagerank_linear}) exactly. Speeding up this computation could allow for
@@ -92,7 +92,8 @@ by the Markov process given by Eqn. (\ref{eq:pagerank_markov}). Here all
 matrices and vectors are stored using Compressed Sparse Column (CSC) format. We
 implemented our method using a shared memory approach in C++ using OpenMP on the Knights Landing (KNL) processors on
 Stampede. We tested our methods on the DBLP computer science citation database
-\cite{dblp} and a network of facebook users \cite{facebook}. 
+\cite{dblp} and a network of facebook users \cite{facebook}, where these
+datasets were found from the SNAP website \cite{snapnets}. 
 
 We found that the computations involved with reordering the matrix $M$ (i.e.
 coarsening and spectral bisection) were much more complex than simply solving
@@ -107,6 +108,8 @@ we did not find them useful for this particular application.
 %% 2. Methodology
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Methodology}
+
 Our problem takes the view of a network of users in the facebook data or
 citations in the DBLP database. Two vertices are connected by an edge when e.g. two
 users are friends on facebook or when one paper cites another in the DBLP graph.
@@ -117,7 +120,23 @@ spectral bisection, and (3) solve the linear system with a Jacobi iterative
 method motivated by Eqn. (\ref{eq:pagerank_markov}) in Compressed Sparse
 Column (CSC) format. We discuss each of these separate parts in detail here. 
 
-The graph coarsening 
+\subsection{Graph Coarsening}
+
+The graph coarsening algorithm involves two intermediate phases. First, we
+labeled each node in the graph with a color by repetitively computing Maximal
+Independent Sets (MIS), where each color makes a maximal independent set for the
+graph. The pseudocode for these algorithms is shown in
+Algorithms \ref{alg:mis} and \ref{alg:coloring}, respectively. Next, we used the
+graph colors to match the nodes into pairs in a maximal matching algorithm. Here
+it was important to assign partners such that the edgeweight between them is
+maximized so that when the graph is reordered, it minimizes the edgecut partners
+were assigned to maximize the edgeweight between partners 
+
+
+\subsection{Spectral Bisection}
+
+\subsection{Iterative Linear Solver}
+
 
 
 
