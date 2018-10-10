@@ -1,26 +1,33 @@
 BOOSTLIB := $(shell env | grep BOOST | grep LIB | cut -f 2 -d=)
 BOOSTINC := $(shell env | grep BOOST | grep INC | cut -f 2 -d=)
 SPIC_DIR = ${PWD}
+
+
 INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod -I${BOOSTINC}
 
 LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external -L${BOOSTLIB} 
 LDLIBS     :=  -larpack -lsuperlu -lgfortran  -llapack  -lblas -lboost_program_options
+EXEC := sparc
+EXECDIR := ../
+
+
 
 # Export variables so check, install, and coverage can all use libraries
 export LDFLAGS
 export INC
 export LDLIBS
 export LIB
-
-all: info
+export EXEC
+export EXECDIR
 
 info:
+
 	@echo "Available make targets:"
-	@echo "  install   : build main program in /src/"
+	@echo "  all       : build main program in /src/"
 	@echo "  check	    : build and run test suite in /test/regression"
 	@echo "  dep       : build dependencies"
 
-install:
+all:
 	$(MAKE) -C ./src/  
 
 check: 

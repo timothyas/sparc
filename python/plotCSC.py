@@ -10,7 +10,7 @@ import scipy.sparse as sps
 
 
 # Load and plot
-f=open("../src/Results.dat")
+f=open("../output/Results.dat")
 f.readline()
 line1=f.readline()
 line2=f.readline()
@@ -33,8 +33,8 @@ a = sps.csc_matrix( (vals,irow,pcol) )
 plt.figure(figsize=(15,15))
 mh=plt.spy(a,markersize=0.1)
 
-#plt.show()
-plotName = "DBLP_SBC4.png"
+plt.show()
+#plotName = "DBLP_SBC4.png"
 plt.xlabel('Total nnz = ' + str((len(vals))) + ',     Off-Diagonal Blocks nnz = ' + str(2*offDiagNNZ))
 plt.title('DBLP Spectral Bisection after 4 levels of Coarsening')
 plt.savefig(plotName,bbox_inches='tight',dpi=100)

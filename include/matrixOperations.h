@@ -5,8 +5,29 @@
 #include<vector>
 #include<string>
 
+/* \brief Returns matrix of submatrices (power of 2) 
+ * \param G: Full matrix
+ * \return Matrix of submatrices
+ */
 std::vector<CSC_MATRIX> getSubMatrices(Graph G);
+
+/* 
+ * \brief Gets the ij element of a given CSC matrix 
+ *
+ * \param i: Row of matrix 
+ * \param j: Column of matrix
+ * \return value of matrix A(i,j)
+ */
 double getAij(CSC_MATRIX A,int i,int j);
+
+
+/*
+ * \brief Saves matrix in csc format to file 
+ *
+ * \param A: Matrix in CSC format to save
+ * \param filename File to save matrix to.
+ * \return Error code. 
+ */
 int saveMatrixToFile(CSC_MATRIX A,std::string filename);
 std::vector<CSC_MATRIX> divideVec(CSC_MATRIX X);
 int writeTimingToFile(std::vector<std::vector<double> >& timeKeeper, std::string filename, int coarsen_levels);

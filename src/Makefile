@@ -8,7 +8,7 @@ CC      := g++
 CFLAGS  :=-O3 -g -p -Wall -std=c++11 
 
 # RULES
-$(EXEC): $(OBJ)
+$(EXECDIR)/$(EXEC): $(OBJ)
 	$(LINK.o)  -p -fopenmp  -o $@ $^ $(INC) ${LDFLAGS} $(LDLIBS)
 %.o: %.cpp
 	$(COMPILE.c) $< -fopenmp -o $@ $(INC)

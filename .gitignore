@@ -20,9 +20,9 @@ include/arpackpp
 results/*
 figs/*
 edgeList.txt
-src/Results.dat
 timing.txt
 src/timingExperiment.py
+*.png
 
 
 # C++ #
@@ -33,7 +33,7 @@ src/timingExperiment.py
 
 # executables #
 ###############
-spiC
+sparc
 regression_tests
 
 # doxygen #

@@ -22,6 +22,7 @@ using namespace boost::program_options;
 int PrepareGraph(Graph & G,int coarsen_levels,std::vector<int>& indMap, std::vector<std::vector<double> >& timeKeeper);
 std::vector<double> readV(std::string file);
 int saveVec(std::vector<double> b, std::string file);
+std::vector<double> setV(int num_nodes);
 // Determine if conflicting options are passed
 void conflicting_options(const variables_map& vm, const char* opt1, const char* opt2)
 {
@@ -39,10 +40,11 @@ int main(int argc, char * argv[])
 		desc.add_options()
 			("help,h","show this mesage and exit")
 			("graphFile,f",value<std::string>()->required(),"(required) file containing initial graph data")
+			("telFile,t",value<std::string>()->default_value("NONE"),"file containing teleportation vector data")
 			("alpha,a",value<double>()->default_value(0.5),"Set probability praramer alpha")
 			("coarse_levels,c",value<int>()->default_value(0),"Set coarsen levels")
 			("noSB,n",bool_switch(),"Don't do spectral bisection. Just solve pagerank problem with original graph.")
-			("nprocs,p",value<int>()->default_value(4),"Set number of procs");
+			("nprocs,p",value<int>()->default_value(1),"Set number of procs");
 			
 		
 		// Second, store command line information
@@ -67,13 +69,22 @@ int main(int argc, char * argv[])
 	//Get inputs 
 	omp_set_num_threads(vm["nprocs"].as<int>());
 	string input_file = vm["graphFile"].as< std::string >();
+	string tel_file   = vm["telFile"].as< std::string >();
 	int coarsen_levels = vm["coarse_levels"].as<int>();
 	double alpha = vm["alpha"].as<double>();
 
 	//Set up and solve for page rank vector
 	Graph G(input_file);
-	cout << "Reading in V" << endl;
-	std::vector<double> v = readV("VinFile.dat");
+	std::vector<double> v;
+	if (tel_file.compare("NONE")==0) 
+	{
+		v=setV(G.getNumNodes());
+	}
+	else
+	{
+		cout << "Reading in V" << endl;
+		v=readV(tel_file);
+	}
         std::vector<std::vector<double> > timeKeeper(5,vector<double>(0));
 
 	std::vector<int> indMap;
@@ -84,7 +95,7 @@ int main(int argc, char * argv[])
        		   cout << "Error getting index map, exiting ... " << endl;
        		   return 1;
 		}
-		std::string reEdge("ReorderedGraph.txt");
+		std::string reEdge("./output/ReorderedGraph.txt");
 		G.writeEdgeList(reEdge);
 		cout << reEdge << " written" << endl;
 		cout << "Reordering Input Vector" << endl;
@@ -113,19 +124,19 @@ int main(int argc, char * argv[])
 	}
 	cout << "Writing Results" << endl;
 	//Save Results
-	std::string outName = "Results.dat";
+	std::string outName = "./output/Results.dat";
 	//CSC_MATRIX adj = G.computeAdjacencyMatrix();
 	saveCSCMatrixToFile(G,outName);
         cout <<  outName << " written" << endl;
 
-	std::string prvec = "Page_Rank_Vec.txt";
+	std::string prvec = "./output/Page_Rank_Vec.txt";
 	saveVec(b,prvec);
 
-        std::string edgeName("edgeList.txt");
+        std::string edgeName("./output/edgeList.txt");
         G.writeEdgeList(edgeName);
         cout << edgeName << " written" << endl;
 
-        std::string timeFile("timing.txt");
+        std::string timeFile("./output/timing.txt");
         writeTimingToFile(timeKeeper,timeFile,coarsen_levels);
         cout << timeFile << " written" << endl;
 
@@ -216,6 +227,18 @@ std::vector<double> readV(std::string file)
 		inFile >> val; 
 	}
         inFile.close();
+
+	return b;
+}
+
+std::vector<double> setV(int num_nodes)
+{
+	std::vector<double> b; 
+	double val = double(1.0)/num_nodes;
+	for (int i = 0; i < num_nodes; i++)
+	{
+	        b.push_back(val);
+	}
 
 	return b;
 }
