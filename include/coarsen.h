@@ -1,7 +1,34 @@
+/**
+ * \file
+ * \author Tim Smith and Gopal Yalla
+ * 
+ * \brief Defines functions used to perform graph coarsening.
+ *
+ * Multilevel graph partitioning requires coarsening if the number of vertices is large. 
+ * Coarsening requires maximal matching which requires coloring with requires maximal
+ * independent sets. A short description of each algorithm is given below. 
+ *
+ * \htmlonly
+ * <IMG SRC="coarsening1.png" width=350px height=350px align="middle"/>
+ * \endhtmlonly
+ *
+ * \htmlonly
+ * <IMG SRC="coarsening2.png" width=350px height=350px align="middle"/>
+ * \endhtmlonly
+ *
+ * \htmlonly
+ * <IMG SRC="coarsening3.png" width=350px height=350px align="middle"/>
+ * \endhtmlonly
+ *
+ * This file implements those functions to be used in the page rank problem.  
+ *
+ */
+
 #ifndef COARSEN_H
 #define COARSEN_H
 
-/* \brief Compute maximal matching for graph.
+/**
+ * \brief Compute maximal matching for graph.
  *
  * \param g: original Graph object to be coarsened
  * \param colors: vector denoting node coloring
@@ -11,7 +38,8 @@
  */
 int mxm_shared(Graph& g, std::vector<int> &colors, int numColors);
 
-/* \brief Compute colors for graph coarsening implementing openmp parallelism.
+/**
+ * \brief Compute colors for graph coarsening implementing openmp parallelism.
  *
  * \param g: original Graph object to be coarsened
  * \param colors: vector denoting node coloring
@@ -20,7 +48,8 @@ int mxm_shared(Graph& g, std::vector<int> &colors, int numColors);
  */
 int colorGraph_shared(Graph& g, std::vector<int> &colors, int &numColors);
 
-/* \brief Compute maximal independent set.
+/**
+ * \brief Compute maximal independent set.
  *
  * \param g: original Graph object to be coarsened
  * \param finalRemoveList: vector of nodes which have already been assigned a color (1=remove,0=keep). This denotes nodes that have been colored already.
@@ -30,7 +59,8 @@ int colorGraph_shared(Graph& g, std::vector<int> &colors, int &numColors);
 int mis_shared(Graph& g, std::vector<int> finalRemoveList, std::vector<int> &I, int currentColor);
 
 
-/* \brief Find unmatched nodes of a particular color.
+/**
+ * \brief Find unmatched nodes of a particular color.
  *
  * \param colors: list of colors for each node
  * \param currentColor: color value to find
@@ -41,7 +71,8 @@ int mis_shared(Graph& g, std::vector<int> finalRemoveList, std::vector<int> &I, 
  */
 int doubleSelect_shared(std::vector<int> &colors, int currentColor, std::vector<int> matchList, int unmatchedValue, std::vector<int> &nodeList);
 
-/* \brief Find unmatched nodes of a particular color.
+/**
+ * \brief Find unmatched nodes of a particular color.
  *
  * \param matchList: list of matched status for each node 
  * \param unmatchedValue: value to look for unmatched nodes
@@ -50,7 +81,8 @@ int doubleSelect_shared(std::vector<int> &colors, int currentColor, std::vector<
  */
 int selectUnmatched_shared(std::vector<int> matchList, int unmatchedValue, std::vector<int> &nodeList);
 
-/* \brief Performs parallel inclusive scan on vector. Does not use pass by reference since algorithm is recursive..
+/** 
+ * \brief Performs parallel inclusive scan on vector. Does not use pass by reference since algorithm is recursive..
  *
  * \param a: vector of integers to be scanned
  * \return s: cumulative sum of vector a 

@@ -1,0 +1,151 @@
+/** 
+\page install Installation and Usage
+
+\section inu Installation and Usage
+
+\subsection Installation
+
+To get the latest version of v2fun, clone from github via:
+
+<div class="fragment"><pre class="fragment">> git clone https://github.com/gyalla/sparc.git
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+
+Before building v2fun, one must have GSL and BOOST installed. After building GSL and BOOST, edit the variables GSL_DIR and BOOST_DIR
+in first two lines of the file 'Makefile' to point to the root path for each directory.
+
+After building the required packages, issue a make command in the root directory to see all available targets, i.e., 
+
+<div class="fragment"><pre class="fragment">> make
+Available make targets:
+  all       : build main program
+  check     : build and run test unit test suite in /test/unit
+  coverage  : build lcov in include/lcov, build tests with --coverage option, run lcov, 
+  		and generate html in /test/unit/lcov_html
+  doc       : build documentation (doxygen page)
+ </pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+There is also the following PHONY targets in the Makefile: clean. Note, there are a total of four Makefiles in the project: 
+<ul>
+<li> Makefile
+<li> src/Makefile
+<li> test/unit/Makefile
+<li> doc/writeup/Makefile
+</ul>
+
+Only the Makefile in the root directory should be called directly. To build v2fun directory, run 
+
+<div class="fragment"><pre class="fragment">> make all
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+To verify that the software is working properly, a test option is provided to run a short suite of functionality tests against the local build. 
+To run, issue a 'make check' to initiate the tests. If succesful, output similar to the following will be generated: 
+
+<div class="fragment"><pre><pre class="fragment">
+> make check
+----------------------------------------------------------------------
+Running Simple Graph Test
+----------------------------------------------------------------------
+Initalizing graph from: simple_graph.dat
+Successfully computed neighbors
+Successfully computed adjacency matrix in CSC format
+Successfully computed graph laplacian in CSC format
+Successfully computed smallest two eigenvalues
+PASSED: Simple Graph Test
+----------------------------------------------------------------------
+Running Complex Graph Test
+----------------------------------------------------------------------
+Initalizing graph from: complex_graph.dat
+Successfully computed adjacency matrix in CSC format
+Successfully computed graph laplacian in CSC format
+--->Graph coloring computed (Time: 6.7e-05)
+--->Maximal matching computed (Time: 1.2e-05)
+--->Parent graph computed (Time: 9e-06)
+--->Graph coloring computed (Time: 2.1e-05)
+--->Maximal matching computed (Time: 1.8e-05)
+--->Parent graph computed (Time: 4e-06)
+--->Computing adjacency matrix (Time: 0)
+--->Computing graph laplacian (Time: 0)
+--->Getting second eigenvector with Arpack++ (Time: 0)
+--->Getting index Map (Time: 0)
+PASSED: Complex Graph Test
+----------------------------------------------------------------------
+Running Complex Graph Test
+----------------------------------------------------------------------
+Initalizing graph from: corner_cases_graph.dat
+Successfully computed adjacency matrix in CSC format
+Successfully computed graph laplacian in CSC format
+PASSED: Corner Cases Graph Test
+----------------------------------------------------------------------
+Running Graph Coarsening Test
+----------------------------------------------------------------------
+Initalizing graph from: coarsen_test.dat
+Successfully colored graph in 2.9e-05 sec
+Successfully computed maximal matching in 9e-06 sec
+--->Graph coloring computed (Time: 3.7e-05)
+--->Maximal matching computed (Time: 6e-06)
+--->Parent graph computed (Time: 6e-06)
+Successfully coarsened graph in 6.6e-05 sec
+PASSED: Coarsening Test
+----------------------------------------------------------------------
+Running OpenMP Test
+----------------------------------------------------------------------
+Setting num_threads to 1
+Rerunning coarsen test with multiple threads ... 
+----------------------------------------------------------------------
+Running Graph Coarsening Test
+----------------------------------------------------------------------
+Initalizing graph from: coarsen_test.dat
+Successfully colored graph in 2.8e-05 sec
+Successfully computed maximal matching in 9e-06 sec
+--->Graph coloring computed (Time: 2.7e-05)
+--->Maximal matching computed (Time: 7e-06)
+--->Parent graph computed (Time: 6e-06)
+Successfully coarsened graph in 5.6e-05 sec
+PASSED: Coarsening Test
+Initalizing graph from: complex_graph.dat
+--->Graph coloring computed (Time: 3.7e-05)
+--->Maximal matching computed (Time: 9e-06)
+--->Parent graph computed (Time: 7e-06)
+--->Computing adjacency matrix (Time: 0)
+--->Computing graph laplacian (Time: 0)
+--->Getting second eigenvector with Arpack++ (Time: 0)
+--->Getting index Map (Time: 0)
+PASSED: OpenMP Test
+----------------------------------------------------------------------
+Running Matrix Manipulation Test
+----------------------------------------------------------------------
+Initalizing graph from: matrixOperations.dat
+Successfully computed sub matrices in CSC format
+Successfully divide vector in CSC format
+Successfully performed Matvec
+--->Approximate Matvec Time: 1e-06
+--->Converged in 43 iterations. Residual = 8.7564e-15
+Successfully solved system with iterative solver
+Successfully reordered vector
+PASSED: Matrix Operations Test
+</pre></pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+Finally, to check the code coverage of the unit tests, issue a 'make coverage' to run lcov on the test suite and save the coverage info and html files in the directory test/unit/ as follows: 
+
+<div class="fragment"><pre class="fragment">> make coverage
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+Note, lcov must be installed to use this feature. 
+The current code coverage results can be found <a href="http://users.ices.utexas.edu/~gopal/software/v2fun/lcov_html/src/">here</a>.
+
+\subsection usage Usage
+
+The main way to interact with v2fun is through the input file <i>input_file.txt</i> located in the input/ directory, which is parsed by the BOOST library. The parameters are detailed in the input file provided. Specifically, one can adjust model constants, change the step size in the wall normal direction, and indicate which data file from the data/ directory to use for initial conditions. Three data files are provided with v2fun (one for Reynold's number 180, one for Reynold's number 2000, and one for Reynold's number 5200), and the README file in the data/ directory explains how to easily generate more. Additionally, a paramter for logging is included to suppress or expand the program output. Once the input file is to your liking, run v2fun as, 
+
+<div class="fragment"><pre class="fragment">> ./v2fun
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+or
+
+<div class="fragment"><pre class="fragment">> ./v2fun -c input/input_file.txt
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+The result of the code will be written to the output file specified in the input file. Once the bugs are fixed, we hope to include more features for viewing and verifying the results. 
+
+*/
