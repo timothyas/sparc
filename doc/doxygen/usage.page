@@ -5,35 +5,34 @@
 
 \subsection Installation
 
-To get the latest version of v2fun, clone from github via:
+To get the latest version of sparc, clone from github via:
 
 <div class="fragment"><pre class="fragment">> git clone https://github.com/gyalla/sparc.git
 </pre></div><p><a class="anchor" id="Installation"></a> </p>
 
+SPARC makes use of the following packages: 
 
-Before building v2fun, one must have GSL and BOOST installed. After building GSL and BOOST, edit the variables GSL_DIR and BOOST_DIR
-in first two lines of the file 'Makefile' to point to the root path for each directory.
+- BOOST
+- ARPACK
+- SuperLU
+
+which requires blas and lapack, as well as a fortran and c++ compiler. Use the 'make dep' target in the 
+Makefile to aid in installation. After building BOOST and ARPACK, edit the variables BOOST_DIR and ARPACK_DIR
+at the top of the Makefile to point to the root path for each package. Additionally, make sure the blas and lapack
+libraries are specified correctly.
 
 After building the required packages, issue a make command in the root directory to see all available targets, i.e., 
 
 <div class="fragment"><pre class="fragment">> make
 Available make targets:
   all       : build main program
-  check     : build and run test unit test suite in /test/unit
-  coverage  : build lcov in include/lcov, build tests with --coverage option, run lcov, 
-  		and generate html in /test/unit/lcov_html
+  check     : build and run test suite
   doc       : build documentation (doxygen page)
- </pre></div><p><a class="anchor" id="Installation"></a> </p>
+  dep       : build dependencies
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
 
-There is also the following PHONY targets in the Makefile: clean. Note, there are a total of four Makefiles in the project: 
-<ul>
-<li> Makefile
-<li> src/Makefile
-<li> test/unit/Makefile
-<li> doc/writeup/Makefile
-</ul>
-
-Only the Makefile in the root directory should be called directly. To build v2fun directory, run 
+There is also the following PHONY targets in the Makefile: clean, clobber. Note, only the Makefile in the root directory should be called directly. 
+To build sparc, run 
 
 <div class="fragment"><pre class="fragment">> make all
 </pre></div><p><a class="anchor" id="Installation"></a> </p>
@@ -126,26 +125,56 @@ Successfully reordered vector
 PASSED: Matrix Operations Test
 </pre></pre></div><p><a class="anchor" id="Installation"></a> </p>
 
-Finally, to check the code coverage of the unit tests, issue a 'make coverage' to run lcov on the test suite and save the coverage info and html files in the directory test/unit/ as follows: 
-
-<div class="fragment"><pre class="fragment">> make coverage
-</pre></div><p><a class="anchor" id="Installation"></a> </p>
-
-Note, lcov must be installed to use this feature. 
-The current code coverage results can be found <a href="http://users.ices.utexas.edu/~gopal/software/v2fun/lcov_html/src/">here</a>.
-
 \subsection usage Usage
 
-The main way to interact with v2fun is through the input file <i>input_file.txt</i> located in the input/ directory, which is parsed by the BOOST library. The parameters are detailed in the input file provided. Specifically, one can adjust model constants, change the step size in the wall normal direction, and indicate which data file from the data/ directory to use for initial conditions. Three data files are provided with v2fun (one for Reynold's number 180, one for Reynold's number 2000, and one for Reynold's number 5200), and the README file in the data/ directory explains how to easily generate more. Additionally, a paramter for logging is included to suppress or expand the program output. Once the input file is to your liking, run v2fun as, 
+The main way to interact with sparc is through the command line. Running a './sparc -h' command will show the following message: 
 
-<div class="fragment"><pre class="fragment">> ./v2fun
+<div class="fragment"><pre class="fragment">> ./sparc -h
+Usage: ./sparc [OPTIONS] [ARGUMENT]
+Allowed Options:
+  -h [ --help ]                   show this mesage and exit
+  -f [ --graphFile ] arg          (required) file containing initial graph data
+  -t [ --telFile ] arg (=NONE)    file containing teleportation vector data
+  -a [ --alpha ] arg (=0.5)       Set probability praramer alpha
+  -c [ --coarse_levels ] arg (=0) Set coarsen levels
+  -n [ --noSB ]                   Don't do spectral bisection. Just solve
+				  pagerank problem with original graph.
+  -p [ --nprocs ] arg (=1)        Set number of procs
 </pre></div><p><a class="anchor" id="Installation"></a> </p>
 
-or
+An example run would look like: 
 
-<div class="fragment"><pre class="fragment">> ./v2fun -c input/input_file.txt
+<div class="fragment"><pre class="fragment">> ./sparc -f data/facebook_combined.txt -c 4 
 </pre></div><p><a class="anchor" id="Installation"></a> </p>
 
-The result of the code will be written to the output file specified in the input file. Once the bugs are fixed, we hope to include more features for viewing and verifying the results. 
+This specifies to solve the page rank problem using the data from 'facebook_combined.txt' with spectral bisection after four levels of coarsening. A uniform 
+teleportation vector is used by default. 
+
+Another example would be 
+
+<div class="fragment"><pre class="fragment">> ./sparc -f data/facebook_combined.txt -t data/VinFile10Facebook.dat -a 0.1
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
+
+This specifies to solve the page rank problem using data from 'facebook_combined.txt' with spectral bisection without any coarsening and to use the 
+information in 'VinFile10Facebook.dat' as the teleportation vector, and a probability parameter of 0.1. 
+
+The results will be written to the output/ directory and can be plotted using the post processing scripts. 
+
+Note, the first line of the data file must contain the number of nodes and edges, e.g.,
+<div class="fragment"><pre class="fragment">
+4039 88234
+0 1
+0 2
+0 3
+...
+... (88234)
+...
+4023 4038
+4026 4030
+4027 4031
+4027 4032
+4027 4038
+4031 4038
+</pre></div><p><a class="anchor" id="Installation"></a> </p>
 
 */

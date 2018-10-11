@@ -1,16 +1,16 @@
-BOOSTLIB := $(shell env | grep BOOST | grep LIB | cut -f 2 -d=)
-BOOSTINC := $(shell env | grep BOOST | grep INC | cut -f 2 -d=)
-SPIC_DIR = ${PWD}
+#Change the following lines to the root path of BOOST and ARPACK
+#BOOST_DIR=
+SPARC_DIR= ${PWD}
+ARPACK_DIR=${SPARC_DIR}/include/arpackpp/
 
+INC	:= -I${SPARC_DIR}/include/ -I${ARPACK_DIR}/include  -I${ARPACK_DIR}/include/../examples/matrices  -I${ARPACK_DIR}/include/../examples/areig/  -I${ARPACK_DIR}/include/../examples/matprod -I${BOOST_DIR}/incldue/
 
-INC	:= -I${SPIC_DIR}/include/ -I${SPIC_DIR}/include/arpackpp/include  -I${SPIC_DIR}/include/arpackpp/include/../examples/matrices  -I${SPIC_DIR}/include/arpackpp/include/../examples/areig/  -I${SPIC_DIR}/include/arpackpp/include/../examples/matprod -I${BOOSTINC}
-
-LDFLAGS  := -L${SPIC_DIR}/include/arpackpp/external -L${BOOSTLIB} 
+#Add the location of blas and lapack here.
+LDFLAGS  := -L${ARPACK_DIR}/external -L${BOOST_DIR}/lib/ 
 LDLIBS     :=  -larpack -lsuperlu -lgfortran  -llapack  -lblas -lboost_program_options
+
 EXEC := sparc
 EXECDIR := ../
-
-
 
 # Export variables so check, install, and coverage can all use libraries
 export LDFLAGS
@@ -23,9 +23,9 @@ export EXECDIR
 info:
 
 	@echo "Available make targets:"
-	@echo "  all       : build main program in /src/"
-	@echo "  check	    : build and run test suite in /test/regression"
-	@echo "  doc       : build documentation"
+	@echo "  all       : build main program"
+	@echo "  check	    : build and run test suite"
+	@echo "  doc       : build documentation (doxygen page)"
 	@echo "  dep       : build dependencies"
 
 all:
