@@ -1071,11 +1071,16 @@ HTML_EXTRA_STYLESHEET  =
 # files will be copied as-is; there are no commands or markers available.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_FILES       =./figs/coarsening1.png \
-			./figs/coarsening2.png \
-			./figs/coarsening3.png \
+HTML_EXTRA_FILES       =./figs/coarsening.png \
 			./figs/DBLP_SBC0.png \
 			./figs/DBLP_SBC4.png \
+			./figs/csc_storage.png \
+			./figs/edge_matching.png \
+			./figs/mis.png \
+			./figs/coloring.png \
+			./figs/example_results.png \
+			./figs/spectral_bisection.png \
+			./figs/matvec.png \
 			./figs/facebook_data.png
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. Doxygen

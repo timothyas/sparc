@@ -25,6 +25,7 @@ info:
 	@echo "Available make targets:"
 	@echo "  all       : build main program in /src/"
 	@echo "  check	    : build and run test suite in /test/regression"
+	@echo "  doc       : build documentation"
 	@echo "  dep       : build dependencies"
 
 all:
@@ -58,3 +59,5 @@ clobber: clean
 clean: 
 	-$(MAKE) -C ./test/regression/ clean
 	-$(MAKE) -C ./src/ clean
+doc:
+	cd doc/doxygen/ && doxygen sparc.dox

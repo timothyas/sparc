@@ -1,3 +1,17 @@
+/** 
+ * \file 
+ * \author
+ *
+ * \brief 
+ *
+ * TODO: We should add information about the page rank problem here and how it 
+ * reduces to a matvec / solve. I forgot how we solved it actually so we should 
+ * try to add comments about all this stuff. 
+ *
+ *
+ */
+
+
 #ifndef MATRIXMANIP_H
 #define MATRIXMANIP_H
 

@@ -1,18 +1,39 @@
+/**
+ * \file
+ * \author Tim Smith and Gopal Yalla
+ * 
+ * \brief Defines class for a graph object and struct for a matrix stored in compact sparse column format. See CSC_MATRIX and Graph class for more information. 
+ *
+ */
 #ifndef GRAPH_H
 #define GRAPH_H
 #include<string>
 #include<vector>
 
 
+/**
+ * \brief Struct defining matrix in Compact Sparse Column (CSC) format
+ *
+ * \htmlonly
+ * <IMG SRC="csc_storage.png" width=600px height=500px align="middle"/>
+ * \endhtmlonly
+ *
+ */
 struct CSC_MATRIX {
 
-	int n; //dimension of matrix
-	int nnz; //number of nonzero elements
-	std::vector<int> irow; //row index of all non zero elements
-	std::vector<int> pcol; //pointer to beginning of each column
-	std::vector<double> vals; //nonzero elements of matrix
+	int n; /**dimension of matrix*/
+	int nnz; /**number of nonzero elements*/
+	std::vector<int> irow; /**row index of all non zero elements*/
+	std::vector<int> pcol; /**pointer to beginning of each column*/
+	std::vector<double> vals; /**nonzero elements of matrix*/
 };
 
+/**
+ * \brief 
+ *
+ * TODO: Give description of Graph class and add comments to each function
+ *
+ */
 class Graph { 
 
 	public: 
